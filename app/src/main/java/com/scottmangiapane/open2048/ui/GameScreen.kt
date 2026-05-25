@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState as animateFloat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -86,7 +88,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                 }
             }
     ) {
-        val isLandscape = maxWidth > maxHeight
+        val isLandscape = this.maxWidth > this.maxHeight
 
         if (isLandscape) {
             Row(
@@ -107,7 +109,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
 
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight()
+                        .fillMaxHeight(0.95f)
                         .aspectRatio(1f)
                 ) {
                     BoardContainer(state = state)
@@ -132,7 +134,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(32.dp))
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth(0.95f)
                         .aspectRatio(1f)
                 ) {
                     BoardContainer(state = state)
@@ -147,9 +149,11 @@ fun BoardContainer(state: GameState) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .shadow(4.dp, RoundedCornerShape(8.dp))
+            .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFFBBADA0))
-            .padding(8.dp)
+            .padding(12.dp)
     ) {
         GameBoard(board = state.board)
 
@@ -192,7 +196,7 @@ fun HeaderSection(
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF776E65)
             )
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ScoreCard(label = "SCORE", score = score)
                 ScoreCard(label = "BEST", score = bestScore)
             }
@@ -268,12 +272,22 @@ fun ScoreCard(label: String, score: Int) {
         modifier = Modifier
             .width(80.dp)
             .clip(RoundedCornerShape(4.dp))
-            .background(Color(0xFFBBADA0))
+            .background(Color(0xFFEEE4DA))
             .padding(vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = label, fontSize = 12.sp, color = Color(0xFFEEE4DA), fontWeight = FontWeight.Bold)
-        Text(text = score.toString(), fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = Color(0xFF776E65).copy(alpha = 0.7f),
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = score.toString(),
+            fontSize = 18.sp,
+            color = Color(0xFF776E65),
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -288,7 +302,7 @@ fun GameBoard(board: List<List<Tile?>>) {
             .onGloballyPositioned { boardWidthPx = it.size.width }
     ) {
         if (boardWidthPx > 0) {
-            val spacingDp = 8.dp
+            val spacingDp = 12.dp
             val spacingPx = with(density) { spacingDp.toPx() }
             val tileSizePx = (boardWidthPx - (spacingPx * 3)) / 4f
             val tileSizeDp = with(density) { tileSizePx.toDp() }
@@ -301,7 +315,7 @@ fun GameBoard(board: List<List<Tile?>>) {
                             Box(
                                 modifier = Modifier
                                     .size(tileSizeDp)
-                                    .background(Color(0xFFCDC1B4), RoundedCornerShape(4.dp))
+                                    .background(Color(0xFFCDC1B4), RoundedCornerShape(6.dp))
                             )
                         }
                     }
@@ -382,20 +396,27 @@ fun TileView(tile: Tile) {
         label = "tilePop"
     )
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
-            .clip(RoundedCornerShape(4.dp))
-            .background(backgroundColor),
+            .shadow(2.dp, RoundedCornerShape(6.dp))
+            .clip(RoundedCornerShape(6.dp))
+            .background(backgroundColor)
+            .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(6.dp)),
         contentAlignment = Alignment.Center
     ) {
+        val fontSize = when {
+            tile.value >= 1024 -> maxWidth.value * 0.28f
+            tile.value >= 100 -> maxWidth.value * 0.35f
+            else -> maxWidth.value * 0.45f
+        }
         Text(
             text = tile.value.toString(),
-            fontSize = if (tile.value >= 1024) 20.sp else if (tile.value >= 100) 24.sp else 32.sp,
+            fontSize = fontSize.sp,
             fontWeight = FontWeight.Bold,
             color = textColor
         )
