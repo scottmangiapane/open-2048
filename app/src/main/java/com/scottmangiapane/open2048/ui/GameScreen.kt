@@ -1,9 +1,8 @@
 package com.scottmangiapane.open2048.ui
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -14,13 +13,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,7 +39,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
         
         HeaderSection(
             score = state.score,
@@ -86,7 +85,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color(0x88FFFFFF))
+                        .background(Color(0xAAFFFFFF))
                         .clip(RoundedCornerShape(8.dp)),
                     contentAlignment = Alignment.Center
                 ) {
@@ -111,7 +110,7 @@ fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit) {
     ) {
         Text(
             text = "2048",
-            fontSize = 64.sp,
+            fontSize = 56.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF776E65)
         )
@@ -121,7 +120,7 @@ fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit) {
                 ScoreCard(label = "SCORE", score = score)
                 ScoreCard(label = "BEST", score = bestScore)
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = onRestart,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
@@ -138,78 +137,83 @@ fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit) {
 fun ScoreCard(label: String, score: Int) {
     Column(
         modifier = Modifier
+            .width(80.dp)
             .clip(RoundedCornerShape(4.dp))
             .background(Color(0xFFBBADA0))
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+            .padding(vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = label, fontSize = 12.sp, color = Color(0xFFEEE4DA), fontWeight = FontWeight.Bold)
-        Text(text = score.toString(), fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold)
+        Text(text = score.toString(), fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
 fun GameBoard(board: List<List<Tile?>>) {
-    var boardSize by remember { mutableStateOf(0.dp) }
+    var boardWidthPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
 
-    BoxWithConstraints(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .onGloballyPositioned {
-                boardSize = with(density) { it.size.width.toDp() }
-            }
+            .onGloballyPositioned { boardWidthPx = it.size.width }
     ) {
-        val tileSize = (maxWidth - 24.dp) / 4 // 8dp padding * 3 gaps = 24dp
-        val spacing = 8.dp
+        if (boardWidthPx > 0) {
+            val spacingDp = 8.dp
+            val spacingPx = with(density) { spacingDp.toPx() }
+            val tileSizePx = (boardWidthPx - (spacingPx * 3)) / 4
+            val tileSizeDp = with(density) { tileSizePx.toDp() }
 
-        // Background Grid
-        Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
-            repeat(4) {
-                Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
-                    repeat(4) {
-                        Box(
-                            modifier = Modifier
-                                .size(tileSize)
-                                .background(Color(0xFFCDC1B4), RoundedCornerShape(4.dp))
-                        )
+            // 1. Static Background Grid
+            Column(verticalArrangement = Arrangement.spacedBy(spacingDp)) {
+                repeat(4) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(spacingDp)) {
+                        repeat(4) {
+                            Box(
+                                modifier = Modifier
+                                    .size(tileSizeDp)
+                                    .background(Color(0xFFCDC1B4), RoundedCornerShape(4.dp))
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        // Active Tiles
-        board.forEachIndexed { rowIndex, row ->
-            row.forEachIndexed { colIndex, tile ->
-                if (tile != null) {
-                    val animatedX by animateDpAsState(
-                        targetValue = colIndex.toDp(tileSize, spacing),
-                        animationSpec = spring(stiffness = Spring.StiffnessLow),
-                        label = "tileX"
+            // 2. Active Tiles (Glide Animation)
+            // Flattening the board ensures tiles are siblings in the Box for proper identity tracking.
+            val activeTiles = remember(board) {
+                board.flatMapIndexed { r, row ->
+                    row.mapIndexedNotNull { c, tile -> if (tile != null) Triple(tile, r, c) else null }
+                }
+            }
+
+            activeTiles.forEach { (tile, r, c) ->
+                key(tile.id) {
+                    val targetOffset = IntOffset(
+                        x = ((tileSizePx + spacingPx) * c).toInt(),
+                        y = ((tileSizePx + spacingPx) * r).toInt()
                     )
-                    val animatedY by animateDpAsState(
-                        targetValue = rowIndex.toDp(tileSize, spacing),
-                        animationSpec = spring(stiffness = Spring.StiffnessLow),
-                        label = "tileY"
+                    
+                    val animatedOffset by animateIntOffsetAsState(
+                        targetValue = targetOffset,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow
+                        ),
+                        label = "tileGlide"
                     )
 
-                    key(tile.id) {
-                        Box(
-                            modifier = Modifier
-                                .offset(x = animatedX, y = animatedY)
-                                .size(tileSize)
-                        ) {
-                            TileView(tile = tile)
-                        }
+                    Box(
+                        modifier = Modifier
+                            .offset { animatedOffset }
+                            .size(tileSizeDp)
+                    ) {
+                        TileView(tile = tile)
                     }
                 }
             }
         }
     }
-}
-
-private fun Int.toDp(tileSize: Dp, spacing: Dp): Dp {
-    return (this.toFloat().dp * tileSize.value) + (this.toFloat().dp * spacing.value)
 }
 
 @Composable
@@ -234,24 +238,29 @@ fun TileView(tile: Tile) {
         else -> Color.White
     }
 
-    // Scale animation for new/merged tiles
+    var isDeployed by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { isDeployed = true }
+
     val scale by animateFloatAsState(
-        targetValue = 1f,
+        targetValue = if (isDeployed) 1f else 0.8f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "tileScale"
+        label = "tilePop"
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .scale(scale)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(RoundedCornerShape(4.dp))
             .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = tile.value.toString(),
-            fontSize = if (tile.value >= 1024) 24.sp else 32.sp,
+            fontSize = if (tile.value >= 1024) 20.sp else if (tile.value >= 100) 24.sp else 32.sp,
             fontWeight = FontWeight.Bold,
             color = textColor
         )
