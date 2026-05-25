@@ -100,6 +100,8 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                     score = state.score,
                     bestScore = state.bestScore,
                     onRestart = { viewModel.restartGame() },
+                    onUndo = { viewModel.undo() },
+                    canUndo = state.canUndo,
                     isLandscape = true
                 )
 
@@ -123,6 +125,8 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                     score = state.score,
                     bestScore = state.bestScore,
                     onRestart = { viewModel.restartGame() },
+                    onUndo = { viewModel.undo() },
+                    canUndo = state.canUndo,
                     isLandscape = false
                 )
                 Spacer(modifier = Modifier.height(32.dp))
@@ -169,7 +173,14 @@ fun BoardContainer(state: GameState) {
 }
 
 @Composable
-fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit, isLandscape: Boolean) {
+fun HeaderSection(
+    score: Int,
+    bestScore: Int,
+    onRestart: () -> Unit,
+    onUndo: () -> Unit,
+    canUndo: Boolean,
+    isLandscape: Boolean
+) {
     if (isLandscape) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -185,13 +196,27 @@ fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit, isLandscape
                 ScoreCard(label = "SCORE", score = score)
                 ScoreCard(label = "BEST", score = bestScore)
             }
-            Button(
-                onClick = onRestart,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
-                shape = RoundedCornerShape(4.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = onUndo,
+                    enabled = canUndo,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF8F7A66),
+                        disabledContainerColor = Color(0xFFBBADA0)
+                    ),
+                    shape = RoundedCornerShape(4.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text("Undo", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+                Button(
+                    onClick = onRestart,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
+                    shape = RoundedCornerShape(4.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
     } else {
@@ -211,13 +236,27 @@ fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit, isLandscape
                 ScoreCard(label = "BEST", score = bestScore)
             }
 
-            Button(
-                onClick = onRestart,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
-                shape = RoundedCornerShape(4.dp),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
-            ) {
-                Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = onUndo,
+                    enabled = canUndo,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF8F7A66),
+                        disabledContainerColor = Color(0xFFBBADA0)
+                    ),
+                    shape = RoundedCornerShape(4.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+                ) {
+                    Text("Undo", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+                Button(
+                    onClick = onRestart,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
+                    shape = RoundedCornerShape(4.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+                ) {
+                    Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

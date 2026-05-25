@@ -1,23 +1,31 @@
 package com.scottmangiapane.open2048.logic
 
 import com.scottmangiapane.open2048.model.Tile
-import kotlin.random.Random
 
 enum class Direction {
     UP, DOWN, LEFT, RIGHT
 }
 
 class GameEngine(private val size: Int = 4) {
-    private var nextId = 0
 
-    fun createInitialBoard(): List<List<Tile?>> {
+    fun createInitialBoard(
+        seedValue1: Float, seedPos1: Float,
+        seedValue2: Float, seedPos2: Float,
+        startId: Int
+    ): Pair<List<List<Tile?>>, Int> {
         val board = MutableList(size) { MutableList<Tile?>(size) { null } }
-        addRandomTile(board)
-        addRandomTile(board)
-        return board
+        var currentId = startId
+        currentId = addTile(board, seedValue1, seedPos1, currentId)
+        currentId = addTile(board, seedValue2, seedPos2, currentId)
+        return board to currentId
     }
 
-    private fun addRandomTile(board: MutableList<MutableList<Tile?>>) {
+    private fun addTile(
+        board: MutableList<MutableList<Tile?>>,
+        valueSeed: Float,
+        posSeed: Float,
+        id: Int
+    ): Int {
         val emptyCells = mutableListOf<Pair<Int, Int>>()
         for (r in 0 until size) {
             for (c in 0 until size) {
@@ -25,12 +33,21 @@ class GameEngine(private val size: Int = 4) {
             }
         }
         if (emptyCells.isNotEmpty()) {
-            val (r, c) = emptyCells[Random.nextInt(emptyCells.size)]
-            board[r][c] = Tile(id = nextId++, value = if (Random.nextFloat() < 0.9) 2 else 4)
+            val index = (posSeed * emptyCells.size).toInt().coerceIn(0, emptyCells.size - 1)
+            val (r, c) = emptyCells[index]
+            board[r][c] = Tile(id = id, value = if (valueSeed < 0.9) 2 else 4)
+            return id + 1
         }
+        return id
     }
 
-    fun move(board: List<List<Tile?>>, direction: Direction): Pair<List<List<Tile?>>, Int> {
+    fun move(
+        board: List<List<Tile?>>,
+        direction: Direction,
+        valueSeed: Float,
+        posSeed: Float,
+        nextId: Int
+    ): Triple<List<List<Tile?>>, Int, Int> {
         var scoreGained = 0
         val tempBoard = MutableList(size) { MutableList<Tile?>(size) { null } }
 
@@ -48,7 +65,6 @@ class GameEngine(private val size: Int = 4) {
             while (i < row.size) {
                 if (i + 1 < row.size && row[i].value == row[i + 1].value) {
                     val mergedValue = row[i].value * 2
-                    // Use the ID of the second tile so we see the sliding motion into the first tile
                     newRow.add(Tile(id = row[i + 1].id, value = mergedValue))
                     scoreGained += mergedValue
                     i += 2
@@ -64,13 +80,14 @@ class GameEngine(private val size: Int = 4) {
         }
 
         val finalBoard = rotateBack(tempBoard, direction)
+        var finalNextId = nextId
 
         return if (board != finalBoard) {
             val mutableFinalBoard = finalBoard.map { it.toMutableList() }.toMutableList()
-            addRandomTile(mutableFinalBoard)
-            mutableFinalBoard to scoreGained
+            finalNextId = addTile(mutableFinalBoard, valueSeed, posSeed, nextId)
+            Triple(mutableFinalBoard, scoreGained, finalNextId)
         } else {
-            board to 0
+            Triple(board, 0, nextId)
         }
     }
 
