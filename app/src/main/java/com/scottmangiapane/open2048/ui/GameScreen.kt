@@ -1,10 +1,12 @@
 package com.scottmangiapane.open2048.ui
 
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,29 +15,55 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.model.Tile
 import kotlin.math.abs
+import androidx.compose.animation.core.animateFloatAsState as animateFloat
 
 @Composable
 fun GameScreen(viewModel: GameViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFAF8EF))
-            .padding(16.dp),
+            .padding(16.dp)
+            .focusRequester(focusRequester)
+            .focusable()
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.type == KeyEventType.KeyDown) {
+                    val direction = when (keyEvent.key) {
+                        Key.DirectionUp -> Direction.UP
+                        Key.DirectionDown -> Direction.DOWN
+                        Key.DirectionLeft -> Direction.LEFT
+                        Key.DirectionRight -> Direction.RIGHT
+                        else -> null
+                    }
+                    direction?.let {
+                        viewModel.move(it)
+                        return@onKeyEvent true
+                    }
+                }
+                false
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -161,7 +189,7 @@ fun GameBoard(board: List<List<Tile?>>) {
         if (boardWidthPx > 0) {
             val spacingDp = 8.dp
             val spacingPx = with(density) { spacingDp.toPx() }
-            val tileSizePx = (boardWidthPx - (spacingPx * 3)) / 4
+            val tileSizePx = (boardWidthPx - (spacingPx * 3)) / 4f
             val tileSizeDp = with(density) { tileSizePx.toDp() }
 
             // 1. Static Background Grid
@@ -179,34 +207,37 @@ fun GameBoard(board: List<List<Tile?>>) {
                 }
             }
 
-            // 2. Active Tiles (Glide Animation)
-            // Flattening the board ensures tiles are siblings in the Box for proper identity tracking.
+            // 2. Persistent Active Tiles
+            // Sorting by ID ensures stable composition order across re-renders
             val activeTiles = remember(board) {
                 board.flatMapIndexed { r, row ->
                     row.mapIndexedNotNull { c, tile -> if (tile != null) Triple(tile, r, c) else null }
-                }
+                }.sortedBy { it.first.id }
             }
 
             activeTiles.forEach { (tile, r, c) ->
                 key(tile.id) {
-                    val targetOffset = IntOffset(
-                        x = ((tileSizePx + spacingPx) * c).toInt(),
-                        y = ((tileSizePx + spacingPx) * r).toInt()
-                    )
+                    val targetXPx = (tileSizePx + spacingPx) * c
+                    val targetYPx = (tileSizePx + spacingPx) * r
                     
-                    val animatedOffset by animateIntOffsetAsState(
-                        targetValue = targetOffset,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessMediumLow
-                        ),
-                        label = "tileGlide"
+                    val animXPx by animateFloat(
+                        targetValue = targetXPx,
+                        animationSpec = tween(durationMillis = 100, easing = FastOutSlowInEasing),
+                        label = "glideX"
+                    )
+                    val animYPx by animateFloat(
+                        targetValue = targetYPx,
+                        animationSpec = tween(durationMillis = 100, easing = FastOutSlowInEasing),
+                        label = "glideY"
                     )
 
                     Box(
                         modifier = Modifier
-                            .offset { animatedOffset }
                             .size(tileSizeDp)
+                            .graphicsLayer {
+                                translationX = animXPx
+                                translationY = animYPx
+                            }
                     ) {
                         TileView(tile = tile)
                     }
@@ -238,10 +269,10 @@ fun TileView(tile: Tile) {
         else -> Color.White
     }
 
-    var isDeployed by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { isDeployed = true }
+    var isDeployed by remember(tile.value) { mutableStateOf(false) }
+    LaunchedEffect(tile.value) { isDeployed = true }
 
-    val scale by animateFloatAsState(
+    val scale by animateFloat(
         targetValue = if (isDeployed) 1f else 0.8f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "tilePop"
