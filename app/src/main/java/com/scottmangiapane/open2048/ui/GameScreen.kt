@@ -117,15 +117,15 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                     .fillMaxSize()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.Center
             ) {
-                Spacer(modifier = Modifier.height(48.dp))
                 HeaderSection(
                     score = state.score,
                     bestScore = state.bestScore,
                     onRestart = { viewModel.restartGame() },
                     isLandscape = false
                 )
+                Spacer(modifier = Modifier.height(32.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -173,7 +173,7 @@ fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit, isLandscape
     if (isLandscape) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.End
         ) {
             Text(
                 text = "2048",
@@ -195,32 +195,29 @@ fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit, isLandscape
             }
         }
     } else {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = "2048",
-                fontSize = 56.sp,
+                fontSize = 64.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF776E65)
             )
 
-            Column(horizontalAlignment = Alignment.End) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ScoreCard(label = "SCORE", score = score)
-                    ScoreCard(label = "BEST", score = bestScore)
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = onRestart,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
-                    shape = RoundedCornerShape(4.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ScoreCard(label = "SCORE", score = score)
+                ScoreCard(label = "BEST", score = bestScore)
+            }
+
+            Button(
+                onClick = onRestart,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
+                shape = RoundedCornerShape(4.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+            ) {
+                Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
             }
         }
     }
