@@ -62,67 +62,6 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                 }
                 false
             }
-    ) {
-        val isLandscape = maxWidth > maxHeight
-
-        if (isLandscape) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HeaderSection(
-                    score = state.score,
-                    bestScore = state.bestScore,
-                    onRestart = { viewModel.restartGame() },
-                    isLandscape = true
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                ) {
-                    BoardContainer(state = state, viewModel = viewModel)
-                }
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Spacer(modifier = Modifier.height(48.dp))
-                HeaderSection(
-                    score = state.score,
-                    bestScore = state.bestScore,
-                    onRestart = { viewModel.restartGame() },
-                    isLandscape = false
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                ) {
-                    BoardContainer(state = state, viewModel = viewModel)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun BoardContainer(state: GameState, viewModel: GameViewModel) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFBBADA0))
-            .padding(8.dp)
             .pointerInput(Unit) {
                 var totalDragX = 0f
                 var totalDragY = 0f
@@ -146,6 +85,67 @@ fun BoardContainer(state: GameState, viewModel: GameViewModel) {
                     totalDragY += dragAmount.y
                 }
             }
+    ) {
+        val isLandscape = maxWidth > maxHeight
+
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HeaderSection(
+                    score = state.score,
+                    bestScore = state.bestScore,
+                    onRestart = { viewModel.restartGame() },
+                    isLandscape = true
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(1f)
+                ) {
+                    BoardContainer(state = state)
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(48.dp))
+                HeaderSection(
+                    score = state.score,
+                    bestScore = state.bestScore,
+                    onRestart = { viewModel.restartGame() },
+                    isLandscape = false
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                ) {
+                    BoardContainer(state = state)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BoardContainer(state: GameState) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0xFFBBADA0))
+            .padding(8.dp)
     ) {
         GameBoard(board = state.board)
 
