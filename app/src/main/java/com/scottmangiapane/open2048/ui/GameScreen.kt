@@ -2,7 +2,7 @@ package com.scottmangiapane.open2048.ui
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateFloatAsState as animateFloat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -30,7 +30,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.model.Tile
 import kotlin.math.abs
-import androidx.compose.animation.core.animateFloatAsState as animateFloat
 
 @Composable
 fun GameScreen(viewModel: GameViewModel = viewModel()) {
@@ -41,11 +40,10 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
         focusRequester.requestFocus()
     }
 
-    Column(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFAF8EF))
-            .padding(16.dp)
             .focusRequester(focusRequester)
             .focusable()
             .onKeyEvent { keyEvent ->
@@ -63,66 +61,54 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                     }
                 }
                 false
-            },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            }
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
-        
-        HeaderSection(
-            score = state.score,
-            bestScore = state.bestScore,
-            onRestart = { viewModel.restartGame() }
-        )
+        val isLandscape = maxWidth > maxHeight
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFBBADA0))
-                .padding(8.dp)
-                .pointerInput(Unit) {
-                    var totalDragX = 0f
-                    var totalDragY = 0f
-                    detectDragGestures(
-                        onDragEnd = {
-                            val direction = when {
-                                abs(totalDragX) > abs(totalDragY) -> {
-                                    if (totalDragX > 50) Direction.RIGHT else if (totalDragX < -50) Direction.LEFT else null
-                                }
-                                else -> {
-                                    if (totalDragY > 50) Direction.DOWN else if (totalDragY < -50) Direction.UP else null
-                                }
-                            }
-                            direction?.let { viewModel.move(it) }
-                            totalDragX = 0f
-                            totalDragY = 0f
-                        },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            totalDragX += dragAmount.x
-                            totalDragY += dragAmount.y
-                        }
-                    )
-                }
-        ) {
-            GameBoard(board = state.board)
-            
-            if (state.isGameOver) {
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HeaderSection(
+                    score = state.score,
+                    bestScore = state.bestScore,
+                    onRestart = { viewModel.restartGame() },
+                    isLandscape = true
+                )
+
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xAAFFFFFF))
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentAlignment = Alignment.Center
+                        .fillMaxHeight()
+                        .aspectRatio(1f)
                 ) {
-                    Text(
-                        text = "Game Over!",
-                        fontSize = 48.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF776E65)
-                    )
+                    BoardContainer(state = state, viewModel = viewModel)
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(48.dp))
+                HeaderSection(
+                    score = state.score,
+                    bestScore = state.bestScore,
+                    onRestart = { viewModel.restartGame() },
+                    isLandscape = false
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                ) {
+                    BoardContainer(state = state, viewModel = viewModel)
                 }
             }
         }
@@ -130,25 +116,75 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
 }
 
 @Composable
-fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+fun BoardContainer(state: GameState, viewModel: GameViewModel) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0xFFBBADA0))
+            .padding(8.dp)
+            .pointerInput(Unit) {
+                var totalDragX = 0f
+                var totalDragY = 0f
+                detectDragGestures(
+                    onDragEnd = {
+                        val direction = when {
+                            abs(totalDragX) > abs(totalDragY) -> {
+                                if (totalDragX > 50) Direction.RIGHT else if (totalDragX < -50) Direction.LEFT else null
+                            }
+                            else -> {
+                                if (totalDragY > 50) Direction.DOWN else if (totalDragY < -50) Direction.UP else null
+                            }
+                        }
+                        direction?.let { viewModel.move(it) }
+                        totalDragX = 0f
+                        totalDragY = 0f
+                    }
+                ) { change, dragAmount ->
+                    change.consume()
+                    totalDragX += dragAmount.x
+                    totalDragY += dragAmount.y
+                }
+            }
     ) {
-        Text(
-            text = "2048",
-            fontSize = 56.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF776E65)
-        )
-        
-        Column(horizontalAlignment = Alignment.End) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        GameBoard(board = state.board)
+
+        if (state.isGameOver) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xAAFFFFFF))
+                    .clip(RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Game Over!",
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF776E65)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit, isLandscape: Boolean) {
+    if (isLandscape) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = "2048",
+                fontSize = 56.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF776E65)
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 ScoreCard(label = "SCORE", score = score)
                 ScoreCard(label = "BEST", score = bestScore)
             }
-            Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = onRestart,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
@@ -156,6 +192,35 @@ fun HeaderSection(score: Int, bestScore: Int, onRestart: () -> Unit) {
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        }
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "2048",
+                fontSize = 56.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF776E65)
+            )
+
+            Column(horizontalAlignment = Alignment.End) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ScoreCard(label = "SCORE", score = score)
+                    ScoreCard(label = "BEST", score = bestScore)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = onRestart,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
+                    shape = RoundedCornerShape(4.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
@@ -210,9 +275,12 @@ fun GameBoard(board: List<List<Tile?>>) {
             // 2. Persistent Active Tiles
             // Sorting by ID ensures stable composition order across re-renders
             val activeTiles = remember(board) {
-                board.flatMapIndexed { r, row ->
-                    row.mapIndexedNotNull { c, tile -> if (tile != null) Triple(tile, r, c) else null }
-                }.sortedBy { it.first.id }
+                board.asSequence()
+                    .flatMapIndexed { r, row ->
+                        row.mapIndexedNotNull { c, tile -> tile?.let { Triple(it, r, c) } }
+                    }
+                    .sortedBy { it.first.id }
+                    .toList()
             }
 
             activeTiles.forEach { (tile, r, c) ->
@@ -269,7 +337,7 @@ fun TileView(tile: Tile) {
         else -> Color.White
     }
 
-    var isDeployed by remember(tile.value) { mutableStateOf(false) }
+    var isDeployed by remember(tile.value) { mutableStateOf(value = false) }
     LaunchedEffect(tile.value) { isDeployed = true }
 
     val scale by animateFloat(
