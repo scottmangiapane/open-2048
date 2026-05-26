@@ -1,5 +1,6 @@
 package com.scottmangiapane.open2048.ui
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +29,9 @@ fun MenuScreen(
     onToggleDarkMode: () -> Unit,
     canResume: Boolean
 ) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -36,67 +41,96 @@ fun MenuScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(32.dp),
+                .padding(horizontal = 32.dp, vertical = if (isLandscape) 16.dp else 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "2048",
-                fontSize = 80.sp,
+                fontSize = if (isLandscape) 64.sp else 80.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 48.dp)
+                modifier = Modifier.padding(bottom = if (isLandscape) 16.dp else 48.dp)
             )
 
-            if (canResume) {
+            if (isLandscape) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    // Group 1: Challenges & Resume
+                    MenuColumn(modifier = Modifier.weight(1f)) {
+                        if (canResume) {
+                            MenuHeader("CONTINUE")
+                            MenuButton(
+                                text = "Resume",
+                                onClick = onResumeGame,
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                        
+                        MenuHeader("CHALLENGE")
+                        MenuButton(
+                            text = "Daily Challenge",
+                            onClick = { onStartGame(GameMode.Daily.today()) },
+                            containerColor = Color(0xFFC2410C)
+                        )
+                    }
+
+                    // Group 2: Classic
+                    MenuColumn(modifier = Modifier.weight(1f)) {
+                        MenuHeader("CLASSIC")
+                        MenuButton(text = "Classic 4x4", onClick = { onStartGame(GameMode.Classic(4)) })
+                        Spacer(modifier = Modifier.height(8.dp))
+                        MenuButton(text = "Small 3x3", onClick = { onStartGame(GameMode.Classic(3)) })
+                        Spacer(modifier = Modifier.height(8.dp))
+                        MenuButton(text = "Large 5x5", onClick = { onStartGame(GameMode.Classic(5)) })
+                    }
+
+                    // Group 3: Blitz
+                    MenuColumn(modifier = Modifier.weight(1f)) {
+                        MenuHeader("BLITZ")
+                        MenuButton(text = "2m Blitz", onClick = { onStartGame(GameMode.Blitz(2)) })
+                        Spacer(modifier = Modifier.height(8.dp))
+                        MenuButton(text = "5m Blitz", onClick = { onStartGame(GameMode.Blitz(5)) })
+                    }
+                }
+            } else {
+                // Portrait Layout
+                if (canResume) {
+                    MenuButton(
+                        text = "Resume Game",
+                        onClick = onResumeGame,
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                MenuHeader("CHALLENGE")
                 MenuButton(
-                    text = "Resume Game",
-                    onClick = onResumeGame,
-                    containerColor = MaterialTheme.colorScheme.secondary
+                    text = "Daily Challenge",
+                    onClick = { onStartGame(GameMode.Daily.today()) },
+                    containerColor = Color(0xFFC2410C)
                 )
+
                 Spacer(modifier = Modifier.height(24.dp))
+
+                MenuHeader("CLASSIC")
+                MenuButton(text = "Classic 4x4", onClick = { onStartGame(GameMode.Classic(4)) })
+                Spacer(modifier = Modifier.height(8.dp))
+                MenuButton(text = "Small 3x3", onClick = { onStartGame(GameMode.Classic(3)) })
+                Spacer(modifier = Modifier.height(8.dp))
+                MenuButton(text = "Large 5x5", onClick = { onStartGame(GameMode.Classic(5)) })
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                MenuHeader("BLITZ")
+                MenuButton(text = "2 Minute Blitz", onClick = { onStartGame(GameMode.Blitz(2)) })
+                Spacer(modifier = Modifier.height(8.dp))
+                MenuButton(text = "5 Minute Blitz", onClick = { onStartGame(GameMode.Blitz(5)) })
             }
-
-            Text(
-                text = "CHALLENGE",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            MenuButton(
-                text = "Daily Challenge",
-                onClick = { onStartGame(GameMode.Daily.today()) },
-                containerColor = Color(0xFFC2410C) // Burnt Orange
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "CLASSIC",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            MenuButton(text = "Classic 4x4", onClick = { onStartGame(GameMode.Classic(4)) })
-            Spacer(modifier = Modifier.height(8.dp))
-            MenuButton(text = "Small 3x3", onClick = { onStartGame(GameMode.Classic(3)) })
-            Spacer(modifier = Modifier.height(8.dp))
-            MenuButton(text = "Large 5x5", onClick = { onStartGame(GameMode.Classic(5)) })
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Text(
-                text = "BLITZ",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            MenuButton(text = "2 Minute Blitz", onClick = { onStartGame(GameMode.Blitz(2)) })
-            Spacer(modifier = Modifier.height(8.dp))
-            MenuButton(text = "5 Minute Blitz", onClick = { onStartGame(GameMode.Blitz(5)) })
         }
 
         // Fixed Theme Toggle in Top Right
@@ -117,6 +151,29 @@ fun MenuScreen(
             }
         }
     }
+}
+
+@Composable
+private fun MenuColumn(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier.widthIn(max = 240.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        content = content
+    )
+}
+
+@Composable
+private fun MenuHeader(text: String) {
+    Text(
+        text = text,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
 }
 
 @Composable
