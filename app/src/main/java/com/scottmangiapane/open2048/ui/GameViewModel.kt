@@ -65,7 +65,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } else {
                 val defaultMode = GameMode.Classic(4)
-                _state.update { createNewGameState(defaultMode).copy(theme = it.theme) }
+                _state.update { it.copy(gameMode = defaultMode) }
                 observeBestScore(defaultMode)
                 _currentScreen.value = Screen.Menu
             }
