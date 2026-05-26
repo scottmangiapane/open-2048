@@ -356,7 +356,7 @@ fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
             .onGloballyPositioned { boardWidthPx = it.size.width }
     ) {
         if (boardWidthPx > 0 && size > 0) {
-            val spacingDp = 12.dp
+            val spacingDp = if (size > 4) 8.dp else 12.dp
             val spacingPx = with(density) { spacingDp.toPx() }
             val tileSizePx = (boardWidthPx - (spacingPx * (size - 1))) / size.toFloat()
             val tileSizeDp = with(density) { tileSizePx.toDp() }

@@ -67,6 +67,8 @@ fun MenuScreen(
             MenuButton(text = "Classic 4x4", onClick = { onStartGame(GameMode.Classic(4)) })
             Spacer(modifier = Modifier.height(8.dp))
             MenuButton(text = "Small 3x3", onClick = { onStartGame(GameMode.Classic(3)) })
+            Spacer(modifier = Modifier.height(8.dp))
+            MenuButton(text = "Large 5x5", onClick = { onStartGame(GameMode.Classic(5)) })
             
             Spacer(modifier = Modifier.height(24.dp))
             
