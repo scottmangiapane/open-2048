@@ -5,24 +5,28 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Top Left Square (Color of 2) -->
+    <!-- Top Left Tile (Value 2 - white) -->
+    <!-- 21x21 centered in safe zone, starts at (31, 31) -->
     <path
-        android:fillColor="@color/tile_classic_2"
-        android:pathData="M26,20h18a6,6 0 0 1 6,6v18a6,6 0 0 1 -6,6h-18a6,6 0 0 1 -6,-6v-18a6,6 0 0 1 6,-6z" />
+        android:fillColor="@color/white"
+        android:pathData="M37,31h9a6,6 0 0 1 6,6v9a6,6 0 0 1 -6,6h-9a6,6 0 0 1 -6,-6v-9a6,6 0 0 1 6,-6z" />
 
-    <!-- Top Right Square (Color of 8) -->
+    <!-- Top Right Tile (Value 8 - tile_classic_8) -->
+    <!-- Starts at (56, 31) -->
     <path
         android:fillColor="@color/tile_classic_8"
-        android:pathData="M64,20h18a6,6 0 0 1 6,6v18a6,6 0 0 1 -6,6h-18a6,6 0 0 1 -6,-6v-18a6,6 0 0 1 6,-6z" />
+        android:pathData="M62,31h9a6,6 0 0 1 6,6v9a6,6 0 0 1 -6,6h-9a6,6 0 0 1 -6,-6v-9a6,6 0 0 1 6,-6z" />
 
-    <!-- Bottom Left Square (Color of 64) -->
+    <!-- Bottom Left Tile (Value 64 - tile_classic_64) -->
+    <!-- Starts at (31, 56) -->
     <path
         android:fillColor="@color/tile_classic_64"
-        android:pathData="M26,58h18a6,6 0 0 1 6,6v18a6,6 0 0 1 -6,6h-18a6,6 0 0 1 -6,-6v-18a6,6 0 0 1 6,-6z" />
+        android:pathData="M37,56h9a6,6 0 0 1 6,6v9a6,6 0 0 1 -6,6h-9a6,6 0 0 1 -6,-6v-9a6,6 0 0 1 6,-6z" />
 
-    <!-- Bottom Right Square (Color of 2048) -->
+    <!-- Bottom Right Tile (Value 2048 - tile_classic_2048) -->
+    <!-- Starts at (56, 56) -->
     <path
         android:fillColor="@color/tile_classic_2048"
-        android:pathData="M64,58h18a6,6 0 0 1 6,6v18a6,6 0 0 1 -6,6h-18a6,6 0 0 1 -6,-6v-18a6,6 0 0 1 6,-6z" />
+        android:pathData="M62,56h9a6,6 0 0 1 6,6v9a6,6 0 0 1 -6,6h-9a6,6 0 0 1 -6,-6v-9a6,6 0 0 1 6,-6z" />
 
 </vector>
