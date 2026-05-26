@@ -11,7 +11,6 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -33,12 +32,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.scottmangiapane.open2048.R
 import com.scottmangiapane.open2048.logic.Direction
+import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.GameState
 import com.scottmangiapane.open2048.model.Tile
 import com.scottmangiapane.open2048.model.GameMode
@@ -54,7 +56,7 @@ fun GameScreen(
     val focusRequester = remember { FocusRequester() }
     val density = LocalDensity.current
     val swipeThreshold = with(density) { 56.dp.toPx() }
-    val isDarkMode = state.isDarkMode ?: isSystemInDarkTheme()
+    val currentTheme = state.theme
 
     // Re-request focus whenever the screen is composed or game state changes
     // to ensure keyboard support stays active.
@@ -146,7 +148,7 @@ fun GameScreen(
                         .aspectRatio(1f)
                         .sizeIn(maxWidth = contentMaxWidth)
                 ) {
-                    BoardContainer(state = state, isDark = isDarkMode)
+                    BoardContainer(state = state, currentTheme = currentTheme)
                 }
 
                 DirectionalControls(
@@ -175,7 +177,7 @@ fun GameScreen(
                         .aspectRatio(1f, matchHeightConstraintsFirst = true)
                         .sizeIn(maxWidth = contentMaxWidth)
                 ) {
-                    BoardContainer(state = state, isDark = isDarkMode)
+                    BoardContainer(state = state, currentTheme = currentTheme)
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 DirectionalControls(
@@ -187,18 +189,18 @@ fun GameScreen(
 
         // Navigation and Theme controls (Drawn last so they stay clickable)
         GameControls(
-            isDarkMode = isDarkMode,
+            currentTheme = currentTheme,
             onBackToMenu = onBackToMenu,
-            onToggleDarkMode = { viewModel.toggleDarkMode(isDarkMode) }
+            onToggleTheme = { viewModel.cycleTheme() }
         )
     }
 }
 
 @Composable
 private fun GameControls(
-    isDarkMode: Boolean,
+    currentTheme: AppTheme,
     onBackToMenu: () -> Unit,
-    onToggleDarkMode: () -> Unit
+    onToggleTheme: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         IconButton(
@@ -213,12 +215,17 @@ private fun GameControls(
         }
 
         IconButton(
-            onClick = onToggleDarkMode,
+            onClick = onToggleTheme,
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
+            val icon = when (currentTheme) {
+                AppTheme.LIGHT -> Icons.Default.LightMode
+                AppTheme.DARK -> Icons.Default.DarkMode
+                AppTheme.CLASSIC -> Icons.Default.Palette
+            }
             Icon(
-                imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                contentDescription = "Toggle Dark Mode",
+                imageVector = icon,
+                contentDescription = "Toggle Theme",
                 tint = MaterialTheme.colorScheme.onBackground
             )
         }
@@ -226,7 +233,7 @@ private fun GameControls(
 }
 
 @Composable
-private fun BoardContainer(state: GameState, isDark: Boolean) {
+private fun BoardContainer(state: GameState, currentTheme: AppTheme) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -238,7 +245,7 @@ private fun BoardContainer(state: GameState, isDark: Boolean) {
         // We wrap the board in a padded box, but keep the overlay outside the padding
         // so it covers the entire board including the gutters where shadows might spill.
         Box(modifier = Modifier.fillMaxSize().padding(12.dp)) {
-            GameBoard(board = state.board, isDark = isDark)
+            GameBoard(board = state.board, currentTheme = currentTheme)
         }
 
         if (state.isGameOver) {
@@ -335,7 +342,7 @@ private fun TimerDisplay(timeLeftMs: Long) {
         text = timeString,
         fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
-        color = if (timeLeftMs < 10000) Color(0xFFE11D48) else MaterialTheme.colorScheme.primary
+        color = if (timeLeftMs < 10000) colorResource(R.color.rose_500) else MaterialTheme.colorScheme.primary
     )
 }
 
@@ -445,20 +452,20 @@ private fun ScoreCard(label: String, score: Int) {
         Text(
             text = label,
             fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             fontWeight = FontWeight.Bold
         )
         Text(
             text = score.toString(),
             fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Bold
         )
     }
 }
 
 @Composable
-private fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
+private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme) {
     var boardWidthPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
     val size = board.size
@@ -529,7 +536,7 @@ private fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
                                 translationY = animYPx
                             }
                     ) {
-                        TileView(tile = tile, tileSize = tileSizeDp, isDark = isDark)
+                        TileView(tile = tile, tileSize = tileSizeDp, currentTheme = currentTheme)
                     }
                 }
             }
@@ -538,11 +545,11 @@ private fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
 }
 
 @Composable
-private fun TileView(tile: Tile, tileSize: Dp, isDark: Boolean) {
+private fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme) {
     val displayValue = remember(tile.id) { mutableIntStateOf(tile.value) }
     val isVisible = remember(tile.id) { mutableStateOf(!tile.isNew) }
-    val backgroundColor = getTileBackgroundColor(displayValue.intValue, isDark)
-    val textColor = getTileTextColor(displayValue.intValue, isDark)
+    val backgroundColor = getTileBackgroundColor(displayValue.intValue, currentTheme)
+    val textColor = getTileTextColor(displayValue.intValue, currentTheme)
     val scale = remember { Animatable(if (tile.isNew) 0f else 1f) }
 
     LaunchedEffect(tile.id, tile.value, tile.isNew) {
@@ -593,22 +600,88 @@ private fun TileView(tile: Tile, tileSize: Dp, isDark: Boolean) {
     }
 }
 
-private fun getTileBackgroundColor(value: Int, isDark: Boolean): Color = when (value) {
-    2 -> if (isDark) Color(0xFF334155) else Color(0xFFFFFFFF)
-    4 -> if (isDark) Color(0xFF475569) else Color(0xFFF8FAFC)
-    8 -> if (isDark) Color(0xFF0EA5E9) else Color(0xFFF2B179)
-    16 -> if (isDark) Color(0xFF0284C7) else Color(0xFFF59563)
-    32 -> if (isDark) Color(0xFF2563EB) else Color(0xFFF67C5F)
-    64 -> if (isDark) Color(0xFF4F46E5) else Color(0xFFF65E3B)
-    128 -> if (isDark) Color(0xFF7C3AED) else Color(0xFFEDCF72)
-    256 -> if (isDark) Color(0xFF8B5CF6) else Color(0xFFEDCC61)
-    512 -> if (isDark) Color(0xFFA78BFA) else Color(0xFFEDC850)
-    1024 -> if (isDark) Color(0xFFC084FC) else Color(0xFFEDC53F)
-    2048 -> if (isDark) Color(0xFFE879F9) else Color(0xFFEDC22E)
-    else -> if (isDark) Color(0xFF0F172A) else Color(0xFF3C3A32)
+@Composable
+private fun getTileBackgroundColor(value: Int, theme: AppTheme): Color {
+    val isDark = theme == AppTheme.DARK
+    if (theme == AppTheme.CLASSIC) {
+        return colorResource(
+            when (value) {
+                2 -> R.color.tile_classic_2
+                4 -> R.color.tile_classic_4
+                8 -> R.color.tile_classic_8
+                16 -> R.color.tile_classic_16
+                32 -> R.color.tile_classic_32
+                64 -> R.color.tile_classic_64
+                128 -> R.color.tile_classic_128
+                256 -> R.color.tile_classic_256
+                512 -> R.color.tile_classic_512
+                1024 -> R.color.tile_classic_1024
+                2048 -> R.color.tile_classic_2048
+                4096 -> R.color.tile_classic_4096
+                else -> R.color.tile_classic_super
+            }
+        )
+    }
+    
+    return if (isDark) {
+        colorResource(
+            when (value) {
+                2 -> R.color.slate_800
+                4 -> R.color.slate_600
+                8 -> R.color.tile_modern_8
+                16 -> R.color.tile_modern_16
+                32 -> R.color.tile_modern_32
+                64 -> R.color.tile_modern_64
+                128 -> R.color.tile_modern_128
+                256 -> R.color.tile_modern_256
+                512 -> R.color.tile_modern_512
+                1024 -> R.color.tile_modern_1024
+                2048 -> R.color.tile_modern_2048
+                else -> R.color.slate_900
+            }
+        )
+    } else {
+        colorResource(
+            when (value) {
+                2 -> R.color.white
+                4 -> R.color.slate_50
+                8 -> R.color.tile_classic_8
+                16 -> R.color.tile_classic_16
+                32 -> R.color.tile_classic_32
+                64 -> R.color.tile_classic_64
+                128 -> R.color.tile_classic_128
+                256 -> R.color.tile_classic_256
+                512 -> R.color.tile_classic_512
+                1024 -> R.color.tile_classic_1024
+                2048 -> R.color.tile_classic_2048
+                else -> R.color.slate_900
+            }
+        )
+    }
 }
 
-private fun getTileTextColor(value: Int, isDark: Boolean): Color = when (value) {
-    2, 4 -> if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF776E65)
-    else -> Color.White
+@Composable
+private fun getTileTextColor(value: Int, theme: AppTheme): Color {
+    if (theme == AppTheme.CLASSIC) {
+        return colorResource(
+            when (value) {
+                2, 4 -> R.color.classic_text_dark
+                else -> R.color.white
+            }
+        )
+    }
+    val isDark = theme == AppTheme.DARK
+    return if (isDark) {
+        when (value) {
+            2, 4 -> Color.White.copy(alpha = 0.9f)
+            else -> Color.White
+        }
+    } else {
+        colorResource(
+            when (value) {
+                2, 4 -> R.color.classic_text_dark
+                else -> R.color.white
+            }
+        )
+    }
 }

@@ -1,13 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- Basic Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="board_background">#BBADA0</color>
-    <color name="game_background">#FAF8EF</color>
-    <color name="tile_2048">#EDC22E</color>
+
+    <!-- Classic Theme -->
+    <color name="classic_bg">#FAF8EF</color>
+    <color name="classic_board">#BBADA0</color>
+    <color name="classic_empty">#CDC1B4</color>
+    <color name="classic_text_dark">#776E65</color>
+    <color name="classic_text_light">#F9F6F2</color>
+    <color name="classic_button_brown">#8F7A66</color>
+    <color name="classic_resume_blue">#558ABB</color>
+
+    <!-- Classic Tile Colors -->
+    <color name="tile_classic_2">#EEE4DA</color>
+    <color name="tile_classic_4">#EDE0C8</color>
+    <color name="tile_classic_8">#F2B179</color>
+    <color name="tile_classic_16">#F59563</color>
+    <color name="tile_classic_32">#F67C5F</color>
+    <color name="tile_classic_64">#F65E3B</color>
+    <color name="tile_classic_128">#EDCF72</color>
+    <color name="tile_classic_256">#EDCC61</color>
+    <color name="tile_classic_512">#EDC850</color>
+    <color name="tile_classic_1024">#EDC53F</color>
+    <color name="tile_classic_2048">#EDC22E</color>
+    <color name="tile_classic_4096">#EF3D3D</color>
+    <color name="tile_classic_super">#3C3A32</color>
+
+    <!-- Modern Palette (Slate) -->
+    <color name="slate_50">#F8FAFC</color>
+    <color name="slate_100">#F1F5F9</color>
+    <color name="slate_200">#E2E8F0</color>
+    <color name="slate_300">#CBD5E1</color>
+    <color name="slate_400">#94A3B8</color>
+    <color name="slate_500">#64748B</color>
+    <color name="slate_600">#475569</color>
+    <color name="slate_700">#334155</color>
+    <color name="slate_800">#1E293B</color>
+    <color name="slate_900">#0F172A</color>
+    <color name="slate_950">#020617</color>
+
+    <!-- Modern Accent Colors -->
+    <color name="emerald_500">#10B981</color>
+    <color name="royal_blue_500">#3B82F6</color>
+    <color name="violet_600">#7C3AED</color>
+    <color name="rose_500">#F43F5E</color>
+    <color name="amber_500">#F59E0B</color>
+
+    <!-- Modern Tile Colors -->
+    <color name="tile_modern_8">#0EA5E9</color>
+    <color name="tile_modern_16">#0284C7</color>
+    <color name="tile_modern_32">#2563EB</color>
+    <color name="tile_modern_64">#4F46E5</color>
+    <color name="tile_modern_128">#7C3AED</color>
+    <color name="tile_modern_256">#8B5CF6</color>
+    <color name="tile_modern_512">#A78BFA</color>
+    <color name="tile_modern_1024">#C084FC</color>
+    <color name="tile_modern_2048">#E879F9</color>
 </resources>

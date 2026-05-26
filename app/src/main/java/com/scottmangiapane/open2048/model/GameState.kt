@@ -6,7 +6,7 @@ data class GameState(
     val bestScore: Int = 0,
     val isGameOver: Boolean = false,
     val canUndo: Boolean = false,
-    val isDarkMode: Boolean? = null,
+    val theme: AppTheme = AppTheme.LIGHT,
     val nextId: Int = 0,
     val nextValueSeed: Float = 0f,
     val nextPosSeed: Float = 0f,

@@ -3,6 +3,7 @@ package com.scottmangiapane.open2048.data
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.model.GameState
 import com.scottmangiapane.open2048.model.Tile
@@ -13,7 +14,7 @@ private val Context.dataStore by preferencesDataStore(name = "settings")
 
 class PreferenceRepository(private val context: Context) {
     companion object {
-        private val DARK_MODE_KEY = booleanPreferencesKey("dark_mode")
+        private val THEME_KEY = stringPreferencesKey("app_theme")
         private val BOARD_KEY = stringPreferencesKey("board")
         private val SCORE_KEY = intPreferencesKey("score")
         private val NEXT_ID_KEY = intPreferencesKey("next_id")
@@ -27,7 +28,9 @@ class PreferenceRepository(private val context: Context) {
         fun getBestScoreKey(modeId: String) = intPreferencesKey("best_score_$modeId")
     }
 
-    val isDarkMode: Flow<Boolean?> = context.dataStore.data.map { it[DARK_MODE_KEY] }
+    val theme: Flow<AppTheme?> = context.dataStore.data.map { preferences ->
+        preferences[THEME_KEY]?.let { AppTheme.valueOf(it) }
+    }
 
     fun getBestScore(modeId: String): Flow<Int> = context.dataStore.data.map { 
         it[getBestScoreKey(modeId)] ?: 0 
@@ -37,9 +40,11 @@ class PreferenceRepository(private val context: Context) {
         val boardString = preferences[BOARD_KEY] ?: return@map null
         val board = deserializeBoard(boardString)
         val modeString = preferences[GAME_MODE_KEY] ?: "classic:4"
+        val themeString = preferences[THEME_KEY] ?: AppTheme.LIGHT.name
         GameState(
             board = board,
             score = preferences[SCORE_KEY] ?: 0,
+            theme = AppTheme.valueOf(themeString),
             nextId = preferences[NEXT_ID_KEY] ?: 0,
             nextValueSeed = preferences[NEXT_VALUE_SEED_KEY] ?: 0f,
             nextPosSeed = preferences[NEXT_POS_SEED_KEY] ?: 0f,
@@ -58,8 +63,8 @@ class PreferenceRepository(private val context: Context) {
         }
     }
 
-    suspend fun setDarkMode(enabled: Boolean) {
-        context.dataStore.edit { it[DARK_MODE_KEY] = enabled }
+    suspend fun setTheme(theme: AppTheme) {
+        context.dataStore.edit { it[THEME_KEY] = theme.name }
     }
 
     suspend fun saveGameState(state: GameState) {

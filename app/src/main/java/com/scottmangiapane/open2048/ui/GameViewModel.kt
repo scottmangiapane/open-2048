@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.scottmangiapane.open2048.data.PreferenceRepository
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.logic.GameEngine
+import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.model.GameState
 import kotlinx.coroutines.Job
@@ -32,10 +33,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val state: StateFlow<GameState> = _state.asStateFlow()
 
     init {
-        // Observe dark mode setting
+        // Observe theme setting
         viewModelScope.launch {
-            prefs.isDarkMode.collectLatest { isDark ->
-                _state.update { it.copy(isDarkMode = isDark) }
+            prefs.theme.collectLatest { theme ->
+                _state.update { it.copy(theme = theme ?: AppTheme.LIGHT) }
             }
         }
         
@@ -45,7 +46,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (saved != null) {
                 _state.update { 
                     saved.copy(
-                        isDarkMode = it.isDarkMode,
+                        theme = it.theme,
                         isGameOver = saved.isGameOver || gameEngine.isGameOver(saved.board) || (saved.timeLeftMs == 0L),
                     )
                 }
@@ -135,7 +136,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             movesCount = 0,
             elapsedTimeMs = 0L
         )
-        _state.update { newState.copy(bestScore = it.bestScore, isDarkMode = it.isDarkMode) }
+        _state.update { newState.copy(bestScore = it.bestScore, theme = it.theme) }
         saveGame(newState)
         startTimer()
     }
@@ -163,9 +164,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (!newState.isGameOver) startTimer()
     }
 
-    fun toggleDarkMode(active: Boolean) {
+    fun cycleTheme() {
+        val nextTheme = when (_state.value.theme) {
+            AppTheme.LIGHT -> AppTheme.DARK
+            AppTheme.DARK -> AppTheme.CLASSIC
+            AppTheme.CLASSIC -> AppTheme.LIGHT
+        }
         viewModelScope.launch {
-            prefs.setDarkMode(!active)
+            prefs.setTheme(nextTheme)
         }
     }
 

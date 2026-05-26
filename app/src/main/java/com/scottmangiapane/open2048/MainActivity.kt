@@ -15,6 +15,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.ui.GameScreen
 import com.scottmangiapane.open2048.ui.GameViewModel
 import com.scottmangiapane.open2048.ui.MenuScreen
@@ -27,7 +28,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: GameViewModel = viewModel()
             val state by viewModel.state.collectAsState()
-            val darkTheme = state.isDarkMode ?: isSystemInDarkTheme()
+            val currentTheme = state.theme
 
             var currentScreen by remember { mutableStateOf("menu") }
 
@@ -46,10 +47,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            Open2048Theme(darkTheme = darkTheme) {
+            Open2048Theme(theme = currentTheme) {
                 if (currentScreen == "menu") {
                     MenuScreen(
-                        isDarkMode = darkTheme,
+                        currentTheme = currentTheme,
                         onStartGame = { mode ->
                             viewModel.restartGame(mode)
                             currentScreen = "game"
@@ -58,7 +59,7 @@ class MainActivity : ComponentActivity() {
                             viewModel.resumeGame()
                             currentScreen = "game"
                         },
-                        onToggleDarkMode = { viewModel.toggleDarkMode(darkTheme) },
+                        onToggleTheme = { viewModel.cycleTheme() },
                         canResume = state.board.isNotEmpty() && !state.isGameOver
                     )
                 } else {

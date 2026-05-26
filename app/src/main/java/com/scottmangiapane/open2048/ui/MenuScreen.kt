@@ -9,29 +9,33 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.scottmangiapane.open2048.R
+import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.GameMode
-import com.scottmangiapane.open2048.ui.theme.Amber500
 
 @Composable
 fun MenuScreen(
-    isDarkMode: Boolean,
+    currentTheme: AppTheme,
     onStartGame: (GameMode) -> Unit,
     onResumeGame: () -> Unit,
-    onToggleDarkMode: () -> Unit,
+    onToggleTheme: () -> Unit,
     canResume: Boolean
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val amber = colorResource(R.color.amber_500)
 
     Box(
         modifier = Modifier
@@ -64,68 +68,73 @@ fun MenuScreen(
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         if (canResume) {
                             MenuHeader("CONTINUE")
-                            MenuButton("Resume", onResumeGame, MaterialTheme.colorScheme.secondary)
+                            MenuHeaderButton("Resume", onResumeGame, MaterialTheme.colorScheme.secondary)
                             Spacer(modifier = Modifier.height(16.dp))
                         }
                         
                         MenuHeader("CHALLENGE")
-                        MenuButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, Amber500)
+                        MenuHeaderButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, amber)
                     }
 
                     // Group 2: Classic
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         MenuHeader("CLASSIC")
-                        MenuButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
+                        MenuHeaderButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
                         Spacer(modifier = Modifier.height(8.dp))
-                        MenuButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
+                        MenuHeaderButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
                         Spacer(modifier = Modifier.height(8.dp))
-                        MenuButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
+                        MenuHeaderButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
                     }
 
                     // Group 3: Blitz
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         MenuHeader("BLITZ")
-                        MenuButton("2m Blitz", { onStartGame(GameMode.Blitz(2)) })
+                        MenuHeaderButton("2m Blitz", { onStartGame(GameMode.Blitz(2)) })
                         Spacer(modifier = Modifier.height(8.dp))
-                        MenuButton("5m Blitz", { onStartGame(GameMode.Blitz(5)) })
+                        MenuHeaderButton("5m Blitz", { onStartGame(GameMode.Blitz(5)) })
                     }
                 }
             } else {
                 if (canResume) {
-                    MenuButton("Resume Game", onResumeGame, MaterialTheme.colorScheme.secondary)
+                    MenuHeaderButton("Resume Game", onResumeGame, MaterialTheme.colorScheme.secondary)
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
                 MenuHeader("CHALLENGE")
-                MenuButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, Amber500)
+                MenuHeaderButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, amber)
                 Spacer(modifier = Modifier.height(24.dp))
 
                 MenuHeader("CLASSIC")
-                MenuButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
+                MenuHeaderButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
                 Spacer(modifier = Modifier.height(8.dp))
-                MenuButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
+                MenuHeaderButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
                 Spacer(modifier = Modifier.height(8.dp))
-                MenuButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
+                MenuHeaderButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 MenuHeader("BLITZ")
-                MenuButton("2 Minute Blitz", { onStartGame(GameMode.Blitz(2)) })
+                MenuHeaderButton("2 Minute Blitz", { onStartGame(GameMode.Blitz(2)) })
                 Spacer(modifier = Modifier.height(8.dp))
-                MenuButton("5 Minute Blitz", { onStartGame(GameMode.Blitz(5)) })
+                MenuHeaderButton("5 Minute Blitz", { onStartGame(GameMode.Blitz(5)) })
             }
         }
 
         IconButton(
-            onClick = onToggleDarkMode,
+            onClick = onToggleTheme,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .systemBarsPadding()
                 .padding(8.dp)
                 .zIndex(1f)
         ) {
+            val icon = when (currentTheme) {
+                AppTheme.LIGHT -> Icons.Default.LightMode
+                AppTheme.DARK -> Icons.Default.DarkMode
+                AppTheme.CLASSIC -> Icons.Default.Palette
+            }
             Icon(
-                imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                contentDescription = "Toggle Dark Mode",
+                imageVector = icon,
+                contentDescription = "Toggle Theme",
                 tint = MaterialTheme.colorScheme.onBackground
             )
         }
@@ -156,7 +165,7 @@ private fun MenuHeader(text: String) {
 }
 
 @Composable
-private fun MenuButton(
+private fun MenuHeaderButton(
     text: String,
     onClick: () -> Unit,
     containerColor: Color = MaterialTheme.colorScheme.primary
