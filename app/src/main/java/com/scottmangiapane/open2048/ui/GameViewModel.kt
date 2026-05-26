@@ -141,10 +141,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (!newState.isGameOver) startTimer()
     }
 
-    fun toggleDarkMode() {
+    fun toggleDarkMode(active: Boolean) {
         viewModelScope.launch {
-            val current = _state.value.isDarkMode ?: false
-            prefs.setDarkMode(!current)
+            prefs.setDarkMode(!active)
         }
     }
 

@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.scottmangiapane.open2048.model.GameMode
 
 @Composable
@@ -31,19 +32,6 @@ fun MenuScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        IconButton(
-            onClick = onToggleDarkMode,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-        ) {
-            Icon(
-                imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                contentDescription = "Toggle Dark Mode",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -92,6 +80,24 @@ fun MenuScreen(
             MenuButton(text = "2 Minute Blitz", onClick = { onStartGame(GameMode.Blitz(2)) })
             Spacer(modifier = Modifier.height(8.dp))
             MenuButton(text = "5 Minute Blitz", onClick = { onStartGame(GameMode.Blitz(5)) })
+        }
+
+        // Fixed Theme Toggle in Top Right
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .systemBarsPadding()
+                .padding(8.dp)
+                .zIndex(1f),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            IconButton(onClick = onToggleDarkMode) {
+                Icon(
+                    imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = "Toggle Dark Mode",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
     }
 }

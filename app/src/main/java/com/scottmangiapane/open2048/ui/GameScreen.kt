@@ -110,31 +110,6 @@ fun GameScreen(
     ) {
         val isDarkMode = state.isDarkMode ?: isSystemInDarkTheme()
 
-        // Navigation and Theme controls
-        Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-            IconButton(
-                onClick = onBackToMenu,
-                modifier = Modifier.align(Alignment.TopStart)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back to Menu",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-
-            IconButton(
-                onClick = { viewModel.toggleDarkMode() },
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                Icon(
-                    imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                    contentDescription = "Toggle Dark Mode",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-        }
-
         val (hPadding, vPadding) = when {
             minDimension >= 840.dp -> 172.dp to 144.dp // Large Tablets
             minDimension >= 600.dp -> 120.dp to 96.dp  // Foldables
@@ -160,7 +135,7 @@ fun GameScreen(
                     timeLeftMs = state.timeLeftMs,
                     onRestart = { viewModel.restartGame() },
                     onUndo = { viewModel.undo() },
-                    canUndo = state.canUndo,
+                    canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs!! > 0),
                     isLandscape = true
                 )
 
@@ -187,7 +162,7 @@ fun GameScreen(
                     timeLeftMs = state.timeLeftMs,
                     onRestart = { viewModel.restartGame() },
                     onUndo = { viewModel.undo() },
-                    canUndo = state.canUndo,
+                    canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs!! > 0),
                     isLandscape = false
                 )
                 Spacer(modifier = Modifier.height(if (isLargeScreen) 48.dp else 16.dp))
@@ -199,6 +174,31 @@ fun GameScreen(
                 ) {
                     BoardContainer(state = state, isDark = isDarkMode)
                 }
+            }
+        }
+
+        // Navigation and Theme controls (Drawn last so they stay clickable)
+        Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+            IconButton(
+                onClick = onBackToMenu,
+                modifier = Modifier.align(Alignment.TopStart)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back to Menu",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            IconButton(
+                onClick = { viewModel.toggleDarkMode(isDarkMode) },
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                Icon(
+                    imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = "Toggle Dark Mode",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
             }
         }
     }
@@ -275,12 +275,7 @@ fun HeaderSection(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GameButton(
-                text = "Undo", 
-                onClick = onUndo, 
-                padding = buttonPadding, 
-                enabled = canUndo && (timeLeftMs == null || timeLeftMs > 0)
-            )
+            GameButton(text = "Undo", onClick = onUndo, padding = buttonPadding, enabled = canUndo)
             GameButton(text = "New Game", onClick = onRestart, padding = buttonPadding)
         }
     }

@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
 
             Open2048Theme(darkTheme = darkTheme) {
                 if (currentScreen == "menu") {
+                    val onToggle = remember(darkTheme) { { viewModel.toggleDarkMode(darkTheme) } }
                     MenuScreen(
                         isDarkMode = darkTheme,
                         onStartGame = { mode ->
@@ -57,7 +58,7 @@ class MainActivity : ComponentActivity() {
                             viewModel.resumeGame()
                             currentScreen = "game"
                         },
-                        onToggleDarkMode = { viewModel.toggleDarkMode() },
+                        onToggleDarkMode = onToggle,
                         canResume = state.board.isNotEmpty() && !state.isGameOver
                     )
                 } else {
