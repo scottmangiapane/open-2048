@@ -2,6 +2,7 @@ package com.scottmangiapane.open2048
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ class MainActivity : ComponentActivity() {
             val state by viewModel.state.collectAsStateWithLifecycle()
             val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
             val canResume by viewModel.canResume.collectAsStateWithLifecycle()
+            val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
 
             LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
                 viewModel.stopTimer()
@@ -39,14 +41,22 @@ class MainActivity : ComponentActivity() {
                 when (currentScreen) {
                     is Screen.Menu -> {
                         MenuScreen(
-                            currentTheme = state.theme,
+                            userPreferences = userPreferences,
                             onStartGame = { mode -> viewModel.restartGame(mode) },
                             onResumeGame = { viewModel.resumeGame() },
-                            onToggleTheme = { viewModel.cycleTheme() },
+                            onSetTheme = { viewModel.setTheme(it) },
+                            onSetSoundsEnabled = { viewModel.setSoundsEnabled(it) },
+                            onSetVibrationEnabled = { viewModel.setVibrationEnabled(it) },
+                            onSetControlMode = { viewModel.setControlMode(it) },
+                            onSetShowUndo = { viewModel.setShowUndo(it) },
+                            onSetShowStopwatch = { viewModel.setShowStopwatch(it) },
                             canResume = canResume
                         )
                     }
                     is Screen.Game -> {
+                        BackHandler {
+                            viewModel.navigateToMenu()
+                        }
                         GameScreen(
                             viewModel = viewModel,
                             onBackToMenu = { viewModel.navigateToMenu() }

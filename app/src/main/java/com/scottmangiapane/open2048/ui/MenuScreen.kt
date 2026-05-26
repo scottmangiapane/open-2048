@@ -7,11 +7,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,19 +21,41 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.scottmangiapane.open2048.R
 import com.scottmangiapane.open2048.model.AppTheme
+import com.scottmangiapane.open2048.model.ControlMode
 import com.scottmangiapane.open2048.model.GameMode
+import com.scottmangiapane.open2048.model.UserPreferences
+import com.scottmangiapane.open2048.ui.components.SettingsDialog
 
 @Composable
 fun MenuScreen(
-    currentTheme: AppTheme,
+    userPreferences: UserPreferences,
     onStartGame: (GameMode) -> Unit,
     onResumeGame: () -> Unit,
-    onToggleTheme: () -> Unit,
+    onSetTheme: (AppTheme) -> Unit,
+    onSetSoundsEnabled: (Boolean) -> Unit,
+    onSetVibrationEnabled: (Boolean) -> Unit,
+    onSetControlMode: (ControlMode) -> Unit,
+    onSetShowUndo: (Boolean) -> Unit,
+    onSetShowStopwatch: (Boolean) -> Unit,
     canResume: Boolean,
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val amber = colorResource(R.color.amber_500)
+    var showSettings by remember { mutableStateOf(false) }
+
+    if (showSettings) {
+        SettingsDialog(
+            preferences = userPreferences,
+            onDismiss = { showSettings = false },
+            onThemeChange = onSetTheme,
+            onSoundsToggle = onSetSoundsEnabled,
+            onVibrationToggle = onSetVibrationEnabled,
+            onControlModeChange = onSetControlMode,
+            onShowUndoToggle = onSetShowUndo,
+            onShowStopwatchToggle = onSetShowStopwatch
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -99,21 +119,16 @@ fun MenuScreen(
         }
 
         IconButton(
-            onClick = onToggleTheme,
+            onClick = { showSettings = true },
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .systemBarsPadding()
                 .padding(8.dp)
                 .zIndex(1f)
         ) {
-            val icon = when (currentTheme) {
-                AppTheme.LIGHT -> Icons.Default.LightMode
-                AppTheme.DARK -> Icons.Default.DarkMode
-                AppTheme.CLASSIC -> Icons.Default.Palette
-            }
             Icon(
-                imageVector = icon,
-                contentDescription = "Toggle Theme",
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Settings",
                 tint = MaterialTheme.colorScheme.onBackground
             )
         }

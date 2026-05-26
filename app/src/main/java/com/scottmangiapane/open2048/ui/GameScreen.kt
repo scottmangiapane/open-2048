@@ -19,9 +19,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.model.AppTheme
+import com.scottmangiapane.open2048.model.ControlMode
 import com.scottmangiapane.open2048.ui.components.*
 import kotlin.math.abs
 
@@ -30,11 +32,13 @@ fun GameScreen(
     viewModel: GameViewModel = viewModel(),
     onBackToMenu: () -> Unit,
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     val density = LocalDensity.current
     val swipeThreshold = with(density) { 56.dp.toPx() }
     val currentTheme = state.theme
+    var showSettings by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.isGameOver) {
         if (!state.isGameOver) focusRequester.requestFocus()
@@ -43,6 +47,19 @@ fun GameScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val minDimension = minOf(configuration.screenWidthDp.dp, configuration.screenHeightDp.dp)
+
+    if (showSettings) {
+        SettingsDialog(
+            preferences = userPreferences,
+            onDismiss = { showSettings = false },
+            onThemeChange = { viewModel.setTheme(it) },
+            onSoundsToggle = { viewModel.setSoundsEnabled(it) },
+            onVibrationToggle = { viewModel.setVibrationEnabled(it) },
+            onControlModeChange = { viewModel.setControlMode(it) },
+            onShowUndoToggle = { viewModel.setShowUndo(it) },
+            onShowStopwatchToggle = { viewModel.setShowStopwatch(it) }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -67,30 +84,34 @@ fun GameScreen(
                 }
                 false
             }
-            .pointerInput(Unit) {
-                var totalDragX = 0f
-                var totalDragY = 0f
-                detectDragGestures(
-                    onDragEnd = {
-                        val direction = when {
-                            (abs(totalDragX) > abs(totalDragY)) && (abs(totalDragX) > swipeThreshold) -> {
-                                if (totalDragX > 0) Direction.RIGHT else Direction.LEFT
+            .then(
+                if (userPreferences.controlMode != ControlMode.ARROWS) {
+                    Modifier.pointerInput(Unit) {
+                        var totalDragX = 0f
+                        var totalDragY = 0f
+                        detectDragGestures(
+                            onDragEnd = {
+                                val direction = when {
+                                    (abs(totalDragX) > abs(totalDragY)) && (abs(totalDragX) > swipeThreshold) -> {
+                                        if (totalDragX > 0) Direction.RIGHT else Direction.LEFT
+                                    }
+                                    abs(totalDragY) > swipeThreshold -> {
+                                        if (totalDragY > 0) Direction.DOWN else Direction.UP
+                                    }
+                                    else -> null
+                                }
+                                direction?.let { viewModel.move(it) }
+                                totalDragX = 0f
+                                totalDragY = 0f
                             }
-                            abs(totalDragY) > swipeThreshold -> {
-                                if (totalDragY > 0) Direction.DOWN else Direction.UP
-                            }
-                            else -> null
+                        ) { change, dragAmount ->
+                            change.consume()
+                            totalDragX += dragAmount.x
+                            totalDragY += dragAmount.y
                         }
-                        direction?.let { viewModel.move(it) }
-                        totalDragX = 0f
-                        totalDragY = 0f
                     }
-                ) { change, dragAmount ->
-                    change.consume()
-                    totalDragX += dragAmount.x
-                    totalDragY += dragAmount.y
-                }
-            }
+                } else Modifier
+            )
     ) {
         val (hPadding, vPadding) = when {
             minDimension >= 840.dp -> 172.dp to 144.dp
@@ -115,7 +136,9 @@ fun GameScreen(
                     state = state,
                     onRestart = { viewModel.restartGame() },
                     onUndo = { viewModel.undo() },
-                    isLandscape = true
+                    isLandscape = true,
+                    showUndo = userPreferences.showUndo,
+                    showStopwatch = userPreferences.showStopwatch
                 )
 
                 Box(
@@ -127,10 +150,12 @@ fun GameScreen(
                     BoardContainer(state = state, currentTheme = currentTheme)
                 }
 
-                DirectionalControls(
-                    isLandscape = true,
-                    onMove = { viewModel.move(it) }
-                )
+                if (userPreferences.controlMode != ControlMode.GESTURES) {
+                    DirectionalControls(
+                        isLandscape = true,
+                        onMove = { viewModel.move(it) }
+                    )
+                }
             }
         } else {
             Column(
@@ -144,7 +169,9 @@ fun GameScreen(
                     state = state,
                     onRestart = { viewModel.restartGame() },
                     onUndo = { viewModel.undo() },
-                    isLandscape = false
+                    isLandscape = false,
+                    showUndo = userPreferences.showUndo,
+                    showStopwatch = userPreferences.showStopwatch
                 )
                 Spacer(modifier = Modifier.height(if (isLargeScreen) 32.dp else 16.dp))
                 Box(
@@ -156,26 +183,26 @@ fun GameScreen(
                     BoardContainer(state = state, currentTheme = currentTheme)
                 }
                 Spacer(modifier = Modifier.height(24.dp))
-                DirectionalControls(
-                    isLandscape = false,
-                    onMove = { viewModel.move(it) }
-                )
+                if (userPreferences.controlMode != ControlMode.GESTURES) {
+                    DirectionalControls(
+                        isLandscape = false,
+                        onMove = { viewModel.move(it) }
+                    )
+                }
             }
         }
 
         GameControls(
-            currentTheme = currentTheme,
             onBackToMenu = onBackToMenu,
-            onToggleTheme = { viewModel.cycleTheme() }
+            onShowSettings = { showSettings = true }
         )
     }
 }
 
 @Composable
 private fun GameControls(
-    currentTheme: AppTheme,
     onBackToMenu: () -> Unit,
-    onToggleTheme: () -> Unit
+    onShowSettings: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         IconButton(
@@ -190,17 +217,12 @@ private fun GameControls(
         }
 
         IconButton(
-            onClick = onToggleTheme,
+            onClick = onShowSettings,
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
-            val icon = when (currentTheme) {
-                AppTheme.LIGHT -> Icons.Default.LightMode
-                AppTheme.DARK -> Icons.Default.DarkMode
-                AppTheme.CLASSIC -> Icons.Default.Palette
-            }
             Icon(
-                imageVector = icon,
-                contentDescription = "Toggle Theme",
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Settings",
                 tint = MaterialTheme.colorScheme.onBackground
             )
         }

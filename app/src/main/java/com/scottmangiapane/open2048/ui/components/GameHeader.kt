@@ -23,7 +23,9 @@ fun HeaderSection(
     state: GameState,
     onRestart: () -> Unit,
     onUndo: () -> Unit,
-    isLandscape: Boolean
+    isLandscape: Boolean,
+    showUndo: Boolean = true,
+    showStopwatch: Boolean = true
 ) {
     val titleSize = if (isLandscape) 56.sp else 64.sp
     val buttonPadding = if (isLandscape) PaddingValues(horizontal = 16.dp, vertical = 8.dp) 
@@ -61,7 +63,7 @@ fun HeaderSection(
 
         if (state.gameMode is GameMode.Blitz) {
             TimerDisplay(timeLeftMs = state.timeLeftMs ?: 0L)
-        } else {
+        } else if (showStopwatch) {
             StopwatchDisplay(elapsedTimeMs = state.elapsedTimeMs)
         }
 
@@ -75,8 +77,10 @@ fun HeaderSection(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            val canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs > 0)
-            GameButton(text = "Undo", onClick = onUndo, padding = buttonPadding, enabled = canUndo)
+            if (showUndo) {
+                val canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs > 0)
+                GameButton(text = "Undo", onClick = onUndo, padding = buttonPadding, enabled = canUndo)
+            }
             GameButton(text = "New Game", onClick = onRestart, padding = buttonPadding)
         }
     }

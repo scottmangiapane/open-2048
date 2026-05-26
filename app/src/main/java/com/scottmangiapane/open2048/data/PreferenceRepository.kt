@@ -3,11 +3,9 @@ package com.scottmangiapane.open2048.data
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import com.scottmangiapane.open2048.model.AppTheme
-import com.scottmangiapane.open2048.model.GameMode
-import com.scottmangiapane.open2048.model.GameState
-import com.scottmangiapane.open2048.model.Tile
+import com.scottmangiapane.open2048.model.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
@@ -24,13 +22,29 @@ class PreferenceRepository(private val context: Context) {
         private val TIME_LEFT_KEY = longPreferencesKey("time_left")
         private val MOVES_COUNT_KEY = intPreferencesKey("moves_count")
         private val ELAPSED_TIME_KEY = longPreferencesKey("elapsed_time")
+        private val SOUNDS_ENABLED_KEY = booleanPreferencesKey("sounds_enabled")
+        private val VIBRATION_ENABLED_KEY = booleanPreferencesKey("vibration_enabled")
+        private val CONTROL_MODE_KEY = stringPreferencesKey("control_mode")
+        private val SHOW_UNDO_KEY = booleanPreferencesKey("show_undo")
+        private val SHOW_STOPWATCH_KEY = booleanPreferencesKey("show_stopwatch")
         
         fun getBestScoreKey(modeId: String) = intPreferencesKey("best_score_$modeId")
     }
 
-    val theme: Flow<AppTheme?> = context.dataStore.data.map { preferences ->
-        preferences[THEME_KEY]?.let { AppTheme.valueOf(it) }
+    val userPreferences: Flow<UserPreferences> = context.dataStore.data.map { preferences ->
+        UserPreferences(
+            theme = preferences[THEME_KEY]?.let { AppTheme.valueOf(it) } ?: AppTheme.LIGHT,
+            soundsEnabled = preferences[SOUNDS_ENABLED_KEY] ?: true,
+            vibrationEnabled = preferences[VIBRATION_ENABLED_KEY] ?: true,
+            controlMode = preferences[CONTROL_MODE_KEY]?.let { ControlMode.valueOf(it) } ?: ControlMode.BOTH,
+            showUndo = preferences[SHOW_UNDO_KEY] ?: true,
+            showStopwatch = preferences[SHOW_STOPWATCH_KEY] ?: true
+        )
     }
+
+    val theme: Flow<AppTheme?> = userPreferences.map { it.theme }
+
+    val soundsEnabled: Flow<Boolean> = userPreferences.map { it.soundsEnabled }
 
     fun getBestScore(modeId: String): Flow<Int> = context.dataStore.data.map { 
         it[getBestScoreKey(modeId)] ?: 0 
@@ -65,6 +79,26 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun setTheme(theme: AppTheme) {
         context.dataStore.edit { it[THEME_KEY] = theme.name }
+    }
+
+    suspend fun setSoundsEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[SOUNDS_ENABLED_KEY] = enabled }
+    }
+
+    suspend fun setVibrationEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[VIBRATION_ENABLED_KEY] = enabled }
+    }
+
+    suspend fun setControlMode(mode: ControlMode) {
+        context.dataStore.edit { it[CONTROL_MODE_KEY] = mode.name }
+    }
+
+    suspend fun setShowUndo(show: Boolean) {
+        context.dataStore.edit { it[SHOW_UNDO_KEY] = show }
+    }
+
+    suspend fun setShowStopwatch(show: Boolean) {
+        context.dataStore.edit { it[SHOW_STOPWATCH_KEY] = show }
     }
 
     suspend fun saveGameState(state: GameState) {

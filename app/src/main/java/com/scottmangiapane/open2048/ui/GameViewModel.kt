@@ -6,21 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.scottmangiapane.open2048.data.PreferenceRepository
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.logic.GameEngine
-import com.scottmangiapane.open2048.model.AppTheme
-import com.scottmangiapane.open2048.model.GameMode
-import com.scottmangiapane.open2048.model.GameState
-import com.scottmangiapane.open2048.model.canResume
+import com.scottmangiapane.open2048.model.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -28,6 +17,7 @@ import kotlin.random.Random
 class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val gameEngine = GameEngine()
     private val prefs = PreferenceRepository(application)
+    private val soundManager = SoundManager(application)
     
     private var previousStateForUndo: GameState? = null
     private var bestScoreJob: Job? = null
@@ -38,6 +28,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentScreen = MutableStateFlow<Screen>(Screen.Menu)
     val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
+
+    val userPreferences: StateFlow<UserPreferences> = prefs.userPreferences
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserPreferences())
 
     val canResume: StateFlow<Boolean> = _state
         .map { state -> state.canResume }
@@ -105,6 +98,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         val newTime = (state.timeLeftMs ?: 0L) - delta
                         if (newTime <= 0) {
                             shouldStop = true
+                            if (userPreferences.value.soundsEnabled) soundManager.playGameOver()
                             state.copy(timeLeftMs = 0, isGameOver = true, elapsedTimeMs = newElapsed)
                         } else {
                             state.copy(timeLeftMs = newTime, elapsedTimeMs = newElapsed)
@@ -216,6 +210,30 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun setTheme(theme: AppTheme) {
+        viewModelScope.launch { prefs.setTheme(theme) }
+    }
+
+    fun setSoundsEnabled(enabled: Boolean) {
+        viewModelScope.launch { prefs.setSoundsEnabled(enabled) }
+    }
+
+    fun setVibrationEnabled(enabled: Boolean) {
+        viewModelScope.launch { prefs.setVibrationEnabled(enabled) }
+    }
+
+    fun setControlMode(mode: ControlMode) {
+        viewModelScope.launch { prefs.setControlMode(mode) }
+    }
+
+    fun setShowUndo(show: Boolean) {
+        viewModelScope.launch { prefs.setShowUndo(show) }
+    }
+
+    fun setShowStopwatch(show: Boolean) {
+        viewModelScope.launch { prefs.setShowStopwatch(show) }
+    }
+
     private fun saveGame(state: GameState) {
         viewModelScope.launch {
             prefs.saveGameState(state)
@@ -246,6 +264,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val isGameOver = gameEngine.isGameOver(result.board) || (currentState.timeLeftMs == 0L)
             if (isGameOver) timerJob?.cancel()
 
+            val prefs = userPreferences.value
+            if (prefs.soundsEnabled) {
+                when {
+                    isGameOver -> soundManager.playGameOver()
+                    result.scoreGained > 0 -> soundManager.playMerge()
+                    else -> soundManager.playMove()
+                }
+            }
+            if (prefs.vibrationEnabled) {
+                soundManager.vibrate()
+            }
+
             val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
 
             _state.update { state ->
@@ -263,5 +293,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             }
             saveGame(_state.value)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        soundManager.release()
     }
 }
