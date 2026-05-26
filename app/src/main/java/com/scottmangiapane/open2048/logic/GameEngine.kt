@@ -2,9 +2,7 @@ package com.scottmangiapane.open2048.logic
 
 import com.scottmangiapane.open2048.model.Tile
 
-enum class Direction {
-    UP, DOWN, LEFT, RIGHT
-}
+enum class Direction { UP, DOWN, LEFT, RIGHT }
 
 data class MoveResult(
     val board: List<List<Tile?>>,
@@ -28,18 +26,13 @@ class GameEngine {
         return board to currentId
     }
 
-    fun createDailyBoard(
-        size: Int,
-        seed: Long
-    ): Pair<List<List<Tile?>>, Int> {
+    fun createDailyBoard(size: Int, seed: Long): Pair<List<List<Tile?>>, Int> {
         val board = MutableList(size) { MutableList<Tile?>(size) { null } }
         val random = kotlin.random.Random(seed)
         var currentId = 0
         
-        // Fill about 85% of the board with "junk"
         val numTiles = (size * size * 0.85).toInt()
         repeat(numTiles) {
-            val posSeed = random.nextFloat()
             val valueSeed = random.nextFloat()
             // Aggressive "junk" from 2 to 2048 with higher probabilities for large numbers
             val value = when {
@@ -55,7 +48,7 @@ class GameEngine {
                 valueSeed < 0.97f -> 1024
                 else -> 2048
             }
-            currentId = addTileWithValue(board, value, posSeed, currentId)
+            currentId = addTileWithValue(board, value, random.nextFloat(), currentId)
         }
         return board to currentId
     }
@@ -137,25 +130,15 @@ class GameEngine {
             Direction.DOWN -> rotate(rotate(rotate(shifted)))
         }
 
-        val hasChanged = board.asSequence().flatten().map { it?.id to it?.value }.toList() != 
-                         finalBoard.asSequence().flatten().map { it?.id to it?.value }.toList()
+        val hasChanged = board.flatten().map { it?.id to it?.value } != 
+                         finalBoard.flatten().map { it?.id to it?.value }
 
         return if (hasChanged) {
             val mutableFinal = finalBoard.map { it.toMutableList() }.toMutableList()
             val finalNextId = addTile(mutableFinal, valueSeed, posSeed, nextId)
-            MoveResult(
-                board = mutableFinal,
-                scoreGained = scoreGained,
-                nextId = finalNextId,
-                hasChanged = true,
-            )
+            MoveResult(mutableFinal, scoreGained, finalNextId, true)
         } else {
-            MoveResult(
-                board = board,
-                scoreGained = 0,
-                nextId = nextId,
-                hasChanged = false,
-            )
+            MoveResult(board, 0, nextId, false)
         }
     }
 
@@ -164,9 +147,9 @@ class GameEngine {
         for (r in 0 until size) {
             for (c in 0 until size) {
                 if (board[r][c] == null) return false
-                val val1 = board[r][c]?.value
-                if (r + 1 < size && board[r + 1][c]?.value == val1) return false
-                if (c + 1 < size && board[r][c + 1]?.value == val1) return false
+                val current = board[r][c]?.value ?: continue
+                if (r + 1 < size && board[r + 1][c]?.value == current) return false
+                if (c + 1 < size && board[r][c + 1]?.value == current) return false
             }
         }
         return true

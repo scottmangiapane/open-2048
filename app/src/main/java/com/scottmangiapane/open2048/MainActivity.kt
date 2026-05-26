@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,12 +32,12 @@ class MainActivity : ComponentActivity() {
             var currentScreen by remember { mutableStateOf("menu") }
 
             val lifecycleOwner = LocalLifecycleOwner.current
-            androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+            DisposableEffect(lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_PAUSE) {
-                        viewModel.stopTimer()
-                    } else if (event == Lifecycle.Event.ON_RESUME && currentScreen == "game") {
-                        viewModel.resumeGame()
+                    when (event) {
+                        Lifecycle.Event.ON_PAUSE -> viewModel.stopTimer()
+                        Lifecycle.Event.ON_RESUME -> if (currentScreen == "game") viewModel.resumeGame()
+                        else -> {}
                     }
                 }
                 lifecycleOwner.lifecycle.addObserver(observer)
@@ -47,7 +48,6 @@ class MainActivity : ComponentActivity() {
 
             Open2048Theme(darkTheme = darkTheme) {
                 if (currentScreen == "menu") {
-                    val onToggle = remember(darkTheme) { { viewModel.toggleDarkMode(darkTheme) } }
                     MenuScreen(
                         isDarkMode = darkTheme,
                         onStartGame = { mode ->
@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
                             viewModel.resumeGame()
                             currentScreen = "game"
                         },
-                        onToggleDarkMode = onToggle,
+                        onToggleDarkMode = { viewModel.toggleDarkMode(darkTheme) },
                         canResume = state.board.isNotEmpty() && !state.isGameOver
                     )
                 } else {

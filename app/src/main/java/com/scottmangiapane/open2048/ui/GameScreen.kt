@@ -52,6 +52,7 @@ fun GameScreen(
     val focusRequester = remember { FocusRequester() }
     val density = LocalDensity.current
     val swipeThreshold = with(density) { 56.dp.toPx() }
+    val isDarkMode = state.isDarkMode ?: isSystemInDarkTheme()
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -109,8 +110,6 @@ fun GameScreen(
                 }
             }
     ) {
-        val isDarkMode = state.isDarkMode ?: isSystemInDarkTheme()
-
         val (hPadding, vPadding) = when {
             minDimension >= 840.dp -> 172.dp to 144.dp // Large Tablets
             minDimension >= 600.dp -> 120.dp to 96.dp  // Foldables
@@ -126,7 +125,7 @@ fun GameScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = hPadding, vertical = vPadding)
-                    .padding(end = 48.dp), // Extra padding for theme toggle
+                    .padding(end = 48.dp),
                 horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 64.dp else 32.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -173,34 +172,47 @@ fun GameScreen(
         }
 
         // Navigation and Theme controls (Drawn last so they stay clickable)
-        Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-            IconButton(
-                onClick = onBackToMenu,
-                modifier = Modifier.align(Alignment.TopStart)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back to Menu",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+        GameControls(
+            isDarkMode = isDarkMode,
+            onBackToMenu = onBackToMenu,
+            onToggleDarkMode = { viewModel.toggleDarkMode(isDarkMode) }
+        )
+    }
+}
 
-            IconButton(
-                onClick = { viewModel.toggleDarkMode(isDarkMode) },
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                Icon(
-                    imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                    contentDescription = "Toggle Dark Mode",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+@Composable
+private fun GameControls(
+    isDarkMode: Boolean,
+    onBackToMenu: () -> Unit,
+    onToggleDarkMode: () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        IconButton(
+            onClick = onBackToMenu,
+            modifier = Modifier.align(Alignment.TopStart)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back to Menu",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        IconButton(
+            onClick = onToggleDarkMode,
+            modifier = Modifier.align(Alignment.TopEnd)
+        ) {
+            Icon(
+                imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                contentDescription = "Toggle Dark Mode",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
         }
     }
 }
 
 @Composable
-fun BoardContainer(state: GameState, isDark: Boolean) {
+private fun BoardContainer(state: GameState, isDark: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -235,7 +247,7 @@ fun BoardContainer(state: GameState, isDark: Boolean) {
 }
 
 @Composable
-fun HeaderSection(
+private fun HeaderSection(
     state: GameState,
     onRestart: () -> Unit,
     onUndo: () -> Unit,
@@ -296,11 +308,11 @@ fun HeaderSection(
 }
 
 @Composable
-fun TimerDisplay(timeLeftMs: Long) {
+private fun TimerDisplay(timeLeftMs: Long) {
     val totalSeconds = timeLeftMs / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
-    val timeString = "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
+    val timeString = "%02d:%02d".format(minutes, seconds)
     
     Text(
         text = timeString,
@@ -334,7 +346,7 @@ private fun GameButton(
 }
 
 @Composable
-fun ScoreCard(label: String, score: Int) {
+private fun ScoreCard(label: String, score: Int) {
     Column(
         modifier = Modifier
             .width(80.dp)
@@ -359,7 +371,7 @@ fun ScoreCard(label: String, score: Int) {
 }
 
 @Composable
-fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
+private fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
     var boardWidthPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
     val size = board.size
@@ -439,14 +451,11 @@ fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
 }
 
 @Composable
-fun TileView(tile: Tile, tileSize: Dp, isDark: Boolean = isSystemInDarkTheme()) {
-    // Use a local state for the value so we can delay the color/text change until after the slide
+private fun TileView(tile: Tile, tileSize: Dp, isDark: Boolean) {
     val displayValue = remember(tile.id) { mutableIntStateOf(tile.value) }
     val isVisible = remember(tile.id) { mutableStateOf(!tile.isNew) }
-
     val backgroundColor = getTileBackgroundColor(displayValue.intValue, isDark)
     val textColor = getTileTextColor(displayValue.intValue, isDark)
-
     val scale = remember { Animatable(if (tile.isNew) 0f else 1f) }
 
     LaunchedEffect(tile.id, tile.value, tile.isNew) {
@@ -454,28 +463,14 @@ fun TileView(tile: Tile, tileSize: Dp, isDark: Boolean = isSystemInDarkTheme()) 
             delay(100) // Wait for other tiles to slide
             isVisible.value = true
             displayValue.intValue = tile.value
-            scale.animateTo(
-                targetValue = 1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessMedium
-                )
-            )
+            scale.animateTo(1f, spring(Spring.DampingRatioNoBouncy, Spring.StiffnessMedium))
         } else {
-            // Ensure tile is visible if it's no longer marked as new
             isVisible.value = true
-            
             if (displayValue.intValue != tile.value) {
                 delay(100) // Wait for slide to complete before changing color/popping
                 displayValue.intValue = tile.value
                 scale.snapTo(0.85f)
-                scale.animateTo(
-                    targetValue = 1f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioHighBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    )
-                )
+                scale.animateTo(1f, spring(Spring.DampingRatioHighBouncy, Spring.StiffnessMedium))
             } else {
                 scale.snapTo(1f)
             }

@@ -63,92 +63,70 @@ fun MenuScreen(
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         if (canResume) {
                             MenuHeader("CONTINUE")
-                            MenuButton(
-                                text = "Resume",
-                                onClick = onResumeGame,
-                                containerColor = MaterialTheme.colorScheme.secondary
-                            )
+                            MenuButton("Resume", onResumeGame, MaterialTheme.colorScheme.secondary)
                             Spacer(modifier = Modifier.height(16.dp))
                         }
                         
                         MenuHeader("CHALLENGE")
-                        MenuButton(
-                            text = "Daily Challenge",
-                            onClick = { onStartGame(GameMode.Daily.today()) },
-                            containerColor = Color(0xFFC2410C)
-                        )
+                        MenuButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, Color(0xFFC2410C))
                     }
 
                     // Group 2: Classic
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         MenuHeader("CLASSIC")
-                        MenuButton(text = "Classic 4x4", onClick = { onStartGame(GameMode.Classic(4)) })
+                        MenuButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
                         Spacer(modifier = Modifier.height(8.dp))
-                        MenuButton(text = "Small 3x3", onClick = { onStartGame(GameMode.Classic(3)) })
+                        MenuButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
                         Spacer(modifier = Modifier.height(8.dp))
-                        MenuButton(text = "Large 5x5", onClick = { onStartGame(GameMode.Classic(5)) })
+                        MenuButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
                     }
 
                     // Group 3: Blitz
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         MenuHeader("BLITZ")
-                        MenuButton(text = "2m Blitz", onClick = { onStartGame(GameMode.Blitz(2)) })
+                        MenuButton("2m Blitz", { onStartGame(GameMode.Blitz(2)) })
                         Spacer(modifier = Modifier.height(8.dp))
-                        MenuButton(text = "5m Blitz", onClick = { onStartGame(GameMode.Blitz(5)) })
+                        MenuButton("5m Blitz", { onStartGame(GameMode.Blitz(5)) })
                     }
                 }
             } else {
-                // Portrait Layout
                 if (canResume) {
-                    MenuButton(
-                        text = "Resume Game",
-                        onClick = onResumeGame,
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    )
+                    MenuButton("Resume Game", onResumeGame, MaterialTheme.colorScheme.secondary)
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
                 MenuHeader("CHALLENGE")
-                MenuButton(
-                    text = "Daily Challenge",
-                    onClick = { onStartGame(GameMode.Daily.today()) },
-                    containerColor = Color(0xFFC2410C)
-                )
-
+                MenuButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, Color(0xFFC2410C))
                 Spacer(modifier = Modifier.height(24.dp))
 
                 MenuHeader("CLASSIC")
-                MenuButton(text = "Classic 4x4", onClick = { onStartGame(GameMode.Classic(4)) })
+                MenuButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
                 Spacer(modifier = Modifier.height(8.dp))
-                MenuButton(text = "Small 3x3", onClick = { onStartGame(GameMode.Classic(3)) })
+                MenuButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
                 Spacer(modifier = Modifier.height(8.dp))
-                MenuButton(text = "Large 5x5", onClick = { onStartGame(GameMode.Classic(5)) })
-                
+                MenuButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 MenuHeader("BLITZ")
-                MenuButton(text = "2 Minute Blitz", onClick = { onStartGame(GameMode.Blitz(2)) })
+                MenuButton("2 Minute Blitz", { onStartGame(GameMode.Blitz(2)) })
                 Spacer(modifier = Modifier.height(8.dp))
-                MenuButton(text = "5 Minute Blitz", onClick = { onStartGame(GameMode.Blitz(5)) })
+                MenuButton("5 Minute Blitz", { onStartGame(GameMode.Blitz(5)) })
             }
         }
 
-        // Fixed Theme Toggle in Top Right
-        Box(
+        IconButton(
+            onClick = onToggleDarkMode,
             modifier = Modifier
-                .fillMaxWidth()
+                .align(Alignment.TopEnd)
                 .systemBarsPadding()
                 .padding(8.dp)
-                .zIndex(1f),
-            contentAlignment = Alignment.TopEnd
+                .zIndex(1f)
         ) {
-            IconButton(onClick = onToggleDarkMode) {
-                Icon(
-                    imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                    contentDescription = "Toggle Dark Mode",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+            Icon(
+                imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                contentDescription = "Toggle Dark Mode",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
         }
     }
 }
@@ -187,16 +165,9 @@ private fun MenuButton(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor
-        ),
+        colors = ButtonDefaults.buttonColors(containerColor = containerColor),
         shape = RoundedCornerShape(8.dp)
     ) {
-        Text(
-            text = text,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
-        )
+        Text(text, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
     }
 }

@@ -117,12 +117,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             )
         }
         
-        val (nextV, nextP) = if (currentMode is GameMode.Daily) {
-            val r = Random(currentMode.dateSeed + nextId)
-            r.nextFloat() to r.nextFloat()
-        } else {
-            Random.nextFloat() to Random.nextFloat()
-        }
+        val (nextV, nextP) = generateNextSeeds(currentMode, nextId)
 
         val newState = GameState(
             board = initialBoard,
@@ -138,6 +133,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _state.update { newState.copy(bestScore = it.bestScore, isDarkMode = it.isDarkMode) }
         saveGame(newState)
         if (currentMode is GameMode.Blitz) startTimer()
+    }
+
+    private fun generateNextSeeds(mode: GameMode, nextId: Int): Pair<Float, Float> {
+        return if (mode is GameMode.Daily) {
+            val r = Random(mode.dateSeed + nextId)
+            r.nextFloat() to r.nextFloat()
+        } else {
+            Random.nextFloat() to Random.nextFloat()
+        }
     }
 
     fun undo() {
@@ -188,12 +192,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val isGameOver = gameEngine.isGameOver(result.board) || (currentState.timeLeftMs == 0L)
                 if (isGameOver) timerJob?.cancel()
 
-                val (nextV, nextP) = if (currentState.gameMode is GameMode.Daily) {
-                    val r = Random(currentState.gameMode.dateSeed + result.nextId)
-                    r.nextFloat() to r.nextFloat()
-                } else {
-                    Random.nextFloat() to Random.nextFloat()
-                }
+                val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
 
                 val newState = currentState.copy(
                     board = result.board,
