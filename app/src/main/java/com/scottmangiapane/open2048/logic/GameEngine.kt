@@ -10,12 +10,13 @@ data class MoveResult(
     val board: List<List<Tile?>>,
     val scoreGained: Int,
     val nextId: Int,
-    val hasChanged: Boolean
+    val hasChanged: Boolean,
 )
 
-class GameEngine(private val size: Int = 4) {
+class GameEngine {
 
     fun createInitialBoard(
+        size: Int,
         seedValue1: Float, seedPos1: Float,
         seedValue2: Float, seedPos2: Float,
         startId: Int
@@ -33,6 +34,7 @@ class GameEngine(private val size: Int = 4) {
         posSeed: Float,
         id: Int
     ): Int {
+        val size = board.size
         val emptyCells = mutableListOf<Pair<Int, Int>>()
         for (r in 0 until size) {
             for (c in 0 until size) {
@@ -55,6 +57,7 @@ class GameEngine(private val size: Int = 4) {
         posSeed: Float,
         nextId: Int
     ): MoveResult {
+        val size = board.size
         var scoreGained = 0
         
         fun rotate(b: List<List<Tile?>>): List<List<Tile?>> =
@@ -72,7 +75,7 @@ class GameEngine(private val size: Int = 4) {
             val newRow = mutableListOf<Tile>()
             var i = 0
             while (i < originalRow.size) {
-                if (i + 1 < originalRow.size && originalRow[i].value == originalRow[i + 1].value) {
+                if ((i + 1 < originalRow.size) && (originalRow[i].value == originalRow[i + 1].value)) {
                     val mergedValue = originalRow[i].value * 2
                     newRow.add(Tile(id = originalRow[i + 1].id, value = mergedValue))
                     scoreGained += mergedValue
@@ -92,19 +95,30 @@ class GameEngine(private val size: Int = 4) {
             Direction.DOWN -> rotate(rotate(rotate(shifted)))
         }
 
-        val hasChanged = board.flatten().map { it?.id to it?.value } != 
-                         finalBoard.flatten().map { it?.id to it?.value }
+        val hasChanged = board.asSequence().flatten().map { it?.id to it?.value }.toList() != 
+                         finalBoard.asSequence().flatten().map { it?.id to it?.value }.toList()
 
         return if (hasChanged) {
             val mutableFinal = finalBoard.map { it.toMutableList() }.toMutableList()
             val finalNextId = addTile(mutableFinal, valueSeed, posSeed, nextId)
-            MoveResult(mutableFinal, scoreGained, finalNextId, true)
+            MoveResult(
+                board = mutableFinal,
+                scoreGained = scoreGained,
+                nextId = finalNextId,
+                hasChanged = true,
+            )
         } else {
-            MoveResult(board, 0, nextId, false)
+            MoveResult(
+                board = board,
+                scoreGained = 0,
+                nextId = nextId,
+                hasChanged = false,
+            )
         }
     }
 
     fun isGameOver(board: List<List<Tile?>>): Boolean {
+        val size = board.size
         for (r in 0 until size) {
             for (c in 0 until size) {
                 if (board[r][c] == null) return false

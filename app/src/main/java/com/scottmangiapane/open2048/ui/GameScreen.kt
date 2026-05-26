@@ -1,10 +1,10 @@
 package com.scottmangiapane.open2048.ui
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState as animateFloat
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.*
@@ -28,8 +29,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,7 +43,10 @@ import kotlinx.coroutines.delay
 import kotlin.math.abs
 
 @Composable
-fun GameScreen(viewModel: GameViewModel = viewModel()) {
+fun GameScreen(
+    viewModel: GameViewModel = viewModel(),
+    onBackToMenu: () -> Unit
+) {
     val state by viewModel.state.collectAsState()
     val focusRequester = remember { FocusRequester() }
     val density = LocalDensity.current
@@ -50,7 +56,11 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
         focusRequester.requestFocus()
     }
 
-    BoxWithConstraints(
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val minDimension = minOf(configuration.screenWidthDp.dp, configuration.screenHeightDp.dp)
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
@@ -98,20 +108,31 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                 }
             }
     ) {
-        val isLandscape = maxWidth > maxHeight
-        val minDimension = minOf(maxWidth, maxHeight)
         val isDarkMode = state.isDarkMode ?: isSystemInDarkTheme()
 
-        // Theme Toggle in top-right
-        IconButton(
-            onClick = { viewModel.toggleDarkMode() },
-            modifier = Modifier.align(Alignment.TopEnd)
-        ) {
-            Icon(
-                imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                contentDescription = "Toggle Dark Mode",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
+        // Navigation and Theme controls
+        Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+            IconButton(
+                onClick = onBackToMenu,
+                modifier = Modifier.align(Alignment.TopStart)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back to Menu",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            IconButton(
+                onClick = { viewModel.toggleDarkMode() },
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                Icon(
+                    imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = "Toggle Dark Mode",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
 
         val (hPadding, vPadding) = when {
@@ -247,7 +268,7 @@ fun HeaderSection(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GameButton(text = "Undo", onClick = onUndo, enabled = canUndo, padding = buttonPadding)
+            GameButton(text = "Undo", onClick = onUndo, padding = buttonPadding, enabled = canUndo)
             GameButton(text = "New Game", onClick = onRestart, padding = buttonPadding)
         }
     }
@@ -257,8 +278,9 @@ fun HeaderSection(
 private fun GameButton(
     text: String,
     onClick: () -> Unit,
-    enabled: Boolean = true,
-    padding: PaddingValues
+    padding: PaddingValues,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     Button(
         onClick = onClick,
@@ -268,7 +290,8 @@ private fun GameButton(
             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         shape = RoundedCornerShape(4.dp),
-        contentPadding = padding
+        contentPadding = padding,
+        modifier = modifier
     ) {
         Text(text, color = Color.White, fontWeight = FontWeight.Bold)
     }
@@ -371,7 +394,7 @@ fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
                                 translationY = animYPx
                             }
                     ) {
-                        TileView(tile = tile, isDark = isDark)
+                        TileView(tile = tile, tileSize = tileSizeDp, isDark = isDark)
                     }
                 }
             }
@@ -380,7 +403,7 @@ fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
 }
 
 @Composable
-fun TileView(tile: Tile, isDark: Boolean = isSystemInDarkTheme()) {
+fun TileView(tile: Tile, tileSize: Dp, isDark: Boolean = isSystemInDarkTheme()) {
     // Use a local state for the value so we can delay the color/text change until after the slide
     val displayValue = remember(tile.id) { mutableIntStateOf(tile.value) }
     val isVisible = remember(tile.id) { mutableStateOf(!tile.isNew) }
@@ -424,7 +447,7 @@ fun TileView(tile: Tile, isDark: Boolean = isSystemInDarkTheme()) {
     }
 
     if (isVisible.value) {
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
@@ -438,9 +461,9 @@ fun TileView(tile: Tile, isDark: Boolean = isSystemInDarkTheme()) {
             contentAlignment = Alignment.Center
         ) {
             val fontSize = when {
-                displayValue.intValue >= 1024 -> maxWidth.value * 0.28f
-                displayValue.intValue >= 100 -> maxWidth.value * 0.35f
-                else -> maxWidth.value * 0.45f
+                displayValue.intValue >= 1024 -> tileSize.value * 0.28f
+                displayValue.intValue >= 100 -> tileSize.value * 0.35f
+                else -> tileSize.value * 0.45f
             }
             Text(
                 text = displayValue.intValue.toString(),

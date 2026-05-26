@@ -7,6 +7,7 @@ import com.scottmangiapane.open2048.data.PreferenceRepository
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.logic.GameEngine
 import com.scottmangiapane.open2048.model.GameState
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,42 +22,55 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = PreferenceRepository(application)
     
     private var lastState: GameState? = null
+    private var bestScoreJob: Job? = null
     
     private val _state = MutableStateFlow(GameState())
     val state: StateFlow<GameState> = _state.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            prefs.bestScore.collectLatest { best ->
-                _state.update { it.copy(bestScore = best) }
-            }
-        }
-
+        // Observe dark mode setting
         viewModelScope.launch {
             prefs.isDarkMode.collectLatest { isDark ->
                 _state.update { it.copy(isDarkMode = isDark) }
             }
         }
         
+        // Load initial state
         viewModelScope.launch {
             val saved = prefs.savedGameState.firstOrNull()
             if (saved != null) {
                 _state.update { 
                     saved.copy(
-                        bestScore = it.bestScore,
                         isDarkMode = it.isDarkMode,
-                        isGameOver = gameEngine.isGameOver(saved.board)
+                        isGameOver = gameEngine.isGameOver(saved.board),
                     )
                 }
+                observeBestScore(saved.board.size)
             } else {
-                restartGame()
+                restartGame(4)
             }
         }
     }
 
-    fun restartGame() {
+    private fun observeBestScore(size: Int) {
+        bestScoreJob?.cancel()
+        bestScoreJob = viewModelScope.launch {
+            prefs.getBestScore(size).collectLatest { best ->
+                _state.update { it.copy(bestScore = best) }
+            }
+        }
+    }
+
+    fun restartGame(size: Int? = null) {
+        val currentSize = size ?: _state.value.board.size.takeIf { it > 0 } ?: 4
         lastState = null
+        
+        if (size != null) {
+            observeBestScore(size)
+        }
+
         val (initialBoard, nextId) = gameEngine.createInitialBoard(
+            size = currentSize,
             seedValue1 = Random.nextFloat(), seedPos1 = Random.nextFloat(),
             seedValue2 = Random.nextFloat(), seedPos2 = Random.nextFloat(),
             startId = 0
@@ -110,9 +124,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (result.hasChanged) {
                 lastState = currentState
                 val newScore = currentState.score + result.scoreGained
+                val size = currentState.board.size
                 
                 if (newScore > currentState.bestScore) {
-                    viewModelScope.launch { prefs.updateBestScore(newScore) }
+                    viewModelScope.launch { prefs.updateBestScore(size, newScore) }
                 }
                 
                 val newState = currentState.copy(
