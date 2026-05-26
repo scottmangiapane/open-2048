@@ -115,10 +115,12 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
         }
 
         val (hPadding, vPadding) = when {
-            minDimension >= 840.dp -> 172.dp to 144.dp // Large Tablets: very dramatic
-            minDimension >= 600.dp -> 120.dp to 96.dp  // Foldables: balanced
-            else -> 16.dp to 16.dp                     // Phones: standard
+            minDimension >= 840.dp -> 172.dp to 144.dp // Large Tablets
+            minDimension >= 600.dp -> 120.dp to 96.dp  // Foldables
+            isLandscape -> 0.dp to 8.dp                // Landscape phones: minimal padding
+            else -> 32.dp to 16.dp                     // Portrait phones: breathing room
         }
+
         val isLargeScreen = minDimension >= 600.dp
         val contentMaxWidth = if (isLargeScreen) 500.dp else 600.dp
 
@@ -126,8 +128,9 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = hPadding, vertical = vPadding),
-                horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 64.dp else 24.dp, Alignment.CenterHorizontally),
+                    .padding(horizontal = hPadding, vertical = vPadding)
+                    .padding(end = 48.dp), // Extra padding for theme toggle
+                horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 64.dp else 32.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 HeaderSection(
@@ -141,7 +144,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
 
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight(0.9f)
+                        .fillMaxHeight(0.95f)
                         .aspectRatio(1f)
                         .sizeIn(maxWidth = contentMaxWidth)
                 ) {
