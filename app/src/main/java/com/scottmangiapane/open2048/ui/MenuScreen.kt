@@ -65,6 +65,7 @@ fun MenuScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .displayCutoutPadding()
     ) {
         Column(
             modifier = Modifier

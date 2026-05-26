@@ -66,6 +66,7 @@ fun GameScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding()
+            .displayCutoutPadding()
             .focusRequester(focusRequester)
             .focusable()
             .onKeyEvent { keyEvent ->
