@@ -157,6 +157,7 @@ fun GameScreen(
                 HeaderSection(
                     score = state.score,
                     bestScore = state.bestScore,
+                    timeLeftMs = state.timeLeftMs,
                     onRestart = { viewModel.restartGame() },
                     onUndo = { viewModel.undo() },
                     canUndo = state.canUndo,
@@ -183,6 +184,7 @@ fun GameScreen(
                 HeaderSection(
                     score = state.score,
                     bestScore = state.bestScore,
+                    timeLeftMs = state.timeLeftMs,
                     onRestart = { viewModel.restartGame() },
                     onUndo = { viewModel.undo() },
                     canUndo = state.canUndo,
@@ -227,7 +229,7 @@ fun BoardContainer(state: GameState, isDark: Boolean) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Game Over!",
+                    text = if (state.timeLeftMs == 0L) "Time's Up!" else "Game Over!",
                     fontSize = 48.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
@@ -241,6 +243,7 @@ fun BoardContainer(state: GameState, isDark: Boolean) {
 fun HeaderSection(
     score: Int,
     bestScore: Int,
+    timeLeftMs: Long?,
     onRestart: () -> Unit,
     onUndo: () -> Unit,
     canUndo: Boolean,
@@ -262,16 +265,40 @@ fun HeaderSection(
             color = MaterialTheme.colorScheme.onBackground
         )
 
+        if (timeLeftMs != null) {
+            TimerDisplay(timeLeftMs = timeLeftMs)
+        }
+
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ScoreCard(label = "SCORE", score = score)
             ScoreCard(label = "BEST", score = bestScore)
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GameButton(text = "Undo", onClick = onUndo, padding = buttonPadding, enabled = canUndo)
+            GameButton(
+                text = "Undo", 
+                onClick = onUndo, 
+                padding = buttonPadding, 
+                enabled = canUndo && (timeLeftMs == null || timeLeftMs > 0)
+            )
             GameButton(text = "New Game", onClick = onRestart, padding = buttonPadding)
         }
     }
+}
+
+@Composable
+fun TimerDisplay(timeLeftMs: Long) {
+    val totalSeconds = timeLeftMs / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    val timeString = "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
+    
+    Text(
+        text = timeString,
+        fontSize = 32.sp,
+        fontWeight = FontWeight.Bold,
+        color = if (timeLeftMs < 10000) Color(0xFFE11D48) else MaterialTheme.colorScheme.primary
+    )
 }
 
 @Composable

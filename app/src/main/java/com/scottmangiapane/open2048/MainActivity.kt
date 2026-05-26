@@ -10,6 +10,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.ui.GameScreen
 import com.scottmangiapane.open2048.ui.GameViewModel
@@ -27,20 +30,43 @@ class MainActivity : ComponentActivity() {
 
             var currentScreen by remember { mutableStateOf("menu") }
 
+            val lifecycleOwner = LocalLifecycleOwner.current
+            androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_PAUSE) {
+                        viewModel.stopTimer()
+                    } else if (event == Lifecycle.Event.ON_RESUME && currentScreen == "game") {
+                        viewModel.resumeGame()
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
+            }
+
             Open2048Theme(darkTheme = darkTheme) {
                 if (currentScreen == "menu") {
                     MenuScreen(
                         isDarkMode = darkTheme,
-                        onStartGame = { size ->
-                            viewModel.restartGame(size)
+                        onStartGame = { mode ->
+                            viewModel.restartGame(mode)
                             currentScreen = "game"
                         },
-                        onToggleDarkMode = { viewModel.toggleDarkMode() }
+                        onResumeGame = {
+                            viewModel.resumeGame()
+                            currentScreen = "game"
+                        },
+                        onToggleDarkMode = { viewModel.toggleDarkMode() },
+                        canResume = state.board.isNotEmpty() && !state.isGameOver
                     )
                 } else {
                     GameScreen(
                         viewModel = viewModel,
-                        onBackToMenu = { currentScreen = "menu" }
+                        onBackToMenu = { 
+                            viewModel.stopTimer()
+                            currentScreen = "menu" 
+                        }
                     )
                 }
             }

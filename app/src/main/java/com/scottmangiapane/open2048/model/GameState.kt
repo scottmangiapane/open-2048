@@ -9,5 +9,7 @@ data class GameState(
     val isDarkMode: Boolean? = null,
     val nextId: Int = 0,
     val nextValueSeed: Float = 0f,
-    val nextPosSeed: Float = 0f
+    val nextPosSeed: Float = 0f,
+    val gameMode: GameMode = GameMode.Classic(4),
+    val timeLeftMs: Long? = null
 )

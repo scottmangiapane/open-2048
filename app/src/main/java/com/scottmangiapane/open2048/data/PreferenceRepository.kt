@@ -3,6 +3,7 @@ package com.scottmangiapane.open2048.data
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.model.GameState
 import com.scottmangiapane.open2048.model.Tile
 import kotlinx.coroutines.flow.Flow
@@ -18,30 +19,35 @@ class PreferenceRepository(private val context: Context) {
         private val NEXT_ID_KEY = intPreferencesKey("next_id")
         private val NEXT_VALUE_SEED_KEY = floatPreferencesKey("next_value_seed")
         private val NEXT_POS_SEED_KEY = floatPreferencesKey("next_pos_seed")
+        private val GAME_MODE_KEY = stringPreferencesKey("game_mode")
+        private val TIME_LEFT_KEY = longPreferencesKey("time_left")
         
-        fun getBestScoreKey(size: Int) = intPreferencesKey("best_score_$size")
+        fun getBestScoreKey(modeId: String) = intPreferencesKey("best_score_$modeId")
     }
 
     val isDarkMode: Flow<Boolean?> = context.dataStore.data.map { it[DARK_MODE_KEY] }
 
-    fun getBestScore(size: Int): Flow<Int> = context.dataStore.data.map { 
-        it[getBestScoreKey(size)] ?: 0 
+    fun getBestScore(modeId: String): Flow<Int> = context.dataStore.data.map { 
+        it[getBestScoreKey(modeId)] ?: 0 
     }
 
     val savedGameState: Flow<GameState?> = context.dataStore.data.map { preferences ->
         val boardString = preferences[BOARD_KEY] ?: return@map null
         val board = deserializeBoard(boardString)
+        val modeString = preferences[GAME_MODE_KEY] ?: "classic:4"
         GameState(
             board = board,
             score = preferences[SCORE_KEY] ?: 0,
             nextId = preferences[NEXT_ID_KEY] ?: 0,
             nextValueSeed = preferences[NEXT_VALUE_SEED_KEY] ?: 0f,
             nextPosSeed = preferences[NEXT_POS_SEED_KEY] ?: 0f,
+            gameMode = deserializeGameMode(modeString),
+            timeLeftMs = preferences[TIME_LEFT_KEY]
         )
     }
 
-    suspend fun updateBestScore(size: Int, score: Int) {
-        val key = getBestScoreKey(size)
+    suspend fun updateBestScore(modeId: String, score: Int) {
+        val key = getBestScoreKey(modeId)
         context.dataStore.edit { preferences ->
             val currentBest = preferences[key] ?: 0
             if (score > currentBest) preferences[key] = score
@@ -59,6 +65,8 @@ class PreferenceRepository(private val context: Context) {
             preferences[NEXT_ID_KEY] = state.nextId
             preferences[NEXT_VALUE_SEED_KEY] = state.nextValueSeed
             preferences[NEXT_POS_SEED_KEY] = state.nextPosSeed
+            preferences[GAME_MODE_KEY] = serializeGameMode(state.gameMode)
+            state.timeLeftMs?.let { preferences[TIME_LEFT_KEY] = it } ?: preferences.remove(TIME_LEFT_KEY)
         }
     }
 
@@ -72,5 +80,18 @@ class PreferenceRepository(private val context: Context) {
         }
         val size = kotlin.math.sqrt(flatList.size.toDouble()).toInt()
         return flatList.chunked(size)
+    }
+
+    private fun serializeGameMode(mode: GameMode): String = when (mode) {
+        is GameMode.Classic -> "classic:${mode.size}"
+        is GameMode.Blitz -> "blitz:${mode.durationMinutes}"
+    }
+
+    private fun deserializeGameMode(data: String): GameMode {
+        val parts = data.split(":")
+        return when (parts[0]) {
+            "blitz" -> GameMode.Blitz(parts[1].toInt())
+            else -> GameMode.Classic(parts.getOrNull(1)?.toInt() ?: 4)
+        }
     }
 }
