@@ -5,7 +5,6 @@ import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.scottmangiapane.open2048.model.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
@@ -33,10 +32,10 @@ class PreferenceRepository(private val context: Context) {
 
     val userPreferences: Flow<UserPreferences> = context.dataStore.data.map { preferences ->
         UserPreferences(
-            theme = preferences[THEME_KEY]?.let { AppTheme.valueOf(it) } ?: AppTheme.LIGHT,
+            theme = preferences[THEME_KEY]?.let { runCatching { AppTheme.valueOf(it) }.getOrNull() } ?: AppTheme.LIGHT,
             soundsEnabled = preferences[SOUNDS_ENABLED_KEY] ?: true,
             vibrationEnabled = preferences[VIBRATION_ENABLED_KEY] ?: true,
-            controlMode = preferences[CONTROL_MODE_KEY]?.let { ControlMode.valueOf(it) } ?: ControlMode.BOTH,
+            controlMode = preferences[CONTROL_MODE_KEY]?.let { runCatching { ControlMode.valueOf(it) }.getOrNull() } ?: ControlMode.BOTH,
             showUndo = preferences[SHOW_UNDO_KEY] ?: true,
             showStopwatch = preferences[SHOW_STOPWATCH_KEY] ?: true
         )
@@ -52,17 +51,24 @@ class PreferenceRepository(private val context: Context) {
 
     val savedGameState: Flow<GameState?> = context.dataStore.data.map { preferences ->
         val boardString = preferences[BOARD_KEY] ?: return@map null
+        val modeString = preferences[GAME_MODE_KEY] ?: return@map null
+        
         val board = deserializeBoard(boardString)
-        val modeString = preferences[GAME_MODE_KEY] ?: "classic:4"
+        val mode = deserializeGameMode(modeString)
+        
+        if (board.isEmpty() || mode == null) return@map null
+
         val themeString = preferences[THEME_KEY] ?: AppTheme.LIGHT.name
+        val theme = runCatching { AppTheme.valueOf(themeString) }.getOrNull() ?: AppTheme.LIGHT
+
         GameState(
             board = board,
             score = preferences[SCORE_KEY] ?: 0,
-            theme = AppTheme.valueOf(themeString),
+            theme = theme,
             nextId = preferences[NEXT_ID_KEY] ?: 0,
             nextValueSeed = preferences[NEXT_VALUE_SEED_KEY] ?: 0f,
             nextPosSeed = preferences[NEXT_POS_SEED_KEY] ?: 0f,
-            gameMode = deserializeGameMode(modeString),
+            gameMode = mode,
             timeLeftMs = preferences[TIME_LEFT_KEY],
             movesCount = preferences[MOVES_COUNT_KEY] ?: 0,
             elapsedTimeMs = preferences[ELAPSED_TIME_KEY] ?: 0L
@@ -119,12 +125,18 @@ class PreferenceRepository(private val context: Context) {
         board.asSequence().flatten().joinToString(",") { it?.let { "${it.id}:${it.value}" } ?: "n" }
 
     private fun deserializeBoard(data: String): List<List<Tile?>> {
+        if (data.isBlank()) return emptyList()
         val flatList = data.split(",").map { s ->
             if (s == "n") null
-            else s.split(":").let { Tile(id = it[0].toInt(), value = it[1].toInt()) }
+            else {
+                val parts = s.split(":")
+                val id = parts.getOrNull(0)?.toIntOrNull() ?: return emptyList()
+                val value = parts.getOrNull(1)?.toIntOrNull() ?: return emptyList()
+                Tile(id, value)
+            }
         }
         val size = kotlin.math.sqrt(flatList.size.toDouble()).toInt()
-        return flatList.chunked(size)
+        return if (size > 0 && size * size == flatList.size) flatList.chunked(size) else emptyList()
     }
 
     private fun serializeGameMode(mode: GameMode): String = when (mode) {
@@ -133,12 +145,18 @@ class PreferenceRepository(private val context: Context) {
         is GameMode.Daily -> "daily:${mode.year}:${mode.month}:${mode.day}"
     }
 
-    private fun deserializeGameMode(data: String): GameMode {
+    private fun deserializeGameMode(data: String): GameMode? {
         val parts = data.split(":")
-        return when (parts[0]) {
-            "blitz" -> GameMode.Blitz(parts[1].toInt())
-            "daily" -> GameMode.Daily(parts[1].toInt(), parts[2].toInt(), parts[3].toInt())
-            else -> GameMode.Classic(parts.getOrNull(1)?.toInt() ?: 4)
+        return when (parts.getOrNull(0)) {
+            "classic" -> parts.getOrNull(1)?.toIntOrNull()?.let { GameMode.Classic(it) }
+            "blitz" -> parts.getOrNull(1)?.toIntOrNull()?.let { GameMode.Blitz(it) }
+            "daily" -> {
+                val y = parts.getOrNull(1)?.toIntOrNull() ?: return null
+                val m = parts.getOrNull(2)?.toIntOrNull() ?: return null
+                val d = parts.getOrNull(3)?.toIntOrNull() ?: return null
+                GameMode.Daily(y, m, d)
+            }
+            else -> null
         }
     }
 }
