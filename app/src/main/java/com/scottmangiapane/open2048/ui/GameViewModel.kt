@@ -3,6 +3,7 @@ package com.scottmangiapane.open2048.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.scottmangiapane.open2048.data.GameRepository
 import com.scottmangiapane.open2048.data.ScoreRepository
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.logic.GameEngine
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -28,7 +30,8 @@ data class GameState(
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val gameEngine = GameEngine()
-    private val repository = ScoreRepository(application)
+    private val scoreRepository = ScoreRepository(application)
+    private val gameRepository = GameRepository(application)
     
     private var lastState: GameState? = null
     
@@ -38,11 +41,25 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     init {
         // Observe best score from local storage
         viewModelScope.launch {
-            repository.bestScore.collectLatest { best ->
+            scoreRepository.bestScore.collectLatest { best ->
                 _state.update { it.copy(bestScore = best) }
             }
         }
-        restartGame()
+        
+        // Load initial state
+        viewModelScope.launch {
+            val saved = gameRepository.savedGameState.firstOrNull()
+            if (saved != null) {
+                _state.update { 
+                    saved.copy(
+                        bestScore = it.bestScore,
+                        isGameOver = gameEngine.isGameOver(saved.board)
+                    )
+                }
+            } else {
+                restartGame()
+            }
+        }
     }
 
     fun restartGame() {
@@ -52,23 +69,31 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             seedValue2 = Random.nextFloat(), seedPos2 = Random.nextFloat(),
             startId = 0
         )
-        _state.update {
-            it.copy(
-                board = initialBoard,
-                score = 0,
-                isGameOver = false,
-                canUndo = false,
-                nextValueSeed = Random.nextFloat(),
-                nextPosSeed = Random.nextFloat(),
-                nextId = nextId
-            )
-        }
+        val newState = GameState(
+            board = initialBoard,
+            score = 0,
+            isGameOver = false,
+            canUndo = false,
+            nextValueSeed = Random.nextFloat(),
+            nextPosSeed = Random.nextFloat(),
+            nextId = nextId
+        )
+        _state.update { newState.copy(bestScore = it.bestScore) }
+        saveGame(newState)
     }
 
     fun undo() {
         val previous = lastState ?: return
         lastState = null
-        _state.update { previous.copy(bestScore = it.bestScore, canUndo = false) }
+        val newState = previous.copy(bestScore = _state.value.bestScore, canUndo = false)
+        _state.update { newState }
+        saveGame(newState)
+    }
+
+    private fun saveGame(state: GameState) {
+        viewModelScope.launch {
+            gameRepository.saveGameState(state)
+        }
     }
 
     fun move(direction: Direction) {
@@ -87,23 +112,23 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             lastState = currentState
             
             val newScore = currentState.score + scoreGained
+            val newState = currentState.copy(
+                board = newBoard,
+                score = newScore,
+                isGameOver = gameEngine.isGameOver(newBoard),
+                canUndo = true,
+                nextValueSeed = Random.nextFloat(),
+                nextPosSeed = Random.nextFloat(),
+                nextId = newNextId
+            )
             
-            _state.update {
-                it.copy(
-                    board = newBoard,
-                    score = newScore,
-                    isGameOver = gameEngine.isGameOver(newBoard),
-                    canUndo = true,
-                    nextValueSeed = Random.nextFloat(),
-                    nextPosSeed = Random.nextFloat(),
-                    nextId = newNextId
-                )
-            }
+            _state.update { newState.copy(bestScore = it.bestScore) }
+            saveGame(newState)
             
             // Persist high score if it's beaten
             if (newScore > _state.value.bestScore) {
                 viewModelScope.launch {
-                    repository.updateBestScore(newScore)
+                    scoreRepository.updateBestScore(newScore)
                 }
             }
         }
