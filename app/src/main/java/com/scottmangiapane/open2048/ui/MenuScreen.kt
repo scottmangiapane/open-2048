@@ -58,6 +58,21 @@ fun MenuScreen(
             }
 
             Text(
+                text = "CHALLENGE",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            MenuButton(
+                text = "Daily Challenge",
+                onClick = { onStartGame(GameMode.Daily.today()) },
+                containerColor = Color(0xFFC2410C) // Burnt Orange
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
                 text = "CLASSIC",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,

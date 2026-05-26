@@ -39,6 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.model.GameState
 import com.scottmangiapane.open2048.model.Tile
+import com.scottmangiapane.open2048.model.GameMode
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 
@@ -130,12 +131,9 @@ fun GameScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 HeaderSection(
-                    score = state.score,
-                    bestScore = state.bestScore,
-                    timeLeftMs = state.timeLeftMs,
+                    state = state,
                     onRestart = { viewModel.restartGame() },
                     onUndo = { viewModel.undo() },
-                    canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs!! > 0),
                     isLandscape = true
                 )
 
@@ -157,12 +155,9 @@ fun GameScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 HeaderSection(
-                    score = state.score,
-                    bestScore = state.bestScore,
-                    timeLeftMs = state.timeLeftMs,
+                    state = state,
                     onRestart = { viewModel.restartGame() },
                     onUndo = { viewModel.undo() },
-                    canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs!! > 0),
                     isLandscape = false
                 )
                 Spacer(modifier = Modifier.height(if (isLargeScreen) 48.dp else 16.dp))
@@ -241,12 +236,9 @@ fun BoardContainer(state: GameState, isDark: Boolean) {
 
 @Composable
 fun HeaderSection(
-    score: Int,
-    bestScore: Int,
-    timeLeftMs: Long?,
+    state: GameState,
     onRestart: () -> Unit,
     onUndo: () -> Unit,
-    canUndo: Boolean,
     isLandscape: Boolean
 ) {
     val titleSize = if (isLandscape) 56.sp else 64.sp
@@ -258,23 +250,45 @@ fun HeaderSection(
         horizontalAlignment = alignment,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "2048",
-            fontSize = titleSize,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        Column(horizontalAlignment = alignment) {
+            Text(
+                text = "2048",
+                fontSize = titleSize,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            
+            val modeText = when (val mode = state.gameMode) {
+                is GameMode.Daily -> "Daily ${mode.month}/${mode.day}"
+                is GameMode.Blitz -> "${mode.durationMinutes}m Blitz"
+                is GameMode.Classic -> if (mode.size != 4) "${mode.size}x${mode.size}" else ""
+            }
+            
+            if (modeText.isNotEmpty()) {
+                Text(
+                    text = modeText,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.offset(y = if (isLandscape) 0.dp else (-8).dp)
+                )
+            }
+        }
 
-        if (timeLeftMs != null) {
-            TimerDisplay(timeLeftMs = timeLeftMs)
+        if (state.timeLeftMs != null) {
+            TimerDisplay(timeLeftMs = state.timeLeftMs)
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ScoreCard(label = "SCORE", score = score)
-            ScoreCard(label = "BEST", score = bestScore)
+            ScoreCard(label = "SCORE", score = state.score)
+            ScoreCard(
+                label = if (state.gameMode is GameMode.Daily) "DAY BEST" else "BEST",
+                score = state.bestScore
+            )
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs > 0)
             GameButton(text = "Undo", onClick = onUndo, padding = buttonPadding, enabled = canUndo)
             GameButton(text = "New Game", onClick = onRestart, padding = buttonPadding)
         }

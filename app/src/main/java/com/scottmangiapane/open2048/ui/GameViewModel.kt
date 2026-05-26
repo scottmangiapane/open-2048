@@ -106,20 +106,32 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         
         observeBestScore(currentMode)
 
-        val (initialBoard, nextId) = gameEngine.createInitialBoard(
-            size = currentMode.size,
-            seedValue1 = Random.nextFloat(), seedPos1 = Random.nextFloat(),
-            seedValue2 = Random.nextFloat(), seedPos2 = Random.nextFloat(),
-            startId = 0
-        )
+        val (initialBoard, nextId) = if (currentMode is GameMode.Daily) {
+            gameEngine.createDailyBoard(currentMode.size, currentMode.dateSeed)
+        } else {
+            gameEngine.createInitialBoard(
+                size = currentMode.size,
+                seedValue1 = Random.nextFloat(), seedPos1 = Random.nextFloat(),
+                seedValue2 = Random.nextFloat(), seedPos2 = Random.nextFloat(),
+                startId = 0
+            )
+        }
+        
+        val (nextV, nextP) = if (currentMode is GameMode.Daily) {
+            val r = Random(currentMode.dateSeed + nextId)
+            r.nextFloat() to r.nextFloat()
+        } else {
+            Random.nextFloat() to Random.nextFloat()
+        }
+
         val newState = GameState(
             board = initialBoard,
             score = 0,
-            isGameOver = false,
+            isGameOver = gameEngine.isGameOver(initialBoard),
             canUndo = false,
             nextId = nextId,
-            nextValueSeed = Random.nextFloat(),
-            nextPosSeed = Random.nextFloat(),
+            nextValueSeed = nextV,
+            nextPosSeed = nextP,
             gameMode = currentMode,
             timeLeftMs = if (currentMode is GameMode.Blitz) currentMode.durationMinutes * 60 * 1000L else null
         )
@@ -176,14 +188,21 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val isGameOver = gameEngine.isGameOver(result.board) || (currentState.timeLeftMs == 0L)
                 if (isGameOver) timerJob?.cancel()
 
+                val (nextV, nextP) = if (currentState.gameMode is GameMode.Daily) {
+                    val r = Random(currentState.gameMode.dateSeed + result.nextId)
+                    r.nextFloat() to r.nextFloat()
+                } else {
+                    Random.nextFloat() to Random.nextFloat()
+                }
+
                 val newState = currentState.copy(
                     board = result.board,
                     score = newScore,
                     isGameOver = isGameOver,
                     canUndo = true,
                     nextId = result.nextId,
-                    nextValueSeed = Random.nextFloat(),
-                    nextPosSeed = Random.nextFloat(),
+                    nextValueSeed = nextV,
+                    nextPosSeed = nextP,
                     bestScore = maxOf(currentState.bestScore, newScore)
                 )
                 saveGame(newState)

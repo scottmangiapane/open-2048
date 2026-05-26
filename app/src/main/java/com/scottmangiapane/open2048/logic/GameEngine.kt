@@ -28,9 +28,41 @@ class GameEngine {
         return board to currentId
     }
 
-    private fun addTile(
+    fun createDailyBoard(
+        size: Int,
+        seed: Long
+    ): Pair<List<List<Tile?>>, Int> {
+        val board = MutableList(size) { MutableList<Tile?>(size) { null } }
+        val random = kotlin.random.Random(seed)
+        var currentId = 0
+        
+        // Fill about 85% of the board with "junk"
+        val numTiles = (size * size * 0.85).toInt()
+        repeat(numTiles) {
+            val posSeed = random.nextFloat()
+            val valueSeed = random.nextFloat()
+            // Aggressive "junk" from 2 to 2048 with higher probabilities for large numbers
+            val value = when {
+                valueSeed < 0.15f -> 2
+                valueSeed < 0.30f -> 4
+                valueSeed < 0.45f -> 8
+                valueSeed < 0.55f -> 16
+                valueSeed < 0.65f -> 32
+                valueSeed < 0.75f -> 64
+                valueSeed < 0.82f -> 128
+                valueSeed < 0.88f -> 256
+                valueSeed < 0.93f -> 512
+                valueSeed < 0.97f -> 1024
+                else -> 2048
+            }
+            currentId = addTileWithValue(board, value, posSeed, currentId)
+        }
+        return board to currentId
+    }
+
+    private fun addTileWithValue(
         board: MutableList<MutableList<Tile?>>,
-        valueSeed: Float,
+        value: Int,
         posSeed: Float,
         id: Int
     ): Int {
@@ -44,10 +76,20 @@ class GameEngine {
         if (emptyCells.isNotEmpty()) {
             val index = (posSeed * emptyCells.size).toInt().coerceIn(0, emptyCells.size - 1)
             val (r, c) = emptyCells[index]
-            board[r][c] = Tile(id = id, value = if (valueSeed < 0.9f) 2 else 4, isNew = true)
+            board[r][c] = Tile(id = id, value = value, isNew = true)
             return id + 1
         }
         return id
+    }
+
+    private fun addTile(
+        board: MutableList<MutableList<Tile?>>,
+        valueSeed: Float,
+        posSeed: Float,
+        id: Int
+    ): Int {
+        val value = if (valueSeed < 0.9f) 2 else 4
+        return addTileWithValue(board, value, posSeed, id)
     }
 
     fun move(

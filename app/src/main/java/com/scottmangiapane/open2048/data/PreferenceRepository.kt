@@ -85,12 +85,14 @@ class PreferenceRepository(private val context: Context) {
     private fun serializeGameMode(mode: GameMode): String = when (mode) {
         is GameMode.Classic -> "classic:${mode.size}"
         is GameMode.Blitz -> "blitz:${mode.durationMinutes}"
+        is GameMode.Daily -> "daily:${mode.year}:${mode.month}:${mode.day}"
     }
 
     private fun deserializeGameMode(data: String): GameMode {
         val parts = data.split(":")
         return when (parts[0]) {
             "blitz" -> GameMode.Blitz(parts[1].toInt())
+            "daily" -> GameMode.Daily(parts[1].toInt(), parts[2].toInt(), parts[3].toInt())
             else -> GameMode.Classic(parts.getOrNull(1)?.toInt() ?: 4)
         }
     }
