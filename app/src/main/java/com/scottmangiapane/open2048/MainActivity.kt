@@ -32,7 +32,9 @@ class MainActivity : ComponentActivity() {
             }
 
             LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
-                viewModel.applyPendingIconChange()
+                if (!isChangingConfigurations) {
+                    viewModel.applyPendingIconChange()
+                }
             }
 
             LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
