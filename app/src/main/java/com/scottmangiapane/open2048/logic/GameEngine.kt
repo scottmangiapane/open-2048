@@ -49,61 +49,56 @@ class GameEngine(private val size: Int = 4) {
         nextId: Int
     ): Triple<List<List<Tile?>>, Int, Int> {
         var scoreGained = 0
-        val tempBoard = MutableList(size) { MutableList<Tile?>(size) { null } }
-
-        val rotatedBoard = when (direction) {
+        
+        // 1. Rotate board so we are always moving "Left"
+        val rotated = when (direction) {
             Direction.LEFT -> board
             Direction.RIGHT -> board.map { it.reversed() }
             Direction.UP -> (0 until size).map { c -> (0 until size).map { r -> board[r][c] } }
             Direction.DOWN -> (0 until size).map { c -> (0 until size).map { r -> board[r][c] }.reversed() }
         }
 
+        val shifted = MutableList(size) { MutableList<Tile?>(size) { null } }
         for (r in 0 until size) {
-            val row = rotatedBoard[r].filterNotNull()
-            val newRow = mutableListOf<Tile?>()
+            val originalRow = rotated[r].filterNotNull()
+            val newRow = mutableListOf<Tile>()
             var i = 0
-            while (i < row.size) {
-                if (i + 1 < row.size && row[i].value == row[i + 1].value) {
-                    val mergedValue = row[i].value * 2
-                    newRow.add(Tile(id = row[i + 1].id, value = mergedValue, isNew = false))
+            while (i < originalRow.size) {
+                if (i + 1 < originalRow.size && originalRow[i].value == originalRow[i + 1].value) {
+                    val mergedValue = originalRow[i].value * 2
+                    // Use the ID of the tile moving INTO the position for animation
+                    newRow.add(Tile(id = originalRow[i + 1].id, value = mergedValue, isNew = false))
                     scoreGained += mergedValue
                     i += 2
                 } else {
-                    newRow.add(row[i].copy(isNew = false))
+                    newRow.add(originalRow[i].copy(isNew = false))
                     i++
                 }
             }
-            while (newRow.size < size) newRow.add(null)
-            for (c in 0 until size) {
-                tempBoard[r][c] = newRow[c]
+            for (c in 0 until newRow.size) {
+                shifted[r][c] = newRow[c]
             }
         }
 
-        val finalBoard = rotateBack(tempBoard, direction)
-        var finalNextId = nextId
+        // 2. Rotate back
+        val finalBoard = when (direction) {
+            Direction.LEFT -> shifted
+            Direction.RIGHT -> shifted.map { it.reversed() }
+            Direction.UP -> (0 until size).map { r -> (0 until size).map { c -> shifted[c][r] } }
+            Direction.DOWN -> (0 until size).map { r -> (0 until size).map { c -> shifted[c][size - 1 - r] } }
+        }
 
-        return if (board != finalBoard) {
-            val mutableFinalBoard = finalBoard.map { it.toMutableList() }.toMutableList()
-            finalNextId = addTile(mutableFinalBoard, valueSeed, posSeed, nextId)
-            Triple(mutableFinalBoard, scoreGained, finalNextId)
+        // 3. Check for changes (comparing values and positions only)
+        val hasChanged = board.flatten().map { it?.id to it?.value } != 
+                         finalBoard.flatten().map { it?.id to it?.value }
+
+        return if (hasChanged) {
+            val mutableFinal = finalBoard.map { it.toMutableList() }.toMutableList()
+            val finalNextId = addTile(mutableFinal, valueSeed, posSeed, nextId)
+            Triple(mutableFinal, scoreGained, finalNextId)
         } else {
             Triple(board, 0, nextId)
         }
-    }
-
-    private fun rotateBack(tempBoard: List<List<Tile?>>, direction: Direction): List<List<Tile?>> {
-        val result = MutableList(size) { MutableList<Tile?>(size) { null } }
-        for (r in 0 until size) {
-            for (c in 0 until size) {
-                when (direction) {
-                    Direction.LEFT -> result[r][c] = tempBoard[r][c]
-                    Direction.RIGHT -> result[r][c] = tempBoard[r][size - 1 - c]
-                    Direction.UP -> result[r][c] = tempBoard[c][r]
-                    Direction.DOWN -> result[r][c] = tempBoard[c][size - 1 - r]
-                }
-            }
-        }
-        return result
     }
 
     fun isGameOver(board: List<List<Tile?>>): Boolean {
