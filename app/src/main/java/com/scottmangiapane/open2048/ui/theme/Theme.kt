@@ -16,34 +16,33 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF8F7A66),
-    secondary = Indigo500,
+    primary = Violet600,
+    secondary = Rose500,
     tertiary = Pink80,
-    background = Color(0xFF181714),
-    surface = Color(0xFF242320),
-    onBackground = Color(0xFFF9F6F2),
-    onSurface = Color(0xFFF9F6F2),
-    surfaceVariant = Color(0xFF3C3A32),
-    onSurfaceVariant = Color(0xFF4E4B42)
+    background = Color(0xFF020617), // Slate 950 (Deep background)
+    surface = Color(0xFF1E293B),    // Slate 800 (Empty tiles)
+    onBackground = Color(0xFFF1F5F9),
+    onSurface = Color(0xFFF1F5F9),
+    surfaceVariant = Color(0xFF0F172A), // Slate 900 (Board/Score container)
+    onSurfaceVariant = Color(0xFF94A3B8)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF8F7A66),
-    secondary = Indigo700,
+    primary = Emerald500,
+    secondary = RoyalBlue500,
     tertiary = Pink40,
-    background = Color(0xFFFAF8EF),
-    surface = Color(0xFFEEE4DA),
-    onBackground = Color(0xFF776E65),
-    onSurface = Color(0xFF776E65),
-    surfaceVariant = Color(0xFFBBADA0),
-    onSurfaceVariant = Color(0xFFCDC1B4)
+    background = Color(0xFFF1F5F9), // Slate 100 (Soft background)
+    surface = Color(0xFFCBD5E1),    // Slate 300 (Empty tiles)
+    onBackground = Color(0xFF0F172A),
+    onSurface = Color(0xFF0F172A),
+    surfaceVariant = Color(0xFFE2E8F0), // Slate 200 (Board/Score container)
+    onSurfaceVariant = Color(0xFF475569) // Dark Slate for disabled text
 )
 
 @Composable
 fun Open2048Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false, // Default to false to keep classic look
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -51,7 +50,6 @@ fun Open2048Theme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.scottmangiapane.open2048.model.GameMode
+import com.scottmangiapane.open2048.ui.theme.Amber500
 
 @Composable
 fun MenuScreen(
@@ -47,7 +48,7 @@ fun MenuScreen(
         ) {
             Text(
                 text = "2048",
-                fontSize = if (isLandscape) 64.sp else 80.sp,
+                fontSize = if (isLandscape) 56.sp else 64.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(bottom = if (isLandscape) 16.dp else 48.dp)
@@ -68,7 +69,7 @@ fun MenuScreen(
                         }
                         
                         MenuHeader("CHALLENGE")
-                        MenuButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, Color(0xFFC2410C))
+                        MenuButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, Amber500)
                     }
 
                     // Group 2: Classic
@@ -96,7 +97,7 @@ fun MenuScreen(
                 }
 
                 MenuHeader("CHALLENGE")
-                MenuButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, Color(0xFFC2410C))
+                MenuButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, Amber500)
                 Spacer(modifier = Modifier.height(24.dp))
 
                 MenuHeader("CLASSIC")

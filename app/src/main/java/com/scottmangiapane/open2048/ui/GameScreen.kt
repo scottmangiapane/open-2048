@@ -420,13 +420,15 @@ private fun GameButton(
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+            contentColor = Color.White,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         shape = RoundedCornerShape(4.dp),
         contentPadding = padding,
         modifier = modifier
     ) {
-        Text(text, color = Color.White, fontWeight = FontWeight.Bold)
+        Text(text, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -436,7 +438,7 @@ private fun ScoreCard(label: String, score: Int) {
         modifier = Modifier
             .width(80.dp)
             .clip(RoundedCornerShape(4.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -480,7 +482,7 @@ private fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
                             Box(
                                 modifier = Modifier
                                     .size(tileSizeDp)
-                                    .background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(6.dp))
+                                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(6.dp))
                             )
                         }
                     }
@@ -592,8 +594,8 @@ private fun TileView(tile: Tile, tileSize: Dp, isDark: Boolean) {
 }
 
 private fun getTileBackgroundColor(value: Int, isDark: Boolean): Color = when (value) {
-    2 -> if (isDark) Color(0xFF1E293B) else Color(0xFFEEE4DA)
-    4 -> if (isDark) Color(0xFF334155) else Color(0xFFEDE0C8)
+    2 -> if (isDark) Color(0xFF334155) else Color(0xFFFFFFFF)
+    4 -> if (isDark) Color(0xFF475569) else Color(0xFFF8FAFC)
     8 -> if (isDark) Color(0xFF0EA5E9) else Color(0xFFF2B179)
     16 -> if (isDark) Color(0xFF0284C7) else Color(0xFFF59563)
     32 -> if (isDark) Color(0xFF2563EB) else Color(0xFFF67C5F)
