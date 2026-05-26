@@ -3,12 +3,10 @@ package com.scottmangiapane.open2048.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.scottmangiapane.open2048.data.GameRepository
-import com.scottmangiapane.open2048.data.ScoreRepository
-import com.scottmangiapane.open2048.data.SettingsRepository
+import com.scottmangiapane.open2048.data.PreferenceRepository
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.logic.GameEngine
-import com.scottmangiapane.open2048.model.Tile
+import com.scottmangiapane.open2048.model.GameState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,23 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-data class GameState(
-    val board: List<List<Tile?>> = emptyList(),
-    val score: Int = 0,
-    val bestScore: Int = 0,
-    val isGameOver: Boolean = false,
-    val canUndo: Boolean = false,
-    val isDarkMode: Boolean? = null,
-    val nextValueSeed: Float = 0f,
-    val nextPosSeed: Float = 0f,
-    val nextId: Int = 0
-)
-
 class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val gameEngine = GameEngine()
-    private val scoreRepository = ScoreRepository(application)
-    private val gameRepository = GameRepository(application)
-    private val settingsRepository = SettingsRepository(application)
+    private val prefs = PreferenceRepository(application)
     
     private var lastState: GameState? = null
     
@@ -42,27 +26,25 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val state: StateFlow<GameState> = _state.asStateFlow()
 
     init {
-        // Observe best score from local storage
         viewModelScope.launch {
-            scoreRepository.bestScore.collectLatest { best ->
+            prefs.bestScore.collectLatest { best ->
                 _state.update { it.copy(bestScore = best) }
             }
         }
 
-        // Observe dark mode setting
         viewModelScope.launch {
-            settingsRepository.isDarkMode.collectLatest { isDark ->
+            prefs.isDarkMode.collectLatest { isDark ->
                 _state.update { it.copy(isDarkMode = isDark) }
             }
         }
         
-        // Load initial state
         viewModelScope.launch {
-            val saved = gameRepository.savedGameState.firstOrNull()
+            val saved = prefs.savedGameState.firstOrNull()
             if (saved != null) {
                 _state.update { 
                     saved.copy(
                         bestScore = it.bestScore,
+                        isDarkMode = it.isDarkMode,
                         isGameOver = gameEngine.isGameOver(saved.board)
                     )
                 }
@@ -84,11 +66,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             score = 0,
             isGameOver = false,
             canUndo = false,
+            nextId = nextId,
             nextValueSeed = Random.nextFloat(),
-            nextPosSeed = Random.nextFloat(),
-            nextId = nextId
+            nextPosSeed = Random.nextFloat()
         )
-        _state.update { newState.copy(bestScore = it.bestScore) }
+        _state.update { newState.copy(bestScore = it.bestScore, isDarkMode = it.isDarkMode) }
         saveGame(newState)
     }
 
@@ -103,13 +85,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleDarkMode() {
         viewModelScope.launch {
             val current = _state.value.isDarkMode ?: false
-            settingsRepository.setDarkMode(!current)
+            prefs.setDarkMode(!current)
         }
     }
 
     private fun saveGame(state: GameState) {
         viewModelScope.launch {
-            gameRepository.saveGameState(state)
+            prefs.saveGameState(state)
         }
     }
 
@@ -127,24 +109,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             
             if (result.hasChanged) {
                 lastState = currentState
-                
                 val newScore = currentState.score + result.scoreGained
-                val isGameOver = gameEngine.isGameOver(result.board)
                 
                 if (newScore > currentState.bestScore) {
-                    viewModelScope.launch {
-                        scoreRepository.updateBestScore(newScore)
-                    }
+                    viewModelScope.launch { prefs.updateBestScore(newScore) }
                 }
                 
                 val newState = currentState.copy(
                     board = result.board,
                     score = newScore,
-                    isGameOver = isGameOver,
+                    isGameOver = gameEngine.isGameOver(result.board),
                     canUndo = true,
+                    nextId = result.nextId,
                     nextValueSeed = Random.nextFloat(),
                     nextPosSeed = Random.nextFloat(),
-                    nextId = result.nextId,
                     bestScore = maxOf(currentState.bestScore, newScore)
                 )
                 saveGame(newState)

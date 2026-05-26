@@ -1,0 +1,13 @@
+package com.scottmangiapane.open2048.model
+
+data class GameState(
+    val board: List<List<Tile?>> = emptyList(),
+    val score: Int = 0,
+    val bestScore: Int = 0,
+    val isGameOver: Boolean = false,
+    val canUndo: Boolean = false,
+    val isDarkMode: Boolean? = null,
+    val nextId: Int = 0,
+    val nextValueSeed: Float = 0f,
+    val nextPosSeed: Float = 0f
+)

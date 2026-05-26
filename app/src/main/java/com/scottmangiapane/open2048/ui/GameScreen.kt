@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.logic.Direction
+import com.scottmangiapane.open2048.model.GameState
 import com.scottmangiapane.open2048.model.Tile
 import kotlinx.coroutines.delay
 import kotlin.math.abs
@@ -42,6 +43,8 @@ import kotlin.math.abs
 fun GameScreen(viewModel: GameViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
     val focusRequester = remember { FocusRequester() }
+    val density = LocalDensity.current
+    val swipeThreshold = with(density) { 56.dp.toPx() }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -76,12 +79,13 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                 detectDragGestures(
                     onDragEnd = {
                         val direction = when {
-                            abs(totalDragX) > abs(totalDragY) -> {
-                                if (totalDragX > 50) Direction.RIGHT else if (totalDragX < -50) Direction.LEFT else null
+                            abs(totalDragX) > abs(totalDragY) && abs(totalDragX) > swipeThreshold -> {
+                                if (totalDragX > 0) Direction.RIGHT else Direction.LEFT
                             }
-                            else -> {
-                                if (totalDragY > 50) Direction.DOWN else if (totalDragY < -50) Direction.UP else null
+                            abs(totalDragY) > swipeThreshold -> {
+                                if (totalDragY > 0) Direction.DOWN else Direction.UP
                             }
+                            else -> null
                         }
                         direction?.let { viewModel.move(it) }
                         totalDragX = 0f

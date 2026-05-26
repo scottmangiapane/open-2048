@@ -57,23 +57,24 @@ class GameEngine(private val size: Int = 4) {
     ): MoveResult {
         var scoreGained = 0
         
-        // 1. Rotate board so we are always moving "Left"
-        val rotated = when (direction) {
+        fun rotate(b: List<List<Tile?>>): List<List<Tile?>> =
+            (0 until size).map { c -> (0 until size).map { r -> b[size - 1 - r][c] } }
+
+        val transformed = when (direction) {
             Direction.LEFT -> board
-            Direction.RIGHT -> board.map { it.reversed() }
-            Direction.UP -> (0 until size).map { c -> (0 until size).map { r -> board[r][c] } }
-            Direction.DOWN -> (0 until size).map { c -> (0 until size).map { r -> board[r][c] }.reversed() }
+            Direction.UP -> rotate(rotate(rotate(board)))
+            Direction.RIGHT -> rotate(rotate(board))
+            Direction.DOWN -> rotate(board)
         }
 
-        val shifted = (0 until size).map { r ->
-            val originalRow = rotated[r].filterNotNull()
+        val shifted = transformed.map { row ->
+            val originalRow = row.filterNotNull()
             val newRow = mutableListOf<Tile>()
             var i = 0
             while (i < originalRow.size) {
                 if (i + 1 < originalRow.size && originalRow[i].value == originalRow[i + 1].value) {
                     val mergedValue = originalRow[i].value * 2
-                    // Use the ID of the tile moving INTO the position for animation
-                    newRow.add(Tile(id = originalRow[i + 1].id, value = mergedValue, isNew = false))
+                    newRow.add(Tile(id = originalRow[i + 1].id, value = mergedValue))
                     scoreGained += mergedValue
                     i += 2
                 } else {
@@ -84,15 +85,13 @@ class GameEngine(private val size: Int = 4) {
             newRow + List(size - newRow.size) { null }
         }
 
-        // 2. Rotate back
         val finalBoard = when (direction) {
             Direction.LEFT -> shifted
-            Direction.RIGHT -> shifted.map { it.reversed() }
-            Direction.UP -> (0 until size).map { r -> (0 until size).map { c -> shifted[c][r] } }
-            Direction.DOWN -> (0 until size).map { r -> (0 until size).map { c -> shifted[c][size - 1 - r] } }
+            Direction.UP -> rotate(shifted)
+            Direction.RIGHT -> rotate(rotate(shifted))
+            Direction.DOWN -> rotate(rotate(rotate(shifted)))
         }
 
-        // 3. Check for changes (comparing values and positions only)
         val hasChanged = board.flatten().map { it?.id to it?.value } != 
                          finalBoard.flatten().map { it?.id to it?.value }
 
