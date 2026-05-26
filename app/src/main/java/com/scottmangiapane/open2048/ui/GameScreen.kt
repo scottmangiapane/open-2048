@@ -154,15 +154,18 @@ fun BoardContainer(state: GameState) {
             .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFFBBADA0))
-            .padding(12.dp)
     ) {
-        GameBoard(board = state.board)
+        // We wrap the board in a padded box, but keep the overlay outside the padding
+        // so it covers the entire board including the gutters where shadows might spill.
+        Box(modifier = Modifier.fillMaxSize().padding(12.dp)) {
+            GameBoard(board = state.board)
+        }
 
         if (state.isGameOver) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xAAFFFFFF))
+                    .background(Color(0xCCFBF8F3)) // Slightly more opaque and matches theme
                     .clip(RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
