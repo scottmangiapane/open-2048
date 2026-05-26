@@ -7,15 +7,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -66,16 +70,15 @@ fun MenuScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 32.dp, vertical = if (isLandscape) 16.dp else 32.dp),
+                .padding(horizontal = 24.dp, vertical = if (isLandscape) 48.dp else 96.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(if (isLandscape) 24.dp else 32.dp, Alignment.CenterVertically)
         ) {
             Text(
                 text = "2048",
                 fontSize = if (isLandscape) 56.sp else 64.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = if (isLandscape) 16.dp else 48.dp)
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             if (isLandscape) {
@@ -86,35 +89,46 @@ fun MenuScreen(
                 ) {
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         if (canResume) {
-                            MenuHeader("CONTINUE")
-                            MenuHeaderButton("Resume", onResumeGame, MaterialTheme.colorScheme.secondary)
-                            Spacer(modifier = Modifier.height(16.dp))
+                            MenuCategoryHeader("CONTINUE")
+                            MenuButton("Resume", Icons.Rounded.PlayArrow, onResumeGame, MaterialTheme.colorScheme.secondary)
+                            Spacer(modifier = Modifier.height(24.dp))
                         }
                         
-                        ChallengeModes(onStartGame, amber)
+                        MenuCategoryHeader("CHALLENGE")
+                        MenuButton("Daily Challenge", Icons.Rounded.EmojiEvents, { onStartGame(GameMode.Daily.today()) }, amber)
                     }
 
                     MenuColumn(modifier = Modifier.weight(1f)) {
+                        MenuCategoryHeader("CLASSIC")
                         ClassicModes(onStartGame)
                     }
 
                     MenuColumn(modifier = Modifier.weight(1f)) {
+                        MenuCategoryHeader("BLITZ")
                         BlitzModes(onStartGame)
                     }
                 }
             } else {
                 if (canResume) {
-                    MenuHeaderButton("Resume Game", onResumeGame, MaterialTheme.colorScheme.secondary)
-                    Spacer(modifier = Modifier.height(24.dp))
+                    MenuButton("Resume Game", Icons.Rounded.PlayArrow, onResumeGame, MaterialTheme.colorScheme.secondary)
                 }
 
-                ChallengeModes(onStartGame, amber)
-                Spacer(modifier = Modifier.height(24.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        MenuCategoryHeader("CHALLENGE")
+                        MenuButton("Daily Challenge", Icons.Rounded.EmojiEvents, { onStartGame(GameMode.Daily.today()) }, amber)
+                    }
 
-                ClassicModes(onStartGame)
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                BlitzModes(onStartGame)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        MenuCategoryHeader("CLASSIC")
+                        ClassicModes(onStartGame)
+                    }
+                    
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        MenuCategoryHeader("BLITZ")
+                        BlitzModes(onStartGame)
+                    }
+                }
             }
         }
 
@@ -127,7 +141,7 @@ fun MenuScreen(
                 .zIndex(1f)
         ) {
             Icon(
-                imageVector = Icons.Default.Settings,
+                imageVector = Icons.Rounded.Settings,
                 contentDescription = "Settings",
                 tint = MaterialTheme.colorScheme.onBackground
             )
@@ -136,27 +150,32 @@ fun MenuScreen(
 }
 
 @Composable
-private fun ChallengeModes(onStartGame: (GameMode) -> Unit, amber: Color) {
-    MenuHeader("CHALLENGE")
-    MenuHeaderButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, amber)
-}
-
-@Composable
 private fun ClassicModes(onStartGame: (GameMode) -> Unit) {
-    MenuHeader("CLASSIC")
-    MenuHeaderButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
-    Spacer(modifier = Modifier.height(8.dp))
-    MenuHeaderButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
-    Spacer(modifier = Modifier.height(8.dp))
-    MenuHeaderButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        MenuButton("Classic 4x4", Icons.Rounded.Grid4x4, { onStartGame(GameMode.Classic(4)) })
+        MenuButton("Small 3x3", Icons.Rounded.Grid3x3, { onStartGame(GameMode.Classic(3)) })
+        MenuButton("Large 5x5", Icons.Rounded.GridView, { onStartGame(GameMode.Classic(5)) })
+    }
 }
 
 @Composable
 private fun BlitzModes(onStartGame: (GameMode) -> Unit) {
-    MenuHeader("BLITZ")
-    MenuHeaderButton("2 Minute Blitz", { onStartGame(GameMode.Blitz(2)) })
-    Spacer(modifier = Modifier.height(8.dp))
-    MenuHeaderButton("5 Minute Blitz", { onStartGame(GameMode.Blitz(5)) })
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        MenuButton("2 Minute Blitz", Icons.Rounded.HourglassBottom, { onStartGame(GameMode.Blitz(2)) })
+        MenuButton("5 Minute Blitz", Icons.Rounded.HourglassTop, { onStartGame(GameMode.Blitz(5)) })
+    }
+}
+
+@Composable
+private fun MenuCategoryHeader(text: String) {
+    Text(
+        text = text,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(bottom = 8.dp),
+        letterSpacing = 1.sp
+    )
 }
 
 @Composable
@@ -172,19 +191,9 @@ private fun MenuColumn(
 }
 
 @Composable
-private fun MenuHeader(text: String) {
-    Text(
-        text = text,
-        fontSize = 12.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 8.dp)
-    )
-}
-
-@Composable
-private fun MenuHeaderButton(
+private fun MenuButton(
     text: String,
+    icon: ImageVector,
     onClick: () -> Unit,
     containerColor: Color = MaterialTheme.colorScheme.primary
 ) {
@@ -194,8 +203,31 @@ private fun MenuHeaderButton(
             .fillMaxWidth()
             .height(56.dp),
         colors = ButtonDefaults.buttonColors(containerColor = containerColor),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 0.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp)
     ) {
-        Text(text, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = Color.White
+            )
+            Text(
+                text = text,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            // Spacer to keep text centered relative to the whole button width
+            Spacer(modifier = Modifier.size(24.dp))
+        }
     }
 }

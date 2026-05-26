@@ -4,10 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,10 +26,10 @@ fun DirectionalControls(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ControlButton(Icons.Default.KeyboardArrowUp, { onMove(Direction.UP) })
-            ControlButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, { onMove(Direction.LEFT) })
-            ControlButton(Icons.AutoMirrored.Filled.KeyboardArrowRight, { onMove(Direction.RIGHT) })
-            ControlButton(Icons.Default.KeyboardArrowDown, { onMove(Direction.DOWN) })
+            ControlButton(Icons.Rounded.KeyboardArrowUp, { onMove(Direction.UP) })
+            ControlButton(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, { onMove(Direction.LEFT) })
+            ControlButton(Icons.AutoMirrored.Rounded.KeyboardArrowRight, { onMove(Direction.RIGHT) })
+            ControlButton(Icons.Rounded.KeyboardArrowDown, { onMove(Direction.DOWN) })
         }
     } else {
         Row(
@@ -37,10 +37,10 @@ fun DirectionalControls(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ControlButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, { onMove(Direction.LEFT) })
-            ControlButton(Icons.Default.KeyboardArrowUp, { onMove(Direction.UP) })
-            ControlButton(Icons.Default.KeyboardArrowDown, { onMove(Direction.DOWN) })
-            ControlButton(Icons.AutoMirrored.Filled.KeyboardArrowRight, { onMove(Direction.RIGHT) })
+            ControlButton(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, { onMove(Direction.LEFT) })
+            ControlButton(Icons.Rounded.KeyboardArrowUp, { onMove(Direction.UP) })
+            ControlButton(Icons.Rounded.KeyboardArrowDown, { onMove(Direction.DOWN) })
+            ControlButton(Icons.AutoMirrored.Rounded.KeyboardArrowRight, { onMove(Direction.RIGHT) })
         }
     }
 }

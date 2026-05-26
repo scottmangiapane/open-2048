@@ -6,8 +6,8 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -210,7 +210,7 @@ private fun GameControls(
             modifier = Modifier.align(Alignment.TopStart)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back to Menu",
                 tint = MaterialTheme.colorScheme.onBackground
             )
@@ -221,7 +221,7 @@ private fun GameControls(
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
             Icon(
-                imageVector = Icons.Default.Settings,
+                imageVector = Icons.Rounded.Settings,
                 contentDescription = "Settings",
                 tint = MaterialTheme.colorScheme.onBackground
             )

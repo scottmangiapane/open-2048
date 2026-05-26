@@ -112,7 +112,7 @@ private fun getTileBackgroundColor(value: Int, theme: AppTheme): Color {
     return if (isDark) {
         colorResource(
             when (value) {
-                2 -> R.color.slate_600
+                2 -> R.color.slate_700
                 4 -> R.color.slate_500
                 8 -> R.color.tile_modern_8
                 16 -> R.color.tile_modern_16
@@ -130,7 +130,7 @@ private fun getTileBackgroundColor(value: Int, theme: AppTheme): Color {
         colorResource(
             when (value) {
                 2 -> R.color.white
-                4 -> R.color.slate_50
+                4 -> R.color.emerald_100
                 8 -> R.color.tile_classic_8
                 16 -> R.color.tile_classic_16
                 32 -> R.color.tile_classic_32
