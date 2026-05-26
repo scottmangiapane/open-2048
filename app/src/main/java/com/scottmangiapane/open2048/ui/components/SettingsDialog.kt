@@ -8,7 +8,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.scottmangiapane.open2048.model.AppTheme
@@ -31,89 +35,104 @@ fun SettingsDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 24.dp),
             shape = MaterialTheme.shapes.extraLarge,
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background
             )
         ) {
             Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.padding(vertical = 24.dp)
             ) {
                 Text(
                     text = "Settings",
                     style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
                 )
 
-                // Theme
-                SettingSection("Theme")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                val scrollState = rememberScrollState()
+                val scrollbarColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .drawScrollbar(scrollState, scrollbarColor)
+                        .verticalScroll(scrollState),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    AppTheme.entries.forEach { theme ->
-                        val isSelected = preferences.theme == theme
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { onThemeChange(theme) },
-                            label = { 
-                                Text(
-                                    text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
-                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                                ) 
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                selectedLabelColor = Color.White,
-                                containerColor = MaterialTheme.colorScheme.surface
-                            )
-                        )
-                    }
-                }
-
-                // Controls
-                SettingSection("Control Mode")
-                Column {
-                    // Custom order: Arrows, Gestures, Both
-                    listOf(ControlMode.ARROWS, ControlMode.GESTURES, ControlMode.BOTH).forEach { mode ->
+                    Column(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Theme
+                        SettingSection("Theme")
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onControlModeChange(mode) }
-                                .padding(vertical = 4.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            RadioButton(
-                                selected = preferences.controlMode == mode,
-                                onClick = { onControlModeChange(mode) },
-                                colors = RadioButtonDefaults.colors(
-                                    selectedColor = MaterialTheme.colorScheme.primary,
-                                    unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            AppTheme.entries.forEach { theme ->
+                                val isSelected = preferences.theme == theme
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { onThemeChange(theme) },
+                                    label = { 
+                                        Text(
+                                            text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
+                                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                                        ) 
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = Color.White,
+                                        containerColor = MaterialTheme.colorScheme.surface
+                                    )
                                 )
-                            )
-                            Text(
-                                text = mode.name.lowercase().replaceFirstChar { it.uppercase(Locale.getDefault()) },
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            }
                         }
+
+                        // Controls
+                        SettingSection("Control Mode")
+                        Column {
+                            listOf(ControlMode.ARROWS, ControlMode.GESTURES, ControlMode.BOTH).forEach { mode ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onControlModeChange(mode) }
+                                        .padding(vertical = 4.dp)
+                                ) {
+                                    RadioButton(
+                                        selected = preferences.controlMode == mode,
+                                        onClick = { onControlModeChange(mode) },
+                                        colors = RadioButtonDefaults.colors(
+                                            selectedColor = MaterialTheme.colorScheme.primary,
+                                            unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        )
+                                    )
+                                    Text(
+                                        text = mode.name.lowercase().replaceFirstChar { it.uppercase(Locale.getDefault()) },
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+
+                        // Toggles
+                        ToggleSetting("Sounds", preferences.soundsEnabled, onSoundsToggle)
+                        ToggleSetting("Vibration", preferences.vibrationEnabled, onVibrationToggle)
+                        ToggleSetting("Show Stopwatch", preferences.showStopwatch, onShowStopwatchToggle)
+                        ToggleSetting("Show Undo Button", preferences.showUndo, onShowUndoToggle)
                     }
                 }
 
-                // Toggles
-                ToggleSetting("Sounds", preferences.soundsEnabled, onSoundsToggle)
-                ToggleSetting("Vibration", preferences.vibrationEnabled, onVibrationToggle)
-                ToggleSetting("Show Stopwatch", preferences.showStopwatch, onShowStopwatchToggle)
-                ToggleSetting("Show Undo Button", preferences.showUndo, onShowUndoToggle)
-
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 
                 TextButton(
                     onClick = onDismiss,
-                    modifier = Modifier.align(Alignment.End),
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(horizontal = 24.dp),
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.primary
                     )
@@ -122,6 +141,26 @@ fun SettingsDialog(
                 }
             }
         }
+    }
+}
+
+fun Modifier.drawScrollbar(
+    state: androidx.compose.foundation.ScrollState,
+    color: Color,
+    width: Dp = 4.dp
+): Modifier = drawWithContent {
+    drawContent()
+    if (state.maxValue > 0) {
+        val viewPortHeight = size.height
+        val contentHeight = viewPortHeight + state.maxValue
+        val scrollbarHeight = (viewPortHeight / contentHeight) * viewPortHeight
+        val scrollbarTop = (state.value / contentHeight) * viewPortHeight
+
+        drawRect(
+            color = color,
+            topLeft = Offset(size.width - width.toPx(), scrollbarTop),
+            size = Size(width.toPx(), scrollbarHeight)
+        )
     }
 }
 

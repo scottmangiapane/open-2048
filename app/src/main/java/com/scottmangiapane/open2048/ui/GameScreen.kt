@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -38,7 +39,7 @@ fun GameScreen(
     val density = LocalDensity.current
     val swipeThreshold = with(density) { 56.dp.toPx() }
     val currentTheme = state.theme
-    var showSettings by remember { mutableStateOf(false) }
+    var showSettings by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.isGameOver) {
         if (!state.isGameOver) focusRequester.requestFocus()
