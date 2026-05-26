@@ -11,5 +11,7 @@ data class GameState(
     val nextValueSeed: Float = 0f,
     val nextPosSeed: Float = 0f,
     val gameMode: GameMode = GameMode.Classic(4),
-    val timeLeftMs: Long? = null
+    val timeLeftMs: Long? = null,
+    val movesCount: Int = 0,
+    val elapsedTimeMs: Long = 0L
 )

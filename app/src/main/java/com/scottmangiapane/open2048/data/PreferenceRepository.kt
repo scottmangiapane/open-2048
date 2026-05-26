@@ -21,6 +21,8 @@ class PreferenceRepository(private val context: Context) {
         private val NEXT_POS_SEED_KEY = floatPreferencesKey("next_pos_seed")
         private val GAME_MODE_KEY = stringPreferencesKey("game_mode")
         private val TIME_LEFT_KEY = longPreferencesKey("time_left")
+        private val MOVES_COUNT_KEY = intPreferencesKey("moves_count")
+        private val ELAPSED_TIME_KEY = longPreferencesKey("elapsed_time")
         
         fun getBestScoreKey(modeId: String) = intPreferencesKey("best_score_$modeId")
     }
@@ -42,7 +44,9 @@ class PreferenceRepository(private val context: Context) {
             nextValueSeed = preferences[NEXT_VALUE_SEED_KEY] ?: 0f,
             nextPosSeed = preferences[NEXT_POS_SEED_KEY] ?: 0f,
             gameMode = deserializeGameMode(modeString),
-            timeLeftMs = preferences[TIME_LEFT_KEY]
+            timeLeftMs = preferences[TIME_LEFT_KEY],
+            movesCount = preferences[MOVES_COUNT_KEY] ?: 0,
+            elapsedTimeMs = preferences[ELAPSED_TIME_KEY] ?: 0L
         )
     }
 
@@ -66,6 +70,8 @@ class PreferenceRepository(private val context: Context) {
             preferences[NEXT_VALUE_SEED_KEY] = state.nextValueSeed
             preferences[NEXT_POS_SEED_KEY] = state.nextPosSeed
             preferences[GAME_MODE_KEY] = serializeGameMode(state.gameMode)
+            preferences[MOVES_COUNT_KEY] = state.movesCount
+            preferences[ELAPSED_TIME_KEY] = state.elapsedTimeMs
             state.timeLeftMs?.let { preferences[TIME_LEFT_KEY] = it } ?: preferences.remove(TIME_LEFT_KEY)
         }
     }

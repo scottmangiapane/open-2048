@@ -14,8 +14,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +27,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -54,8 +56,10 @@ fun GameScreen(
     val swipeThreshold = with(density) { 56.dp.toPx() }
     val isDarkMode = state.isDarkMode ?: isSystemInDarkTheme()
 
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+    // Re-request focus whenever the screen is composed or game state changes
+    // to ensure keyboard support stays active.
+    LaunchedEffect(state.isGameOver) {
+        if (!state.isGameOver) focusRequester.requestFocus()
     }
 
     val configuration = LocalConfiguration.current
@@ -126,7 +130,7 @@ fun GameScreen(
                     .fillMaxSize()
                     .padding(horizontal = hPadding, vertical = vPadding)
                     .padding(end = 48.dp),
-                horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 64.dp else 32.dp, Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 48.dp else 24.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 HeaderSection(
@@ -144,6 +148,11 @@ fun GameScreen(
                 ) {
                     BoardContainer(state = state, isDark = isDarkMode)
                 }
+
+                DirectionalControls(
+                    isLandscape = true,
+                    onMove = { viewModel.move(it) }
+                )
             }
         } else {
             Column(
@@ -159,7 +168,7 @@ fun GameScreen(
                     onUndo = { viewModel.undo() },
                     isLandscape = false
                 )
-                Spacer(modifier = Modifier.height(if (isLargeScreen) 48.dp else 16.dp))
+                Spacer(modifier = Modifier.height(if (isLargeScreen) 32.dp else 16.dp))
                 Box(
                     modifier = Modifier
                         .weight(1f, fill = false)
@@ -168,6 +177,11 @@ fun GameScreen(
                 ) {
                     BoardContainer(state = state, isDark = isDarkMode)
                 }
+                Spacer(modifier = Modifier.height(24.dp))
+                DirectionalControls(
+                    isLandscape = false,
+                    onMove = { viewModel.move(it) }
+                )
             }
         }
 
@@ -287,8 +301,10 @@ private fun HeaderSection(
             }
         }
 
-        if (state.timeLeftMs != null) {
-            TimerDisplay(timeLeftMs = state.timeLeftMs)
+        if (state.gameMode is GameMode.Blitz) {
+            TimerDisplay(timeLeftMs = state.timeLeftMs ?: 0L)
+        } else {
+            StopwatchDisplay(elapsedTimeMs = state.elapsedTimeMs)
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -297,6 +313,7 @@ private fun HeaderSection(
                 label = if (state.gameMode is GameMode.Daily) "DAY BEST" else "BEST",
                 score = state.bestScore
             )
+            ScoreCard(label = "MOVES", score = state.movesCount)
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -320,6 +337,74 @@ private fun TimerDisplay(timeLeftMs: Long) {
         fontWeight = FontWeight.Bold,
         color = if (timeLeftMs < 10000) Color(0xFFE11D48) else MaterialTheme.colorScheme.primary
     )
+}
+
+@Composable
+private fun StopwatchDisplay(elapsedTimeMs: Long) {
+    val totalSeconds = elapsedTimeMs / 1000
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+    val timeString = if (hours > 0) {
+        "%d:%02d:%02d".format(hours, minutes, seconds)
+    } else {
+        "%02d:%02d".format(minutes, seconds)
+    }
+    
+    Text(
+        text = "TIME: $timeString",
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+@Composable
+private fun DirectionalControls(
+    isLandscape: Boolean,
+    onMove: (Direction) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (isLandscape) {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ControlButton(Icons.Default.KeyboardArrowUp, { onMove(Direction.UP) })
+            ControlButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, { onMove(Direction.LEFT) })
+            ControlButton(Icons.AutoMirrored.Filled.KeyboardArrowRight, { onMove(Direction.RIGHT) })
+            ControlButton(Icons.Default.KeyboardArrowDown, { onMove(Direction.DOWN) })
+        }
+    } else {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ControlButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, { onMove(Direction.LEFT) })
+            ControlButton(Icons.Default.KeyboardArrowUp, { onMove(Direction.UP) })
+            ControlButton(Icons.Default.KeyboardArrowDown, { onMove(Direction.DOWN) })
+            ControlButton(Icons.AutoMirrored.Filled.KeyboardArrowRight, { onMove(Direction.RIGHT) })
+        }
+    }
+}
+
+@Composable
+private fun ControlButton(
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    FilledIconButton(
+        onClick = onClick,
+        modifier = Modifier.size(48.dp),
+        colors = IconButtonDefaults.filledIconButtonColors(
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Icon(icon, null, tint = Color.White)
+    }
 }
 
 @Composable

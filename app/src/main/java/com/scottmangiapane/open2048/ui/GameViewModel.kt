@@ -68,23 +68,26 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun startTimer() {
         timerJob?.cancel()
-        if (_state.value.gameMode is GameMode.Blitz) {
-            timerJob = viewModelScope.launch {
-                while (isActive) {
-                    delay(1000)
-                    var shouldStop = false
-                    _state.update { state ->
+        timerJob = viewModelScope.launch {
+            while (isActive) {
+                delay(1000)
+                var shouldStop = false
+                _state.update { state ->
+                    val newElapsed = state.elapsedTimeMs + 1000L
+                    if (state.gameMode is GameMode.Blitz) {
                         val newTime = (state.timeLeftMs ?: 0L) - 1000L
                         if (newTime <= 0) {
                             shouldStop = true
-                            state.copy(timeLeftMs = 0, isGameOver = true)
+                            state.copy(timeLeftMs = 0, isGameOver = true, elapsedTimeMs = newElapsed)
                         } else {
-                            state.copy(timeLeftMs = newTime)
+                            state.copy(timeLeftMs = newTime, elapsedTimeMs = newElapsed)
                         }
+                    } else {
+                        state.copy(elapsedTimeMs = newElapsed)
                     }
-                    saveGame(_state.value)
-                    if (shouldStop) break
                 }
+                saveGame(_state.value)
+                if (shouldStop) break
             }
         }
     }
@@ -128,11 +131,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             nextValueSeed = nextV,
             nextPosSeed = nextP,
             gameMode = currentMode,
-            timeLeftMs = if (currentMode is GameMode.Blitz) currentMode.durationMinutes * 60 * 1000L else null
+            timeLeftMs = if (currentMode is GameMode.Blitz) currentMode.durationMinutes * 60 * 1000L else null,
+            movesCount = 0,
+            elapsedTimeMs = 0L
         )
         _state.update { newState.copy(bestScore = it.bestScore, isDarkMode = it.isDarkMode) }
         saveGame(newState)
-        if (currentMode is GameMode.Blitz) startTimer()
+        startTimer()
     }
 
     private fun generateNextSeeds(mode: GameMode, nextId: Int): Pair<Float, Float> {
@@ -150,7 +155,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val newState = previous.copy(
             bestScore = _state.value.bestScore, 
             canUndo = false,
-            timeLeftMs = _state.value.timeLeftMs // Don't undo time
+            timeLeftMs = _state.value.timeLeftMs,
+            elapsedTimeMs = _state.value.elapsedTimeMs
         )
         _state.update { newState }
         saveGame(newState)
@@ -202,7 +208,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     nextId = result.nextId,
                     nextValueSeed = nextV,
                     nextPosSeed = nextP,
-                    bestScore = maxOf(currentState.bestScore, newScore)
+                    bestScore = maxOf(currentState.bestScore, newScore),
+                    movesCount = currentState.movesCount + 1
                 )
                 saveGame(newState)
                 newState
