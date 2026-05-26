@@ -31,6 +31,10 @@ class MainActivity : ComponentActivity() {
                 viewModel.stopTimer()
             }
 
+            LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+                viewModel.applyPendingIconChange()
+            }
+
             LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
                 if (currentScreen == Screen.Game) {
                     viewModel.resumeGame()

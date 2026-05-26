@@ -18,6 +18,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val gameEngine = GameEngine()
     private val prefs = PreferenceRepository(application)
     private val soundManager = SoundManager(application)
+    private val iconManager = IconManager(application)
     
     private var previousStateForUndo: GameState? = null
     private var bestScoreJob: Job? = null
@@ -44,7 +45,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private fun observeTheme() {
         viewModelScope.launch {
             prefs.theme.collectLatest { theme ->
-                _state.update { it.copy(theme = theme ?: AppTheme.LIGHT) }
+                val newTheme = theme ?: AppTheme.LIGHT
+                _state.update { it.copy(theme = newTheme) }
+                iconManager.setPendingIconUpdate(newTheme)
             }
         }
     }
@@ -130,6 +133,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun navigateToMenu() {
         stopTimer()
         _currentScreen.value = Screen.Menu
+    }
+
+    fun applyPendingIconChange() {
+        iconManager.applyPendingIconChange()
     }
 
     fun restartGame(mode: GameMode? = null) {
