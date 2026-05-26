@@ -31,7 +31,7 @@ fun MenuScreen(
     onStartGame: (GameMode) -> Unit,
     onResumeGame: () -> Unit,
     onToggleTheme: () -> Unit,
-    canResume: Boolean
+    canResume: Boolean,
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -64,7 +64,6 @@ fun MenuScreen(
                     horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.Top
                 ) {
-                    // Group 1: Challenges & Resume
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         if (canResume) {
                             MenuHeader("CONTINUE")
@@ -72,26 +71,15 @@ fun MenuScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                         }
                         
-                        MenuHeader("CHALLENGE")
-                        MenuHeaderButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, amber)
+                        ChallengeModes(onStartGame, amber)
                     }
 
-                    // Group 2: Classic
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        MenuHeader("CLASSIC")
-                        MenuHeaderButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
-                        Spacer(modifier = Modifier.height(8.dp))
-                        MenuHeaderButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
-                        Spacer(modifier = Modifier.height(8.dp))
-                        MenuHeaderButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
+                        ClassicModes(onStartGame)
                     }
 
-                    // Group 3: Blitz
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        MenuHeader("BLITZ")
-                        MenuHeaderButton("2m Blitz", { onStartGame(GameMode.Blitz(2)) })
-                        Spacer(modifier = Modifier.height(8.dp))
-                        MenuHeaderButton("5m Blitz", { onStartGame(GameMode.Blitz(5)) })
+                        BlitzModes(onStartGame)
                     }
                 }
             } else {
@@ -100,22 +88,13 @@ fun MenuScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                MenuHeader("CHALLENGE")
-                MenuHeaderButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, amber)
+                ChallengeModes(onStartGame, amber)
                 Spacer(modifier = Modifier.height(24.dp))
 
-                MenuHeader("CLASSIC")
-                MenuHeaderButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
-                Spacer(modifier = Modifier.height(8.dp))
-                MenuHeaderButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
-                Spacer(modifier = Modifier.height(8.dp))
-                MenuHeaderButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
+                ClassicModes(onStartGame)
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                MenuHeader("BLITZ")
-                MenuHeaderButton("2 Minute Blitz", { onStartGame(GameMode.Blitz(2)) })
-                Spacer(modifier = Modifier.height(8.dp))
-                MenuHeaderButton("5 Minute Blitz", { onStartGame(GameMode.Blitz(5)) })
+                BlitzModes(onStartGame)
             }
         }
 
@@ -139,6 +118,30 @@ fun MenuScreen(
             )
         }
     }
+}
+
+@Composable
+private fun ChallengeModes(onStartGame: (GameMode) -> Unit, amber: Color) {
+    MenuHeader("CHALLENGE")
+    MenuHeaderButton("Daily Challenge", { onStartGame(GameMode.Daily.today()) }, amber)
+}
+
+@Composable
+private fun ClassicModes(onStartGame: (GameMode) -> Unit) {
+    MenuHeader("CLASSIC")
+    MenuHeaderButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) })
+    Spacer(modifier = Modifier.height(8.dp))
+    MenuHeaderButton("Small 3x3", { onStartGame(GameMode.Classic(3)) })
+    Spacer(modifier = Modifier.height(8.dp))
+    MenuHeaderButton("Large 5x5", { onStartGame(GameMode.Classic(5)) })
+}
+
+@Composable
+private fun BlitzModes(onStartGame: (GameMode) -> Unit) {
+    MenuHeader("BLITZ")
+    MenuHeaderButton("2 Minute Blitz", { onStartGame(GameMode.Blitz(2)) })
+    Spacer(modifier = Modifier.height(8.dp))
+    MenuHeaderButton("5 Minute Blitz", { onStartGame(GameMode.Blitz(5)) })
 }
 
 @Composable

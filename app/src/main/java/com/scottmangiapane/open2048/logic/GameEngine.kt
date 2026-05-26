@@ -1,6 +1,7 @@
 package com.scottmangiapane.open2048.logic
 
 import com.scottmangiapane.open2048.model.Tile
+import kotlin.random.Random
 
 enum class Direction { UP, DOWN, LEFT, RIGHT }
 
@@ -15,9 +16,11 @@ class GameEngine {
 
     fun createInitialBoard(
         size: Int,
-        seedValue1: Float, seedPos1: Float,
-        seedValue2: Float, seedPos2: Float,
-        startId: Int
+        seedValue1: Float,
+        seedPos1: Float,
+        seedValue2: Float,
+        seedPos2: Float,
+        startId: Int,
     ): Pair<List<List<Tile?>>, Int> {
         val board = MutableList(size) { MutableList<Tile?>(size) { null } }
         var currentId = startId
@@ -28,13 +31,12 @@ class GameEngine {
 
     fun createDailyBoard(size: Int, seed: Long): Pair<List<List<Tile?>>, Int> {
         val board = MutableList(size) { MutableList<Tile?>(size) { null } }
-        val random = kotlin.random.Random(seed)
+        val random = Random(seed)
         var currentId = 0
         
         val numTiles = (size * size * 0.85).toInt()
         repeat(numTiles) {
             val valueSeed = random.nextFloat()
-            // Aggressive "junk" from 2 to 2048 with higher probabilities for large numbers
             val value = when {
                 valueSeed < 0.15f -> 2
                 valueSeed < 0.30f -> 4
@@ -94,15 +96,12 @@ class GameEngine {
     ): MoveResult {
         val size = board.size
         var scoreGained = 0
-        
-        fun rotate(b: List<List<Tile?>>): List<List<Tile?>> =
-            (0 until size).map { c -> (0 until size).map { r -> b[size - 1 - r][c] } }
 
         val transformed = when (direction) {
             Direction.LEFT -> board
-            Direction.UP -> rotate(rotate(rotate(board)))
-            Direction.RIGHT -> rotate(rotate(board))
-            Direction.DOWN -> rotate(board)
+            Direction.UP -> rotate90CounterClockwise(board)
+            Direction.RIGHT -> rotate180(board)
+            Direction.DOWN -> rotate90Clockwise(board)
         }
 
         val shifted = transformed.map { row ->
@@ -110,7 +109,7 @@ class GameEngine {
             val newRow = mutableListOf<Tile>()
             var i = 0
             while (i < originalRow.size) {
-                if ((i + 1 < originalRow.size) && (originalRow[i].value == originalRow[i + 1].value)) {
+                if (i + 1 < originalRow.size && originalRow[i].value == originalRow[i + 1].value) {
                     val mergedValue = originalRow[i].value * 2
                     newRow.add(Tile(id = originalRow[i + 1].id, value = mergedValue))
                     scoreGained += mergedValue
@@ -125,24 +124,52 @@ class GameEngine {
 
         val finalBoard = when (direction) {
             Direction.LEFT -> shifted
-            Direction.UP -> rotate(shifted)
-            Direction.RIGHT -> rotate(rotate(shifted))
-            Direction.DOWN -> rotate(rotate(rotate(shifted)))
+            Direction.UP -> rotate90Clockwise(shifted)
+            Direction.RIGHT -> rotate180(shifted)
+            Direction.DOWN -> rotate90CounterClockwise(shifted)
         }
 
-        val hasChanged = board.flatten().map { it?.id to it?.value } != 
-                         finalBoard.flatten().map { it?.id to it?.value }
+        val hasChanged = board.asSequence().zip(finalBoard.asSequence()).any { (oldRow, newRow) ->
+            oldRow.asSequence().zip(newRow.asSequence()).any { (oldTile, newTile) ->
+                oldTile?.value != newTile?.value
+            }
+        }
 
         return if (hasChanged) {
             val mutableFinal = finalBoard.map { it.toMutableList() }.toMutableList()
             val finalNextId = addTile(mutableFinal, valueSeed, posSeed, nextId)
-            MoveResult(mutableFinal, scoreGained, finalNextId, true)
+            MoveResult(
+                board = mutableFinal,
+                scoreGained = scoreGained,
+                nextId = finalNextId,
+                hasChanged = true,
+            )
         } else {
-            MoveResult(board, 0, nextId, false)
+            MoveResult(
+                board = board,
+                scoreGained = 0,
+                nextId = nextId,
+                hasChanged = false,
+            )
         }
     }
 
+    private fun rotate90Clockwise(board: List<List<Tile?>>): List<List<Tile?>> {
+        val size = board.size
+        return (0 until size).map { c -> (size - 1 downTo 0).map { r -> board[r][c] } }
+    }
+
+    private fun rotate90CounterClockwise(board: List<List<Tile?>>): List<List<Tile?>> {
+        val size = board.size
+        return (size - 1 downTo 0).map { c -> (0 until size).map { r -> board[r][c] } }
+    }
+
+    private fun rotate180(board: List<List<Tile?>>): List<List<Tile?>> {
+        return board.reversed().map { it.reversed() }
+    }
+
     fun isGameOver(board: List<List<Tile?>>): Boolean {
+        if (board.isEmpty()) return false
         val size = board.size
         for (r in 0 until size) {
             for (c in 0 until size) {

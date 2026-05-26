@@ -4,20 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.ui.GameScreen
 import com.scottmangiapane.open2048.ui.GameViewModel
 import com.scottmangiapane.open2048.ui.MenuScreen
+import com.scottmangiapane.open2048.ui.Screen
 import com.scottmangiapane.open2048.ui.theme.Open2048Theme
 
 class MainActivity : ComponentActivity() {
@@ -26,49 +21,37 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val viewModel: GameViewModel = viewModel()
-            val state by viewModel.state.collectAsState()
-            val currentTheme = state.theme
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
+            val canResume by viewModel.canResume.collectAsStateWithLifecycle()
 
-            var currentScreen by rememberSaveable { mutableStateOf("menu") }
+            LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+                viewModel.stopTimer()
+            }
 
-            val lifecycleOwner = LocalLifecycleOwner.current
-            DisposableEffect(lifecycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    when (event) {
-                        Lifecycle.Event.ON_PAUSE -> viewModel.stopTimer()
-                        Lifecycle.Event.ON_RESUME -> if (currentScreen == "game") viewModel.resumeGame()
-                        else -> {}
-                    }
-                }
-                lifecycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
+            LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                if (currentScreen == Screen.Game) {
+                    viewModel.resumeGame()
                 }
             }
 
-            Open2048Theme(theme = currentTheme) {
-                if (currentScreen == "menu") {
-                    MenuScreen(
-                        currentTheme = currentTheme,
-                        onStartGame = { mode ->
-                            viewModel.restartGame(mode)
-                            currentScreen = "game"
-                        },
-                        onResumeGame = {
-                            viewModel.resumeGame()
-                            currentScreen = "game"
-                        },
-                        onToggleTheme = { viewModel.cycleTheme() },
-                        canResume = state.board.isNotEmpty() && !state.isGameOver
-                    )
-                } else {
-                    GameScreen(
-                        viewModel = viewModel,
-                        onBackToMenu = { 
-                            viewModel.stopTimer()
-                            currentScreen = "menu" 
-                        }
-                    )
+            Open2048Theme(theme = state.theme) {
+                when (currentScreen) {
+                    is Screen.Menu -> {
+                        MenuScreen(
+                            currentTheme = state.theme,
+                            onStartGame = { mode -> viewModel.restartGame(mode) },
+                            onResumeGame = { viewModel.resumeGame() },
+                            onToggleTheme = { viewModel.cycleTheme() },
+                            canResume = canResume
+                        )
+                    }
+                    is Screen.Game -> {
+                        GameScreen(
+                            viewModel = viewModel,
+                            onBackToMenu = { viewModel.navigateToMenu() }
+                        )
+                    }
                 }
             }
         }
