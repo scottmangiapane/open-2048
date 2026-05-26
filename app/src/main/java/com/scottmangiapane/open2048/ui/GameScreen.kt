@@ -51,6 +51,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .systemBarsPadding()
             .focusRequester(focusRequester)
             .focusable()
             .onKeyEvent { keyEvent ->
@@ -93,15 +94,14 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                 }
             }
     ) {
-        val isLandscape = this.maxWidth > this.maxHeight
+        val isLandscape = maxWidth > maxHeight
+        val minDimension = minOf(maxWidth, maxHeight)
         val isDarkMode = state.isDarkMode ?: isSystemInDarkTheme()
 
         // Theme Toggle in top-right
         IconButton(
             onClick = { viewModel.toggleDarkMode() },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
+            modifier = Modifier.align(Alignment.TopEnd)
         ) {
             Icon(
                 imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
@@ -110,12 +110,20 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
             )
         }
 
+        val (hPadding, vPadding) = when {
+            minDimension >= 840.dp -> 172.dp to 144.dp // Large Tablets: very dramatic
+            minDimension >= 600.dp -> 120.dp to 96.dp  // Foldables: balanced
+            else -> 16.dp to 16.dp                     // Phones: standard
+        }
+        val isLargeScreen = minDimension >= 600.dp
+        val contentMaxWidth = if (isLargeScreen) 500.dp else 600.dp
+
         if (isLandscape) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
-                horizontalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterHorizontally),
+                    .padding(horizontal = hPadding, vertical = vPadding),
+                horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 64.dp else 24.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 HeaderSection(
@@ -129,8 +137,9 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
 
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight(0.95f)
+                        .fillMaxHeight(0.9f)
                         .aspectRatio(1f)
+                        .sizeIn(maxWidth = contentMaxWidth)
                 ) {
                     BoardContainer(state = state, isDark = isDarkMode)
                 }
@@ -139,7 +148,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(horizontal = hPadding, vertical = vPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -151,11 +160,12 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                     canUndo = state.canUndo,
                     isLandscape = false
                 )
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(if (isLargeScreen) 48.dp else 16.dp))
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(0.95f)
-                        .aspectRatio(1f)
+                        .weight(1f, fill = false)
+                        .aspectRatio(1f, matchHeightConstraintsFirst = true)
+                        .sizeIn(maxWidth = contentMaxWidth)
                 ) {
                     BoardContainer(state = state, isDark = isDarkMode)
                 }
