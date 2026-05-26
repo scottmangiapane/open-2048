@@ -1,6 +1,6 @@
 package com.scottmangiapane.open2048.ui
 
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState as animateFloat
 import androidx.compose.animation.core.spring
@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.model.Tile
+import kotlinx.coroutines.delay
 import kotlin.math.abs
 
 @Composable
@@ -340,12 +341,18 @@ fun GameBoard(board: List<List<Tile?>>) {
                     
                     val animXPx by animateFloat(
                         targetValue = targetXPx,
-                        animationSpec = tween(durationMillis = 100, easing = FastOutSlowInEasing),
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        ),
                         label = "glideX"
                     )
                     val animYPx by animateFloat(
                         targetValue = targetYPx,
-                        animationSpec = tween(durationMillis = 100, easing = FastOutSlowInEasing),
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        ),
                         label = "glideY"
                     )
 
@@ -367,7 +374,11 @@ fun GameBoard(board: List<List<Tile?>>) {
 
 @Composable
 fun TileView(tile: Tile) {
-    val backgroundColor = when (tile.value) {
+    // Use a local state for the value so we can delay the color/text change until after the slide
+    val displayValue = remember(tile.id) { mutableIntStateOf(tile.value) }
+    val isVisible = remember(tile.id) { mutableStateOf(!tile.isNew) }
+
+    val backgroundColor = when (displayValue.intValue) {
         2 -> Color(0xFFEEE4DA)
         4 -> Color(0xFFEDE0C8)
         8 -> Color(0xFFF2B179)
@@ -382,43 +393,64 @@ fun TileView(tile: Tile) {
         else -> Color(0xFF3C3A32)
     }
     
-    val textColor = when (tile.value) {
+    val textColor = when (displayValue.intValue) {
         2, 4 -> Color(0xFF776E65)
         else -> Color.White
     }
 
-    var isDeployed by remember(tile.value) { mutableStateOf(value = false) }
-    LaunchedEffect(tile.value) { isDeployed = true }
+    val scale = remember { Animatable(if (tile.isNew) 0f else 1f) }
 
-    val scale by animateFloat(
-        targetValue = if (isDeployed) 1f else 0.8f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "tilePop"
-    )
-
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxSize()
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .shadow(2.dp, RoundedCornerShape(6.dp))
-            .clip(RoundedCornerShape(6.dp))
-            .background(backgroundColor)
-            .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(6.dp)),
-        contentAlignment = Alignment.Center
-    ) {
-        val fontSize = when {
-            tile.value >= 1024 -> maxWidth.value * 0.28f
-            tile.value >= 100 -> maxWidth.value * 0.35f
-            else -> maxWidth.value * 0.45f
+    LaunchedEffect(tile.value) {
+        if (tile.isNew) {
+            delay(100) // Wait for other tiles to slide
+            isVisible.value = true
+            displayValue.intValue = tile.value
+            scale.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        } else if (displayValue.intValue != tile.value) {
+            delay(100) // Wait for slide to complete before changing color/popping
+            displayValue.intValue = tile.value
+            scale.snapTo(0.85f)
+            scale.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioHighBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
         }
-        Text(
-            text = tile.value.toString(),
-            fontSize = fontSize.sp,
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        )
+    }
+
+    if (isVisible.value) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = scale.value
+                    scaleY = scale.value
+                }
+                .shadow(2.dp, RoundedCornerShape(6.dp))
+                .clip(RoundedCornerShape(6.dp))
+                .background(backgroundColor)
+                .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(6.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            val fontSize = when {
+                displayValue.intValue >= 1024 -> maxWidth.value * 0.28f
+                displayValue.intValue >= 100 -> maxWidth.value * 0.35f
+                else -> maxWidth.value * 0.45f
+            }
+            Text(
+                text = displayValue.intValue.toString(),
+                fontSize = fontSize.sp,
+                fontWeight = FontWeight.Bold,
+                color = textColor
+            )
+        }
     }
 }

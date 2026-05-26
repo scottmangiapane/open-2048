@@ -35,7 +35,7 @@ class GameEngine(private val size: Int = 4) {
         if (emptyCells.isNotEmpty()) {
             val index = (posSeed * emptyCells.size).toInt().coerceIn(0, emptyCells.size - 1)
             val (r, c) = emptyCells[index]
-            board[r][c] = Tile(id = id, value = if (valueSeed < 0.9) 2 else 4)
+            board[r][c] = Tile(id = id, value = if (valueSeed < 0.9) 2 else 4, isNew = true)
             return id + 1
         }
         return id
@@ -65,11 +65,11 @@ class GameEngine(private val size: Int = 4) {
             while (i < row.size) {
                 if (i + 1 < row.size && row[i].value == row[i + 1].value) {
                     val mergedValue = row[i].value * 2
-                    newRow.add(Tile(id = row[i + 1].id, value = mergedValue))
+                    newRow.add(Tile(id = row[i + 1].id, value = mergedValue, isNew = false))
                     scoreGained += mergedValue
                     i += 2
                 } else {
-                    newRow.add(row[i])
+                    newRow.add(row[i].copy(isNew = false))
                     i++
                 }
             }
