@@ -62,6 +62,7 @@ class GameRepository(private val context: Context) {
                 Tile(id = parts[0].toInt(), value = parts[1].toInt())
             }
         }
-        return flatList.chunked(4)
+        val size = kotlin.math.sqrt(flatList.size.toDouble()).toInt()
+        return flatList.chunked(size)
     }
 }

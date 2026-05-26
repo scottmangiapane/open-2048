@@ -189,84 +189,52 @@ fun HeaderSection(
     canUndo: Boolean,
     isLandscape: Boolean
 ) {
-    if (isLandscape) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.End
-        ) {
-            Text(
-                text = "2048",
-                fontSize = 56.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF776E65)
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ScoreCard(label = "SCORE", score = score)
-                ScoreCard(label = "BEST", score = bestScore)
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = onUndo,
-                    enabled = canUndo,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF8F7A66),
-                        disabledContainerColor = Color(0xFFBBADA0)
-                    ),
-                    shape = RoundedCornerShape(4.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text("Undo", color = Color.White, fontWeight = FontWeight.Bold)
-                }
-                Button(
-                    onClick = onRestart,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
-                    shape = RoundedCornerShape(4.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-    } else {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "2048",
-                fontSize = 64.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF776E65)
-            )
+    val titleSize = if (isLandscape) 56.sp else 64.sp
+    val buttonPadding = if (isLandscape) PaddingValues(horizontal = 16.dp, vertical = 8.dp) 
+                        else PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+    val alignment = if (isLandscape) Alignment.End else Alignment.CenterHorizontally
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ScoreCard(label = "SCORE", score = score)
-                ScoreCard(label = "BEST", score = bestScore)
-            }
+    Column(
+        horizontalAlignment = alignment,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "2048",
+            fontSize = titleSize,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF776E65)
+        )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = onUndo,
-                    enabled = canUndo,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF8F7A66),
-                        disabledContainerColor = Color(0xFFBBADA0)
-                    ),
-                    shape = RoundedCornerShape(4.dp),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
-                ) {
-                    Text("Undo", color = Color.White, fontWeight = FontWeight.Bold)
-                }
-                Button(
-                    onClick = onRestart,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8F7A66)),
-                    shape = RoundedCornerShape(4.dp),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
-                ) {
-                    Text("New Game", color = Color.White, fontWeight = FontWeight.Bold)
-                }
-            }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ScoreCard(label = "SCORE", score = score)
+            ScoreCard(label = "BEST", score = bestScore)
         }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            GameButton(text = "Undo", onClick = onUndo, enabled = canUndo, padding = buttonPadding)
+            GameButton(text = "New Game", onClick = onRestart, padding = buttonPadding)
+        }
+    }
+}
+
+@Composable
+private fun GameButton(
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    padding: PaddingValues
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF8F7A66),
+            disabledContainerColor = Color(0xFFBBADA0)
+        ),
+        shape = RoundedCornerShape(4.dp),
+        contentPadding = padding
+    ) {
+        Text(text, color = Color.White, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -299,23 +267,24 @@ fun ScoreCard(label: String, score: Int) {
 fun GameBoard(board: List<List<Tile?>>) {
     var boardWidthPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
+    val size = board.size
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .onGloballyPositioned { boardWidthPx = it.size.width }
     ) {
-        if (boardWidthPx > 0) {
+        if (boardWidthPx > 0 && size > 0) {
             val spacingDp = 12.dp
             val spacingPx = with(density) { spacingDp.toPx() }
-            val tileSizePx = (boardWidthPx - (spacingPx * 3)) / 4f
+            val tileSizePx = (boardWidthPx - (spacingPx * (size - 1))) / size.toFloat()
             val tileSizeDp = with(density) { tileSizePx.toDp() }
 
             // 1. Static Background Grid
             Column(verticalArrangement = Arrangement.spacedBy(spacingDp)) {
-                repeat(4) {
+                repeat(size) {
                     Row(horizontalArrangement = Arrangement.spacedBy(spacingDp)) {
-                        repeat(4) {
+                        repeat(size) {
                             Box(
                                 modifier = Modifier
                                     .size(tileSizeDp)
@@ -327,7 +296,6 @@ fun GameBoard(board: List<List<Tile?>>) {
             }
 
             // 2. Persistent Active Tiles
-            // Sorting by ID ensures stable composition order across re-renders
             val activeTiles = remember(board) {
                 board.asSequence()
                     .flatMapIndexed { r, row ->
@@ -381,30 +349,13 @@ fun TileView(tile: Tile) {
     val displayValue = remember(tile.id) { mutableIntStateOf(tile.value) }
     val isVisible = remember(tile.id) { mutableStateOf(!tile.isNew) }
 
-    val backgroundColor = when (displayValue.intValue) {
-        2 -> Color(0xFFEEE4DA)
-        4 -> Color(0xFFEDE0C8)
-        8 -> Color(0xFFF2B179)
-        16 -> Color(0xFFF59563)
-        32 -> Color(0xFFF67C5F)
-        64 -> Color(0xFFF65E3B)
-        128 -> Color(0xFFEDCF72)
-        256 -> Color(0xFFEDCC61)
-        512 -> Color(0xFFEDC850)
-        1024 -> Color(0xFFEDC53F)
-        2048 -> Color(0xFFEDC22E)
-        else -> Color(0xFF3C3A32)
-    }
-    
-    val textColor = when (displayValue.intValue) {
-        2, 4 -> Color(0xFF776E65)
-        else -> Color.White
-    }
+    val backgroundColor = getTileBackgroundColor(displayValue.intValue)
+    val textColor = getTileTextColor(displayValue.intValue)
 
     val scale = remember { Animatable(if (tile.isNew) 0f else 1f) }
 
-    LaunchedEffect(tile.value) {
-        if (tile.isNew) {
+    LaunchedEffect(tile.id, tile.value, tile.isNew) {
+        if (tile.isNew && !isVisible.value) {
             delay(100) // Wait for other tiles to slide
             isVisible.value = true
             displayValue.intValue = tile.value
@@ -415,17 +366,24 @@ fun TileView(tile: Tile) {
                     stiffness = Spring.StiffnessMedium
                 )
             )
-        } else if (displayValue.intValue != tile.value) {
-            delay(100) // Wait for slide to complete before changing color/popping
-            displayValue.intValue = tile.value
-            scale.snapTo(0.85f)
-            scale.animateTo(
-                targetValue = 1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioHighBouncy,
-                    stiffness = Spring.StiffnessMedium
+        } else {
+            // Ensure tile is visible if it's no longer marked as new
+            isVisible.value = true
+            
+            if (displayValue.intValue != tile.value) {
+                delay(100) // Wait for slide to complete before changing color/popping
+                displayValue.intValue = tile.value
+                scale.snapTo(0.85f)
+                scale.animateTo(
+                    targetValue = 1f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioHighBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
                 )
-            )
+            } else {
+                scale.snapTo(1f)
+            }
         }
     }
 
@@ -456,4 +414,24 @@ fun TileView(tile: Tile) {
             )
         }
     }
+}
+
+private fun getTileBackgroundColor(value: Int): Color = when (value) {
+    2 -> Color(0xFFEEE4DA)
+    4 -> Color(0xFFEDE0C8)
+    8 -> Color(0xFFF2B179)
+    16 -> Color(0xFFF59563)
+    32 -> Color(0xFFF67C5F)
+    64 -> Color(0xFFF65E3B)
+    128 -> Color(0xFFEDCF72)
+    256 -> Color(0xFFEDCC61)
+    512 -> Color(0xFFEDC850)
+    1024 -> Color(0xFFEDC53F)
+    2048 -> Color(0xFFEDC22E)
+    else -> Color(0xFF3C3A32)
+}
+
+private fun getTileTextColor(value: Int): Color = when (value) {
+    2, 4 -> Color(0xFF776E65)
+    else -> Color.White
 }

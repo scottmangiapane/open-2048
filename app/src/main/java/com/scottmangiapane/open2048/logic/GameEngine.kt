@@ -6,6 +6,13 @@ enum class Direction {
     UP, DOWN, LEFT, RIGHT
 }
 
+data class MoveResult(
+    val board: List<List<Tile?>>,
+    val scoreGained: Int,
+    val nextId: Int,
+    val hasChanged: Boolean
+)
+
 class GameEngine(private val size: Int = 4) {
 
     fun createInitialBoard(
@@ -35,7 +42,7 @@ class GameEngine(private val size: Int = 4) {
         if (emptyCells.isNotEmpty()) {
             val index = (posSeed * emptyCells.size).toInt().coerceIn(0, emptyCells.size - 1)
             val (r, c) = emptyCells[index]
-            board[r][c] = Tile(id = id, value = if (valueSeed < 0.9) 2 else 4, isNew = true)
+            board[r][c] = Tile(id = id, value = if (valueSeed < 0.9f) 2 else 4, isNew = true)
             return id + 1
         }
         return id
@@ -47,7 +54,7 @@ class GameEngine(private val size: Int = 4) {
         valueSeed: Float,
         posSeed: Float,
         nextId: Int
-    ): Triple<List<List<Tile?>>, Int, Int> {
+    ): MoveResult {
         var scoreGained = 0
         
         // 1. Rotate board so we are always moving "Left"
@@ -58,8 +65,7 @@ class GameEngine(private val size: Int = 4) {
             Direction.DOWN -> (0 until size).map { c -> (0 until size).map { r -> board[r][c] }.reversed() }
         }
 
-        val shifted = MutableList(size) { MutableList<Tile?>(size) { null } }
-        for (r in 0 until size) {
+        val shifted = (0 until size).map { r ->
             val originalRow = rotated[r].filterNotNull()
             val newRow = mutableListOf<Tile>()
             var i = 0
@@ -75,9 +81,7 @@ class GameEngine(private val size: Int = 4) {
                     i++
                 }
             }
-            for (c in 0 until newRow.size) {
-                shifted[r][c] = newRow[c]
-            }
+            newRow + List(size - newRow.size) { null }
         }
 
         // 2. Rotate back
@@ -95,9 +99,9 @@ class GameEngine(private val size: Int = 4) {
         return if (hasChanged) {
             val mutableFinal = finalBoard.map { it.toMutableList() }.toMutableList()
             val finalNextId = addTile(mutableFinal, valueSeed, posSeed, nextId)
-            Triple(mutableFinal, scoreGained, finalNextId)
+            MoveResult(mutableFinal, scoreGained, finalNextId, true)
         } else {
-            Triple(board, 0, nextId)
+            MoveResult(board, 0, nextId, false)
         }
     }
 

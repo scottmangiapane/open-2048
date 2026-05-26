@@ -97,39 +97,43 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun move(direction: Direction) {
-        if (_state.value.isGameOver) return
+        _state.update { currentState ->
+            if (currentState.isGameOver) return@update currentState
 
-        val currentState = _state.value
-        val (newBoard, scoreGained, newNextId) = gameEngine.move(
-            board = currentState.board,
-            direction = direction,
-            valueSeed = currentState.nextValueSeed,
-            posSeed = currentState.nextPosSeed,
-            nextId = currentState.nextId
-        )
-        
-        if (newBoard != currentState.board) {
-            lastState = currentState
-            
-            val newScore = currentState.score + scoreGained
-            val newState = currentState.copy(
-                board = newBoard,
-                score = newScore,
-                isGameOver = gameEngine.isGameOver(newBoard),
-                canUndo = true,
-                nextValueSeed = Random.nextFloat(),
-                nextPosSeed = Random.nextFloat(),
-                nextId = newNextId
+            val result = gameEngine.move(
+                board = currentState.board,
+                direction = direction,
+                valueSeed = currentState.nextValueSeed,
+                posSeed = currentState.nextPosSeed,
+                nextId = currentState.nextId
             )
             
-            _state.update { newState.copy(bestScore = it.bestScore) }
-            saveGame(newState)
-            
-            // Persist high score if it's beaten
-            if (newScore > _state.value.bestScore) {
-                viewModelScope.launch {
-                    scoreRepository.updateBestScore(newScore)
+            if (result.hasChanged) {
+                lastState = currentState
+                
+                val newScore = currentState.score + result.scoreGained
+                val isGameOver = gameEngine.isGameOver(result.board)
+                
+                if (newScore > currentState.bestScore) {
+                    viewModelScope.launch {
+                        scoreRepository.updateBestScore(newScore)
+                    }
                 }
+                
+                val newState = currentState.copy(
+                    board = result.board,
+                    score = newScore,
+                    isGameOver = isGameOver,
+                    canUndo = true,
+                    nextValueSeed = Random.nextFloat(),
+                    nextPosSeed = Random.nextFloat(),
+                    nextId = result.nextId,
+                    bestScore = maxOf(currentState.bestScore, newScore)
+                )
+                saveGame(newState)
+                newState
+            } else {
+                currentState
             }
         }
     }
