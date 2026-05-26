@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.scottmangiapane.open2048.data.GameRepository
 import com.scottmangiapane.open2048.data.ScoreRepository
+import com.scottmangiapane.open2048.data.SettingsRepository
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.logic.GameEngine
 import com.scottmangiapane.open2048.model.Tile
@@ -23,6 +24,7 @@ data class GameState(
     val bestScore: Int = 0,
     val isGameOver: Boolean = false,
     val canUndo: Boolean = false,
+    val isDarkMode: Boolean? = null,
     val nextValueSeed: Float = 0f,
     val nextPosSeed: Float = 0f,
     val nextId: Int = 0
@@ -32,6 +34,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val gameEngine = GameEngine()
     private val scoreRepository = ScoreRepository(application)
     private val gameRepository = GameRepository(application)
+    private val settingsRepository = SettingsRepository(application)
     
     private var lastState: GameState? = null
     
@@ -43,6 +46,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             scoreRepository.bestScore.collectLatest { best ->
                 _state.update { it.copy(bestScore = best) }
+            }
+        }
+
+        // Observe dark mode setting
+        viewModelScope.launch {
+            settingsRepository.isDarkMode.collectLatest { isDark ->
+                _state.update { it.copy(isDarkMode = isDark) }
             }
         }
         
@@ -88,6 +98,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val newState = previous.copy(bestScore = _state.value.bestScore, canUndo = false)
         _state.update { newState }
         saveGame(newState)
+    }
+
+    fun toggleDarkMode() {
+        viewModelScope.launch {
+            val current = _state.value.isDarkMode ?: false
+            settingsRepository.setDarkMode(!current)
+        }
     }
 
     private fun saveGame(state: GameState) {

@@ -11,6 +11,10 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,7 +50,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFAF8EF))
+            .background(MaterialTheme.colorScheme.background)
             .focusRequester(focusRequester)
             .focusable()
             .onKeyEvent { keyEvent ->
@@ -90,6 +94,21 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
             }
     ) {
         val isLandscape = this.maxWidth > this.maxHeight
+        val isDarkMode = state.isDarkMode ?: isSystemInDarkTheme()
+
+        // Theme Toggle in top-right
+        IconButton(
+            onClick = { viewModel.toggleDarkMode() },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+        ) {
+            Icon(
+                imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                contentDescription = "Toggle Dark Mode",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        }
 
         if (isLandscape) {
             Row(
@@ -113,7 +132,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                         .fillMaxHeight(0.95f)
                         .aspectRatio(1f)
                 ) {
-                    BoardContainer(state = state)
+                    BoardContainer(state = state, isDark = isDarkMode)
                 }
             }
         } else {
@@ -138,7 +157,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                         .fillMaxWidth(0.95f)
                         .aspectRatio(1f)
                 ) {
-                    BoardContainer(state = state)
+                    BoardContainer(state = state, isDark = isDarkMode)
                 }
             }
         }
@@ -146,26 +165,26 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
 }
 
 @Composable
-fun BoardContainer(state: GameState) {
+fun BoardContainer(state: GameState, isDark: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .shadow(4.dp, RoundedCornerShape(8.dp))
             .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFBBADA0))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         // We wrap the board in a padded box, but keep the overlay outside the padding
         // so it covers the entire board including the gutters where shadows might spill.
         Box(modifier = Modifier.fillMaxSize().padding(12.dp)) {
-            GameBoard(board = state.board)
+            GameBoard(board = state.board, isDark = isDark)
         }
 
         if (state.isGameOver) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xCCFBF8F3)) // Slightly more opaque and matches theme
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
                     .clip(RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
@@ -173,7 +192,7 @@ fun BoardContainer(state: GameState) {
                     text = "Game Over!",
                     fontSize = 48.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF776E65)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -202,7 +221,7 @@ fun HeaderSection(
             text = "2048",
             fontSize = titleSize,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF776E65)
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -228,8 +247,8 @@ private fun GameButton(
         onClick = onClick,
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF8F7A66),
-            disabledContainerColor = Color(0xFFBBADA0)
+            containerColor = MaterialTheme.colorScheme.primary,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         shape = RoundedCornerShape(4.dp),
         contentPadding = padding
@@ -244,27 +263,27 @@ fun ScoreCard(label: String, score: Int) {
         modifier = Modifier
             .width(80.dp)
             .clip(RoundedCornerShape(4.dp))
-            .background(Color(0xFFEEE4DA))
+            .background(MaterialTheme.colorScheme.surface)
             .padding(vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color(0xFF776E65).copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             fontWeight = FontWeight.Bold
         )
         Text(
             text = score.toString(),
             fontSize = 18.sp,
-            color = Color(0xFF776E65),
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold
         )
     }
 }
 
 @Composable
-fun GameBoard(board: List<List<Tile?>>) {
+fun GameBoard(board: List<List<Tile?>>, isDark: Boolean) {
     var boardWidthPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
     val size = board.size
@@ -288,7 +307,7 @@ fun GameBoard(board: List<List<Tile?>>) {
                             Box(
                                 modifier = Modifier
                                     .size(tileSizeDp)
-                                    .background(Color(0xFFCDC1B4), RoundedCornerShape(6.dp))
+                                    .background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(6.dp))
                             )
                         }
                     }
@@ -335,7 +354,7 @@ fun GameBoard(board: List<List<Tile?>>) {
                                 translationY = animYPx
                             }
                     ) {
-                        TileView(tile = tile)
+                        TileView(tile = tile, isDark = isDark)
                     }
                 }
             }
@@ -344,13 +363,13 @@ fun GameBoard(board: List<List<Tile?>>) {
 }
 
 @Composable
-fun TileView(tile: Tile) {
+fun TileView(tile: Tile, isDark: Boolean = isSystemInDarkTheme()) {
     // Use a local state for the value so we can delay the color/text change until after the slide
     val displayValue = remember(tile.id) { mutableIntStateOf(tile.value) }
     val isVisible = remember(tile.id) { mutableStateOf(!tile.isNew) }
 
-    val backgroundColor = getTileBackgroundColor(displayValue.intValue)
-    val textColor = getTileTextColor(displayValue.intValue)
+    val backgroundColor = getTileBackgroundColor(displayValue.intValue, isDark)
+    val textColor = getTileTextColor(displayValue.intValue, isDark)
 
     val scale = remember { Animatable(if (tile.isNew) 0f else 1f) }
 
@@ -416,22 +435,22 @@ fun TileView(tile: Tile) {
     }
 }
 
-private fun getTileBackgroundColor(value: Int): Color = when (value) {
-    2 -> Color(0xFFEEE4DA)
-    4 -> Color(0xFFEDE0C8)
-    8 -> Color(0xFFF2B179)
-    16 -> Color(0xFFF59563)
-    32 -> Color(0xFFF67C5F)
-    64 -> Color(0xFFF65E3B)
-    128 -> Color(0xFFEDCF72)
-    256 -> Color(0xFFEDCC61)
-    512 -> Color(0xFFEDC850)
-    1024 -> Color(0xFFEDC53F)
-    2048 -> Color(0xFFEDC22E)
-    else -> Color(0xFF3C3A32)
+private fun getTileBackgroundColor(value: Int, isDark: Boolean): Color = when (value) {
+    2 -> if (isDark) Color(0xFF1E293B) else Color(0xFFEEE4DA)
+    4 -> if (isDark) Color(0xFF334155) else Color(0xFFEDE0C8)
+    8 -> if (isDark) Color(0xFF0EA5E9) else Color(0xFFF2B179)
+    16 -> if (isDark) Color(0xFF0284C7) else Color(0xFFF59563)
+    32 -> if (isDark) Color(0xFF2563EB) else Color(0xFFF67C5F)
+    64 -> if (isDark) Color(0xFF4F46E5) else Color(0xFFF65E3B)
+    128 -> if (isDark) Color(0xFF7C3AED) else Color(0xFFEDCF72)
+    256 -> if (isDark) Color(0xFF8B5CF6) else Color(0xFFEDCC61)
+    512 -> if (isDark) Color(0xFFA78BFA) else Color(0xFFEDC850)
+    1024 -> if (isDark) Color(0xFFC084FC) else Color(0xFFEDC53F)
+    2048 -> if (isDark) Color(0xFFE879F9) else Color(0xFFEDC22E)
+    else -> if (isDark) Color(0xFF0F172A) else Color(0xFF3C3A32)
 }
 
-private fun getTileTextColor(value: Int): Color = when (value) {
-    2, 4 -> Color(0xFF776E65)
+private fun getTileTextColor(value: Int, isDark: Boolean): Color = when (value) {
+    2, 4 -> if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF776E65)
     else -> Color.White
 }
