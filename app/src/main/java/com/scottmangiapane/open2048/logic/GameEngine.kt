@@ -47,8 +47,7 @@ object GameEngine {
                 valueSeed < 0.82f -> 128
                 valueSeed < 0.88f -> 256
                 valueSeed < 0.93f -> 512
-                valueSeed < 0.97f -> 1024
-                else -> 2048
+                else -> 1024
             }
             currentId = addTileWithValue(board, value, random.nextFloat(), currentId)
         }

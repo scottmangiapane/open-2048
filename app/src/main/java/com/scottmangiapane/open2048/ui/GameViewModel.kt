@@ -257,7 +257,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         val prefs = userPreferences.value
         if (prefs.vibrationEnabled) {
-            vibrationManager.vibrate()
+            vibrationManager.vibrateForScore(result.scoreGained)
         }
 
         val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
