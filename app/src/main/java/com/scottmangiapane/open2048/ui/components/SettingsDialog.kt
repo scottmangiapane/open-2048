@@ -31,7 +31,8 @@ fun SettingsDialog(
     onVibrationToggle: (Boolean) -> Unit,
     onControlModeChange: (ControlMode) -> Unit,
     onShowUndoToggle: (Boolean) -> Unit,
-    onShowStopwatchToggle: (Boolean) -> Unit
+    onShowStopwatchToggle: (Boolean) -> Unit,
+    onConfettiToggle: (Boolean) -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -133,6 +134,7 @@ fun SettingsDialog(
                         // Toggles
                         ToggleSetting("Show Stopwatch", preferences.showStopwatch, onShowStopwatchToggle)
                         ToggleSetting("Show Undo Button", preferences.showUndo, onShowUndoToggle)
+                        ToggleSetting("Confetti", preferences.confettiEnabled, onConfettiToggle)
                         ToggleSetting("Vibration", preferences.vibrationEnabled, onVibrationToggle)
                     }
                 }

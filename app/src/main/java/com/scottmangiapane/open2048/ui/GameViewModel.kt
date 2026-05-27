@@ -229,6 +229,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { prefs.setShowStopwatch(show) }
     }
 
+    fun setConfettiEnabled(enabled: Boolean) {
+        viewModelScope.launch { prefs.setConfettiEnabled(enabled) }
+    }
+
     private fun saveGame(state: GameState) {
         viewModelScope.launch {
             prefs.saveGameState(state)

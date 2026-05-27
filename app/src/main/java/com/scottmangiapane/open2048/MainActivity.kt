@@ -59,6 +59,7 @@ open class MainActivity : ComponentActivity() {
                             onSetControlMode = { viewModel.setControlMode(it) },
                             onSetShowUndo = { viewModel.setShowUndo(it) },
                             onSetShowStopwatch = { viewModel.setShowStopwatch(it) },
+                            onSetConfettiEnabled = { viewModel.setConfettiEnabled(it) },
                             canResume = canResume,
                             hasProgress = hasProgress
                         )

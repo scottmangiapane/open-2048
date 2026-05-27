@@ -53,7 +53,7 @@ fun GameScreen(
     }
 
     LaunchedEffect(state.highestTile) {
-        if (state.highestTile >= 16 && state.highestTile > highestTileSeen) {
+        if (userPreferences.confettiEnabled && state.highestTile >= 2048 && state.highestTile > highestTileSeen) {
             showConfetti = true
             highestTileSeen = state.highestTile
         } else if (state.highestTile < highestTileSeen) {
@@ -74,7 +74,8 @@ fun GameScreen(
             onVibrationToggle = { viewModel.setVibrationEnabled(it) },
             onControlModeChange = { viewModel.setControlMode(it) },
             onShowUndoToggle = { viewModel.setShowUndo(it) },
-            onShowStopwatchToggle = { viewModel.setShowStopwatch(it) }
+            onShowStopwatchToggle = { viewModel.setShowStopwatch(it) },
+            onConfettiToggle = { viewModel.setConfettiEnabled(it) }
         )
     }
 

@@ -9,5 +9,6 @@ data class UserPreferences(
     val vibrationEnabled: Boolean = true,
     val controlMode: ControlMode = ControlMode.GESTURES,
     val showUndo: Boolean = true,
-    val showStopwatch: Boolean = true
+    val showStopwatch: Boolean = true,
+    val confettiEnabled: Boolean = true
 )

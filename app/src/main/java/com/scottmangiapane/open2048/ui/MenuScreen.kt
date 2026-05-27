@@ -42,6 +42,7 @@ fun MenuScreen(
     onSetControlMode: (ControlMode) -> Unit,
     onSetShowUndo: (Boolean) -> Unit,
     onSetShowStopwatch: (Boolean) -> Unit,
+    onSetConfettiEnabled: (Boolean) -> Unit,
     canResume: Boolean,
     hasProgress: Boolean,
 ) {
@@ -67,7 +68,8 @@ fun MenuScreen(
             onVibrationToggle = onSetVibrationEnabled,
             onControlModeChange = onSetControlMode,
             onShowUndoToggle = onSetShowUndo,
-            onShowStopwatchToggle = onSetShowStopwatch
+            onShowStopwatchToggle = onSetShowStopwatch,
+            onConfettiToggle = onSetConfettiEnabled
         )
     }
 
