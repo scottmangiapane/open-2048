@@ -10,13 +10,16 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.ui.GameScreen
 import com.scottmangiapane.open2048.ui.GameViewModel
 import com.scottmangiapane.open2048.ui.MenuScreen
 import com.scottmangiapane.open2048.ui.Screen
 import com.scottmangiapane.open2048.ui.theme.Open2048Theme
 
-class MainActivity : ComponentActivity() {
+open class MainActivity : ComponentActivity() {
+    open val activityTheme: AppTheme = AppTheme.LIGHT
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -43,7 +46,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            Open2048Theme(theme = state.theme) {
+            Open2048Theme(theme = state.theme ?: activityTheme) {
                 when (currentScreen) {
                     is Screen.Menu -> {
                         MenuScreen(

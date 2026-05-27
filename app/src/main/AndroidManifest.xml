@@ -16,52 +16,50 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.Open2048">
+            android:exported="true">
         </activity>
 
-        <activity-alias
+        <activity
             android:name=".MainActivityLight"
             android:enabled="true"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher"
-            android:targetActivity=".MainActivity">
+            android:theme="@style/Theme.Open2048.Light">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity-alias>
+        </activity>
 
-        <activity-alias
+        <activity
             android:name=".MainActivityDark"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_dark"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_dark"
-            android:targetActivity=".MainActivity">
+            android:theme="@style/Theme.Open2048.Dark">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity-alias>
+        </activity>
 
-        <activity-alias
+        <activity
             android:name=".MainActivityClassic"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_classic"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_classic"
-            android:targetActivity=".MainActivity">
+            android:theme="@style/Theme.Open2048.Classic">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity-alias>
+        </activity>
 
     </application>
 
