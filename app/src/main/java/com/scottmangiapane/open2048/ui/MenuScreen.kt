@@ -72,9 +72,9 @@ fun MenuScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = if (isLandscape) 48.dp else 96.dp),
+                .padding(horizontal = 24.dp, vertical = if (isLandscape) 24.dp else 48.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(if (isLandscape) 24.dp else 32.dp, Alignment.CenterVertically)
+            verticalArrangement = Arrangement.spacedBy(if (isLandscape) 16.dp else 24.dp, Alignment.CenterVertically)
         ) {
             Text(
                 text = "2048",
@@ -90,24 +90,16 @@ fun MenuScreen(
                     verticalAlignment = Alignment.Top
                 ) {
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        if (canResume) {
-                            MenuCategoryHeader("CONTINUE")
-                            MenuButton("Resume", Icons.Rounded.PlayArrow, onResumeGame, MaterialTheme.colorScheme.secondary)
-                            Spacer(modifier = Modifier.height(24.dp))
-                        }
-                        
-                        MenuCategoryHeader("CHALLENGE")
-                        MenuButton("Daily Challenge", Icons.Rounded.EmojiEvents, { onStartGame(GameMode.Daily.today()) }, amber)
+                        ResumeSection(canResume, onResumeGame)
+                        ChallengeSection(onStartGame, amber)
                     }
 
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        MenuCategoryHeader("CLASSIC")
-                        ClassicModes(onStartGame)
+                        ClassicSection(onStartGame)
                     }
 
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        MenuCategoryHeader("BLITZ")
-                        BlitzModes(onStartGame)
+                        BlitzSection(onStartGame)
                     }
                 }
             } else {
@@ -117,18 +109,13 @@ fun MenuScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        MenuCategoryHeader("CHALLENGE")
-                        MenuButton("Daily Challenge", Icons.Rounded.EmojiEvents, { onStartGame(GameMode.Daily.today()) }, amber)
+                        ChallengeSection(onStartGame, amber)
                     }
-
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        MenuCategoryHeader("CLASSIC")
-                        ClassicModes(onStartGame)
+                        ClassicSection(onStartGame)
                     }
-                    
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        MenuCategoryHeader("BLITZ")
-                        BlitzModes(onStartGame)
+                        BlitzSection(onStartGame)
                     }
                 }
             }
@@ -149,6 +136,33 @@ fun MenuScreen(
             )
         }
     }
+}
+
+@Composable
+private fun ResumeSection(canResume: Boolean, onResumeGame: () -> Unit) {
+    if (canResume) {
+        MenuCategoryHeader("CONTINUE")
+        MenuButton("Resume", Icons.Rounded.PlayArrow, onResumeGame, MaterialTheme.colorScheme.secondary)
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun ChallengeSection(onStartGame: (GameMode) -> Unit, amber: Color) {
+    MenuCategoryHeader("CHALLENGE")
+    MenuButton("Daily Challenge", Icons.Rounded.EmojiEvents, { onStartGame(GameMode.Daily.today()) }, amber)
+}
+
+@Composable
+private fun ClassicSection(onStartGame: (GameMode) -> Unit) {
+    MenuCategoryHeader("CLASSIC")
+    ClassicModes(onStartGame)
+}
+
+@Composable
+private fun BlitzSection(onStartGame: (GameMode) -> Unit) {
+    MenuCategoryHeader("BLITZ")
+    BlitzModes(onStartGame)
 }
 
 @Composable

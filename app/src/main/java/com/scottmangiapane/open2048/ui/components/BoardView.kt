@@ -86,6 +86,7 @@ private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme) {
             val tileSizePx = (boardWidthPx - (spacingPx * (size - 1))) / size.toFloat()
             val tileSizeDp = with(density) { tileSizePx.toDp() }
 
+            // Render empty grid slots
             Column(verticalArrangement = Arrangement.spacedBy(spacingDp)) {
                 repeat(size) {
                     Row(horizontalArrangement = Arrangement.spacedBy(spacingDp)) {
@@ -93,20 +94,21 @@ private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme) {
                             Box(
                                 modifier = Modifier
                                     .size(tileSizeDp)
-                                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(6.dp))
+                                    .background(
+                                        MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                                        RoundedCornerShape(6.dp)
+                                    )
                             )
                         }
                     }
                 }
             }
 
+            // Render active tiles
             val activeTiles = remember(board) {
-                board.asSequence()
-                    .flatMapIndexed { r, row ->
-                        row.mapIndexedNotNull { c, tile -> tile?.let { Triple(it, r, c) } }
-                    }
-                    .sortedBy { it.first.id }
-                    .toList()
+                board.flatMapIndexed { r, row ->
+                    row.mapIndexedNotNull { c, tile -> tile?.let { Triple(it, r, c) } }
+                }.sortedBy { it.first.id }
             }
 
             activeTiles.forEach { (tile, r, c) ->

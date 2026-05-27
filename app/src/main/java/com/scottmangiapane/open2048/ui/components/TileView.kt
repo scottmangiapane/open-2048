@@ -20,22 +20,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.scottmangiapane.open2048.R
 import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.Tile
+import com.scottmangiapane.open2048.ui.theme.TileColors
 import kotlinx.coroutines.delay
 
 @Composable
 fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme) {
     val displayValue = remember(tile.id) { mutableIntStateOf(tile.value) }
     val isVisible = remember(tile.id) { mutableStateOf(!tile.isNew) }
-    val backgroundColor = getTileBackgroundColor(displayValue.intValue, currentTheme)
-    val textColor = getTileTextColor(displayValue.intValue, currentTheme)
+    val backgroundColor = TileColors.getBackgroundColor(displayValue.intValue, currentTheme)
+    val textColor = TileColors.getTextColor(displayValue.intValue, currentTheme)
     val scale = remember { Animatable(if (tile.isNew) 0f else 1f) }
 
     LaunchedEffect(tile.id, tile.value, tile.isNew) {
@@ -83,91 +82,5 @@ fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme) {
                 color = textColor
             )
         }
-    }
-}
-
-@Composable
-private fun getTileBackgroundColor(value: Int, theme: AppTheme): Color {
-    val isDark = theme == AppTheme.DARK
-    if (theme == AppTheme.CLASSIC) {
-        return colorResource(
-            when (value) {
-                2 -> R.color.tile_classic_2
-                4 -> R.color.tile_classic_4
-                8 -> R.color.tile_classic_8
-                16 -> R.color.tile_classic_16
-                32 -> R.color.tile_classic_32
-                64 -> R.color.tile_classic_64
-                128 -> R.color.tile_classic_128
-                256 -> R.color.tile_classic_256
-                512 -> R.color.tile_classic_512
-                1024 -> R.color.tile_classic_1024
-                2048 -> R.color.tile_classic_2048
-                4096 -> R.color.tile_classic_4096
-                else -> R.color.tile_classic_super
-            }
-        )
-    }
-    
-    return if (isDark) {
-        colorResource(
-            when (value) {
-                2 -> R.color.slate_700
-                4 -> R.color.slate_500
-                8 -> R.color.tile_modern_8
-                16 -> R.color.tile_modern_16
-                32 -> R.color.tile_modern_32
-                64 -> R.color.tile_modern_64
-                128 -> R.color.tile_modern_128
-                256 -> R.color.tile_modern_256
-                512 -> R.color.tile_modern_512
-                1024 -> R.color.tile_modern_1024
-                2048 -> R.color.tile_modern_2048
-                else -> R.color.slate_900
-            }
-        )
-    } else {
-        colorResource(
-            when (value) {
-                2 -> R.color.white
-                4 -> R.color.emerald_100
-                8 -> R.color.tile_classic_8
-                16 -> R.color.tile_classic_16
-                32 -> R.color.tile_classic_32
-                64 -> R.color.tile_classic_64
-                128 -> R.color.tile_classic_128
-                256 -> R.color.tile_classic_256
-                512 -> R.color.tile_classic_512
-                1024 -> R.color.tile_classic_1024
-                2048 -> R.color.tile_classic_2048
-                else -> R.color.slate_900
-            }
-        )
-    }
-}
-
-@Composable
-private fun getTileTextColor(value: Int, theme: AppTheme): Color {
-    if (theme == AppTheme.CLASSIC) {
-        return colorResource(
-            when (value) {
-                2, 4 -> R.color.classic_text_dark
-                else -> R.color.white
-            }
-        )
-    }
-    val isDark = theme == AppTheme.DARK
-    return if (isDark) {
-        when (value) {
-            2, 4 -> Color.White.copy(alpha = 0.9f)
-            else -> Color.White
-        }
-    } else {
-        colorResource(
-            when (value) {
-                2, 4 -> R.color.classic_text_dark
-                else -> R.color.white
-            }
-        )
     }
 }

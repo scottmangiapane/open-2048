@@ -12,7 +12,7 @@ data class MoveResult(
     val hasChanged: Boolean,
 )
 
-class GameEngine {
+object GameEngine {
 
     fun createInitialBoard(
         size: Int,
@@ -111,6 +111,7 @@ class GameEngine {
             while (i < originalRow.size) {
                 if (i + 1 < originalRow.size && originalRow[i].value == originalRow[i + 1].value) {
                     val mergedValue = originalRow[i].value * 2
+                    // Use the ID of the tile being merged into
                     newRow.add(Tile(id = originalRow[i + 1].id, value = mergedValue))
                     scoreGained += mergedValue
                     i += 2
@@ -129,11 +130,7 @@ class GameEngine {
             Direction.DOWN -> rotate90CounterClockwise(shifted)
         }
 
-        val hasChanged = board.asSequence().zip(finalBoard.asSequence()).any { (oldRow, newRow) ->
-            oldRow.asSequence().zip(newRow.asSequence()).any { (oldTile, newTile) ->
-                oldTile?.value != newTile?.value
-            }
-        }
+        val hasChanged = board != finalBoard
 
         return if (hasChanged) {
             val mutableFinal = finalBoard.map { it.toMutableList() }.toMutableList()

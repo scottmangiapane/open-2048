@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
-    private val gameEngine = GameEngine()
     private val prefs = PreferenceRepository(application)
     private val soundManager = SoundManager(application)
     private val iconManager = IconManager(application)
@@ -35,7 +34,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     val canResume: StateFlow<Boolean> = _state
         .map { state -> state.canResume }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
 
     init {
         observeTheme()
@@ -59,7 +58,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _state.update {
                     saved.copy(
                         theme = it.theme,
-                        isGameOver = saved.isGameOver || gameEngine.isGameOver(saved.board) || (saved.timeLeftMs == 0L),
+                        isGameOver = saved.isGameOver || GameEngine.isGameOver(saved.board) || (saved.timeLeftMs == 0L),
                     )
                 }
                 observeBestScore(saved.gameMode)
@@ -155,8 +154,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun createNewGameState(mode: GameMode): GameState {
             val (initialBoard, nextId) = when (mode) {
-                is GameMode.Daily -> gameEngine.createDailyBoard(mode.size, mode.dateSeed)
-                else -> gameEngine.createInitialBoard(
+                is GameMode.Daily -> GameEngine.createDailyBoard(mode.size, mode.dateSeed)
+                else -> GameEngine.createInitialBoard(
                     size = mode.size,
                     seedValue1 = Random.nextFloat(),
                     seedPos1 = Random.nextFloat(),
@@ -171,13 +170,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return GameState(
             board = initialBoard,
             score = 0,
-            isGameOver = gameEngine.isGameOver(initialBoard),
+            isGameOver = GameEngine.isGameOver(initialBoard),
             canUndo = false,
             nextId = nextId,
             nextValueSeed = nextV,
             nextPosSeed = nextP,
             gameMode = mode,
-            timeLeftMs = if (mode is GameMode.Blitz) mode.durationMinutes * 60 * 1000L else null,
+            timeLeftMs = (mode as? GameMode.Blitz)?.let { it.durationMinutes * 60 * 1000L },
             movesCount = 0,
             elapsedTimeMs = 0L,
         )
@@ -199,22 +198,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             bestScore = _state.value.bestScore, 
             canUndo = false,
             timeLeftMs = _state.value.timeLeftMs,
-            elapsedTimeMs = _state.value.elapsedTimeMs
+            elapsedTimeMs = _state.value.elapsedTimeMs,
         )
         _state.update { newState }
         saveGame(newState)
         if (!newState.isGameOver) startTimer()
-    }
-
-    fun cycleTheme() {
-        val nextTheme = when (_state.value.theme) {
-            AppTheme.LIGHT -> AppTheme.DARK
-            AppTheme.DARK -> AppTheme.CLASSIC
-            AppTheme.CLASSIC -> AppTheme.LIGHT
-        }
-        viewModelScope.launch {
-            prefs.setTheme(nextTheme)
-        }
     }
 
     fun setTheme(theme: AppTheme) {
@@ -251,7 +239,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val currentState = _state.value
         if (currentState.isGameOver) return
 
-        val result = gameEngine.move(
+        val result = GameEngine.move(
             board = currentState.board,
             direction = direction,
             valueSeed = currentState.nextValueSeed,
@@ -259,46 +247,50 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             nextId = currentState.nextId
         )
 
-        if (result.hasChanged) {
-            previousStateForUndo = currentState
-            val newScore = currentState.score + result.scoreGained
-            val bestScore = maxOf(currentState.bestScore, newScore)
+        if (!result.hasChanged) return
 
-            if (newScore > currentState.bestScore) {
-                viewModelScope.launch { prefs.updateBestScore(currentState.gameMode.id, newScore) }
+        previousStateForUndo = currentState
+        val newScore = currentState.score + result.scoreGained
+        val bestScore = maxOf(currentState.bestScore, newScore)
+
+        if (newScore > currentState.bestScore) {
+            viewModelScope.launch { prefs.updateBestScore(currentState.gameMode.id, newScore) }
+        }
+
+        val isGameOver = GameEngine.isGameOver(result.board) || (currentState.timeLeftMs == 0L)
+        if (isGameOver) stopTimer()
+
+        playMoveEffects(result.scoreGained > 0, isGameOver)
+
+        val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
+
+        _state.update { state ->
+            state.copy(
+                board = result.board,
+                score = newScore,
+                isGameOver = isGameOver,
+                canUndo = true,
+                nextId = result.nextId,
+                nextValueSeed = nextV,
+                nextPosSeed = nextP,
+                bestScore = bestScore,
+                movesCount = state.movesCount + 1,
+            )
+        }
+        saveGame(_state.value)
+    }
+
+    private fun playMoveEffects(hasMerged: Boolean, isGameOver: Boolean) {
+        val prefs = userPreferences.value
+        if (prefs.soundsEnabled) {
+            when {
+                isGameOver -> soundManager.playGameOver()
+                hasMerged -> soundManager.playMerge()
+                else -> soundManager.playMove()
             }
-
-            val isGameOver = gameEngine.isGameOver(result.board) || (currentState.timeLeftMs == 0L)
-            if (isGameOver) timerJob?.cancel()
-
-            val prefs = userPreferences.value
-            if (prefs.soundsEnabled) {
-                when {
-                    isGameOver -> soundManager.playGameOver()
-                    result.scoreGained > 0 -> soundManager.playMerge()
-                    else -> soundManager.playMove()
-                }
-            }
-            if (prefs.vibrationEnabled) {
-                soundManager.vibrate()
-            }
-
-            val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
-
-            _state.update { state ->
-                state.copy(
-                    board = result.board,
-                    score = newScore,
-                    isGameOver = isGameOver,
-                    canUndo = true,
-                    nextId = result.nextId,
-                    nextValueSeed = nextV,
-                    nextPosSeed = nextP,
-                    bestScore = bestScore,
-                    movesCount = state.movesCount + 1,
-                )
-            }
-            saveGame(_state.value)
+        }
+        if (prefs.vibrationEnabled) {
+            soundManager.vibrate()
         }
     }
 

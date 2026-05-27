@@ -122,21 +122,24 @@ class PreferenceRepository(private val context: Context) {
     }
 
     private fun serializeBoard(board: List<List<Tile?>>): String =
-        board.asSequence().flatten().joinToString(",") { it?.let { "${it.id}:${it.value}" } ?: "n" }
+        board.flatten().joinToString(",") { tile ->
+            tile?.let { "${it.id}:${it.value}" } ?: "n"
+        }
 
     private fun deserializeBoard(data: String): List<List<Tile?>> {
         if (data.isBlank()) return emptyList()
-        val flatList = data.split(",").map { s ->
+        val parts = data.split(",")
+        val flatList = parts.map { s ->
             if (s == "n") null
             else {
-                val parts = s.split(":")
-                val id = parts.getOrNull(0)?.toIntOrNull() ?: return emptyList()
-                val value = parts.getOrNull(1)?.toIntOrNull() ?: return emptyList()
+                val tileParts = s.split(":")
+                val id = tileParts.getOrNull(0)?.toIntOrNull() ?: return emptyList()
+                val value = tileParts.getOrNull(1)?.toIntOrNull() ?: return emptyList()
                 Tile(id, value)
             }
         }
         val size = kotlin.math.sqrt(flatList.size.toDouble()).toInt()
-        return if (size > 0 && size * size == flatList.size) flatList.chunked(size) else emptyList()
+        return if (size * size == flatList.size) flatList.chunked(size) else emptyList()
     }
 
     private fun serializeGameMode(mode: GameMode): String = when (mode) {

@@ -19,12 +19,16 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.ControlMode
+import com.scottmangiapane.open2048.model.GameState
+import com.scottmangiapane.open2048.model.UserPreferences
 import com.scottmangiapane.open2048.ui.components.*
 import kotlin.math.abs
 
@@ -38,7 +42,6 @@ fun GameScreen(
     val focusRequester = remember { FocusRequester() }
     val density = LocalDensity.current
     val swipeThreshold = with(density) { 56.dp.toPx() }
-    val currentTheme = state.theme
     var showSettings by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.isGameOver) {
@@ -115,89 +118,105 @@ fun GameScreen(
                 } else Modifier
             )
     ) {
-        val (hPadding, vPadding) = when {
-            minDimension >= 840.dp -> 172.dp to 144.dp
-            minDimension >= 600.dp -> 120.dp to 96.dp
-            isLandscape -> 0.dp to 8.dp
-            else -> 32.dp to 16.dp
-        }
-
-        val isLargeScreen = minDimension >= 600.dp
-        val contentMaxWidth = if (isLargeScreen) 500.dp else 600.dp
-
-        if (isLandscape) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = hPadding, vertical = vPadding)
-                    .padding(end = 48.dp),
-                horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 48.dp else 24.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HeaderSection(
-                    state = state,
-                    onRestart = { viewModel.restartGame() },
-                    onUndo = { viewModel.undo() },
-                    isLandscape = true,
-                    showUndo = userPreferences.showUndo,
-                    showStopwatch = userPreferences.showStopwatch
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight(0.95f)
-                        .aspectRatio(1f)
-                        .sizeIn(maxWidth = contentMaxWidth)
-                ) {
-                    BoardContainer(state = state, currentTheme = currentTheme)
-                }
-
-                if (userPreferences.controlMode != ControlMode.GESTURES) {
-                    DirectionalControls(
-                        isLandscape = true,
-                        onMove = { viewModel.move(it) }
-                    )
-                }
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = hPadding, vertical = vPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                HeaderSection(
-                    state = state,
-                    onRestart = { viewModel.restartGame() },
-                    onUndo = { viewModel.undo() },
-                    isLandscape = false,
-                    showUndo = userPreferences.showUndo,
-                    showStopwatch = userPreferences.showStopwatch
-                )
-                Spacer(modifier = Modifier.height(if (isLargeScreen) 32.dp else 16.dp))
-                Box(
-                    modifier = Modifier
-                        .weight(1f, fill = false)
-                        .aspectRatio(1f, matchHeightConstraintsFirst = true)
-                        .sizeIn(maxWidth = contentMaxWidth)
-                ) {
-                    BoardContainer(state = state, currentTheme = currentTheme)
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-                if (userPreferences.controlMode != ControlMode.GESTURES) {
-                    DirectionalControls(
-                        isLandscape = false,
-                        onMove = { viewModel.move(it) }
-                    )
-                }
-            }
-        }
+        GameLayout(
+            state = state,
+            userPreferences = userPreferences,
+            isLandscape = isLandscape,
+            minDimension = minDimension,
+            onMove = { viewModel.move(it) },
+            onRestart = { viewModel.restartGame() },
+            onUndo = { viewModel.undo() }
+        )
 
         GameControls(
             onBackToMenu = onBackToMenu,
             onShowSettings = { showSettings = true }
         )
+    }
+}
+
+@Composable
+private fun GameLayout(
+    state: GameState,
+    userPreferences: UserPreferences,
+    isLandscape: Boolean,
+    minDimension: Dp,
+    onMove: (Direction) -> Unit,
+    onRestart: () -> Unit,
+    onUndo: () -> Unit
+) {
+    val (hPadding, vPadding) = when {
+        minDimension >= 840.dp -> 172.dp to 144.dp
+        minDimension >= 600.dp -> 120.dp to 96.dp
+        isLandscape -> 0.dp to 8.dp
+        else -> 32.dp to 16.dp
+    }
+
+    val isLargeScreen = minDimension >= 600.dp
+    val contentMaxWidth = if (isLargeScreen) 500.dp else 600.dp
+    val showControls = userPreferences.controlMode != ControlMode.GESTURES
+
+    if (isLandscape) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = hPadding, vertical = vPadding)
+                .padding(end = 48.dp),
+            horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 48.dp else 24.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HeaderSection(
+                state = state,
+                onRestart = onRestart,
+                onUndo = onUndo,
+                isLandscape = true,
+                showUndo = userPreferences.showUndo,
+                showStopwatch = userPreferences.showStopwatch
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight(0.95f)
+                    .aspectRatio(1f)
+                    .sizeIn(maxWidth = contentMaxWidth)
+            ) {
+                BoardContainer(state = state, currentTheme = state.theme)
+            }
+
+            if (showControls) {
+                DirectionalControls(isLandscape = true, onMove = onMove)
+            }
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = hPadding, vertical = vPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            HeaderSection(
+                state = state,
+                onRestart = onRestart,
+                onUndo = onUndo,
+                isLandscape = false,
+                showUndo = userPreferences.showUndo,
+                showStopwatch = userPreferences.showStopwatch
+            )
+            Spacer(modifier = Modifier.height(if (isLargeScreen) 32.dp else 16.dp))
+            Box(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .aspectRatio(1f, matchHeightConstraintsFirst = true)
+                    .sizeIn(maxWidth = contentMaxWidth)
+            ) {
+                BoardContainer(state = state, currentTheme = state.theme)
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            if (showControls) {
+                DirectionalControls(isLandscape = false, onMove = onMove)
+            }
+        }
     }
 }
 

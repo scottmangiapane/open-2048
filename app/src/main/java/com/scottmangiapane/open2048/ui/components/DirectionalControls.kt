@@ -34,7 +34,7 @@ fun DirectionalControls(
     } else {
         Row(
             modifier = modifier,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             ControlButton(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, { onMove(Direction.LEFT) })

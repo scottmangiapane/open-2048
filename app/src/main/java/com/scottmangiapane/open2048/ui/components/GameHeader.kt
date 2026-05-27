@@ -88,13 +88,8 @@ fun HeaderSection(
 
 @Composable
 private fun TimerDisplay(timeLeftMs: Long) {
-    val totalSeconds = timeLeftMs / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    val timeString = "%02d:%02d".format(minutes, seconds)
-    
     Text(
-        text = timeString,
+        text = formatTime(timeLeftMs),
         fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
         color = if (timeLeftMs < 10000) colorResource(R.color.rose_500) else MaterialTheme.colorScheme.primary
@@ -103,20 +98,22 @@ private fun TimerDisplay(timeLeftMs: Long) {
 
 @Composable
 private fun StopwatchDisplay(elapsedTimeMs: Long) {
-    val totalSeconds = elapsedTimeMs / 1000
-    val hours = totalSeconds / 3600
-    val minutes = (totalSeconds % 3600) / 60
-    val seconds = totalSeconds % 60
-    val timeString = if (hours > 0) {
-        "%d:%02d:%02d".format(hours, minutes, seconds)
-    } else {
-        "%02d:%02d".format(minutes, seconds)
-    }
-    
     Text(
-        text = "TIME: $timeString",
+        text = "TIME: ${formatTime(elapsedTimeMs, showHours = true)}",
         fontSize = 18.sp,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary
     )
+}
+
+private fun formatTime(ms: Long, showHours: Boolean = false): String {
+    val totalSeconds = ms / 1000
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+    
+    return when {
+        showHours && hours > 0 -> "%d:%02d:%02d".format(hours, minutes, seconds)
+        else -> "%02d:%02d".format(minutes, seconds)
+    }
 }
