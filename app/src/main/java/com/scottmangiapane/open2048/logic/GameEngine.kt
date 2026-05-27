@@ -130,7 +130,8 @@ object GameEngine {
             Direction.DOWN -> rotate90CounterClockwise(shifted)
         }
 
-        val hasChanged = board != finalBoard
+        val hasChanged = board.map { row -> row.map { it?.value } } != 
+                         finalBoard.map { row -> row.map { it?.value } }
 
         return if (hasChanged) {
             val mutableFinal = finalBoard.map { it.toMutableList() }.toMutableList()
