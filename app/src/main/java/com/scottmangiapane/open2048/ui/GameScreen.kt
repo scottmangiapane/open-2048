@@ -40,6 +40,8 @@ fun GameScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
     val hasProgress by viewModel.hasProgress.collectAsStateWithLifecycle()
+    var highestTileSeen by rememberSaveable { mutableIntStateOf(state.highestTile) }
+    var showConfetti by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val density = LocalDensity.current
     val swipeThreshold = with(density) { 56.dp.toPx() }
@@ -48,6 +50,16 @@ fun GameScreen(
 
     LaunchedEffect(state.isGameOver) {
         if (!state.isGameOver) focusRequester.requestFocus()
+    }
+
+    LaunchedEffect(state.highestTile) {
+        if (state.highestTile >= 16 && state.highestTile > highestTileSeen) {
+            showConfetti = true
+            highestTileSeen = state.highestTile
+        } else if (state.highestTile < highestTileSeen) {
+            // Reset if game was restarted or undone to a lower state
+            highestTileSeen = state.highestTile
+        }
     }
 
     val configuration = LocalConfiguration.current
@@ -152,6 +164,10 @@ fun GameScreen(
             onBackToMenu = onBackToMenu,
             onShowSettings = { showSettings = true }
         )
+
+        if (showConfetti) {
+            ConfettiOverlay(onAnimationFinished = { showConfetti = false })
+        }
     }
 }
 

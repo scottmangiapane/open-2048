@@ -13,7 +13,8 @@ data class GameState(
     val gameMode: GameMode = GameMode.Classic(4),
     val timeLeftMs: Long? = null,
     val movesCount: Int = 0,
-    val elapsedTimeMs: Long = 0L
+    val elapsedTimeMs: Long = 0L,
+    val highestTile: Int = 0
 )
 
 val GameState.canResume: Boolean get() = board.isNotEmpty() && !isGameOver && movesCount > 0

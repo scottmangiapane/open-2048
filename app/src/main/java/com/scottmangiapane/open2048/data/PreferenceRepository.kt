@@ -21,6 +21,7 @@ class PreferenceRepository(private val context: Context) {
         private val TIME_LEFT_KEY = longPreferencesKey("time_left")
         private val MOVES_COUNT_KEY = intPreferencesKey("moves_count")
         private val ELAPSED_TIME_KEY = longPreferencesKey("elapsed_time")
+        private val HIGHEST_TILE_KEY = intPreferencesKey("highest_tile")
         private val VIBRATION_ENABLED_KEY = booleanPreferencesKey("vibration_enabled")
         private val CONTROL_MODE_KEY = stringPreferencesKey("control_mode")
         private val SHOW_UNDO_KEY = booleanPreferencesKey("show_undo")
@@ -67,7 +68,8 @@ class PreferenceRepository(private val context: Context) {
             gameMode = mode,
             timeLeftMs = preferences[TIME_LEFT_KEY],
             movesCount = preferences[MOVES_COUNT_KEY] ?: 0,
-            elapsedTimeMs = preferences[ELAPSED_TIME_KEY] ?: 0L
+            elapsedTimeMs = preferences[ELAPSED_TIME_KEY] ?: 0L,
+            highestTile = preferences[HIGHEST_TILE_KEY] ?: 0
         )
     }
 
@@ -110,6 +112,7 @@ class PreferenceRepository(private val context: Context) {
                 preferences[GAME_MODE_KEY] = serializeGameMode(state.gameMode)
                 preferences[MOVES_COUNT_KEY] = state.movesCount
                 preferences[ELAPSED_TIME_KEY] = state.elapsedTimeMs
+                preferences[HIGHEST_TILE_KEY] = state.highestTile
                 state.timeLeftMs?.let { preferences[TIME_LEFT_KEY] = it } ?: preferences.remove(TIME_LEFT_KEY)
             } else {
                 preferences.remove(BOARD_KEY)
@@ -121,6 +124,7 @@ class PreferenceRepository(private val context: Context) {
                 preferences.remove(TIME_LEFT_KEY)
                 preferences.remove(MOVES_COUNT_KEY)
                 preferences.remove(ELAPSED_TIME_KEY)
+                preferences.remove(HIGHEST_TILE_KEY)
             }
         }
     }

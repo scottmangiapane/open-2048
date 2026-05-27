@@ -182,6 +182,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             timeLeftMs = (mode as? GameMode.Blitz)?.let { it.durationMinutes * 60 * 1000L },
             movesCount = 0,
             elapsedTimeMs = 0L,
+            highestTile = initialBoard.flatten().filterNotNull().maxOfOrNull { it.value } ?: 0
         )
     }
 
@@ -265,6 +266,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
+        val maxTile = result.board.flatten().filterNotNull().maxOfOrNull { it.value } ?: 0
 
         _state.update { state ->
             state.copy(
@@ -277,6 +279,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 nextPosSeed = nextP,
                 bestScore = bestScore,
                 movesCount = state.movesCount + 1,
+                highestTile = maxOf(state.highestTile, maxTile)
             )
         }
         saveGame(_state.value)
