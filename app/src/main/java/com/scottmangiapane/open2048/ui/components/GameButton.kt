@@ -45,11 +45,12 @@ fun GameButton(
 @Composable
 fun ControlButton(
     icon: ImageVector,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     FilledIconButton(
         onClick = onClick,
-        modifier = Modifier.size(48.dp),
+        modifier = modifier.size(48.dp),
         colors = IconButtonDefaults.filledIconButtonColors(
             containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
         ),

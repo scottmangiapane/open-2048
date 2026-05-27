@@ -21,26 +21,74 @@ fun DirectionalControls(
     modifier: Modifier = Modifier
 ) {
     if (isLandscape) {
+        // Vertical-First Layout (Optimized for Landscape height):
+        //      [Up]
+        // [Left]  [Right]
+        //     [Down]
+        // Width: 2 buttons, Height: 3 buttons
         Column(
             modifier = modifier,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ControlButton(Icons.Rounded.KeyboardArrowUp, { onMove(Direction.UP) })
-            ControlButton(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, { onMove(Direction.LEFT) })
-            ControlButton(Icons.AutoMirrored.Rounded.KeyboardArrowRight, { onMove(Direction.RIGHT) })
-            ControlButton(Icons.Rounded.KeyboardArrowDown, { onMove(Direction.DOWN) })
+            ControlButton(
+                icon = Icons.Rounded.KeyboardArrowUp,
+                onClick = { onMove(Direction.UP) }
+            )
+            
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ControlButton(
+                    icon = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                    onClick = { onMove(Direction.LEFT) }
+                )
+                ControlButton(
+                    icon = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                    onClick = { onMove(Direction.RIGHT) }
+                )
+            }
+
+            ControlButton(
+                icon = Icons.Rounded.KeyboardArrowDown,
+                onClick = { onMove(Direction.DOWN) }
+            )
         }
     } else {
+        // Horizontal-First Layout (Optimized for Portrait width):
+        //         [Up]
+        // [Left]        [Right]
+        //        [Down]
+        // Width: 3 buttons, Height: 2 buttons
         Row(
             modifier = modifier,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ControlButton(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, { onMove(Direction.LEFT) })
-            ControlButton(Icons.Rounded.KeyboardArrowUp, { onMove(Direction.UP) })
-            ControlButton(Icons.Rounded.KeyboardArrowDown, { onMove(Direction.DOWN) })
-            ControlButton(Icons.AutoMirrored.Rounded.KeyboardArrowRight, { onMove(Direction.RIGHT) })
+            ControlButton(
+                icon = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                onClick = { onMove(Direction.LEFT) }
+            )
+            
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ControlButton(
+                    icon = Icons.Rounded.KeyboardArrowUp,
+                    onClick = { onMove(Direction.UP) }
+                )
+                ControlButton(
+                    icon = Icons.Rounded.KeyboardArrowDown,
+                    onClick = { onMove(Direction.DOWN) }
+                )
+            }
+
+            ControlButton(
+                icon = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                onClick = { onMove(Direction.RIGHT) }
+            )
         }
     }
 }
