@@ -106,7 +106,7 @@ fun SettingsDialog(
                         // Controls
                         SettingSection("Control Mode")
                         Column {
-                            listOf(ControlMode.ARROWS, ControlMode.GESTURES, ControlMode.BOTH).forEach { mode ->
+                            listOf(ControlMode.GESTURES, ControlMode.ARROWS, ControlMode.BOTH).forEach { mode ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
@@ -131,9 +131,9 @@ fun SettingsDialog(
                         }
 
                         // Toggles
-                        ToggleSetting("Vibration", preferences.vibrationEnabled, onVibrationToggle)
                         ToggleSetting("Show Stopwatch", preferences.showStopwatch, onShowStopwatchToggle)
                         ToggleSetting("Show Undo Button", preferences.showUndo, onShowUndoToggle)
+                        ToggleSetting("Vibration", preferences.vibrationEnabled, onVibrationToggle)
                     }
                 }
 

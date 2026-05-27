@@ -32,7 +32,7 @@ class PreferenceRepository(private val context: Context) {
     val userPreferences: Flow<UserPreferences> = context.dataStore.data.map { preferences ->
         UserPreferences(
             theme = preferences[THEME_KEY]?.let { runCatching { AppTheme.valueOf(it) }.getOrNull() } ?: AppTheme.LIGHT,
-            vibrationEnabled = preferences[VIBRATION_ENABLED_KEY] ?: false,
+            vibrationEnabled = preferences[VIBRATION_ENABLED_KEY] ?: true,
             controlMode = preferences[CONTROL_MODE_KEY]?.let { runCatching { ControlMode.valueOf(it) }.getOrNull() } ?: ControlMode.GESTURES,
             showUndo = preferences[SHOW_UNDO_KEY] ?: true,
             showStopwatch = preferences[SHOW_STOPWATCH_KEY] ?: true
