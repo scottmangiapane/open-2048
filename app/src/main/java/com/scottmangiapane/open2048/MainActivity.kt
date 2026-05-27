@@ -17,6 +17,7 @@ import com.scottmangiapane.open2048.model.canResume
 import com.scottmangiapane.open2048.ui.GameScreen
 import com.scottmangiapane.open2048.ui.GameViewModel
 import com.scottmangiapane.open2048.ui.MenuScreen
+import com.scottmangiapane.open2048.ui.StatsScreen
 import com.scottmangiapane.open2048.ui.Screen
 import com.scottmangiapane.open2048.ui.theme.Open2048Theme
 
@@ -64,6 +65,7 @@ open class MainActivity : ComponentActivity() {
                             onSetShowUndo = { viewModel.setShowUndo(it) },
                             onSetShowStopwatch = { viewModel.setShowStopwatch(it) },
                             onSetConfettiEnabled = { viewModel.setConfettiEnabled(it) },
+                            onNavigateToStats = { viewModel.navigateToStats() },
                             canResume = canResume,
                             hasProgress = hasProgress
                         )
@@ -74,7 +76,17 @@ open class MainActivity : ComponentActivity() {
                         }
                         GameScreen(
                             viewModel = viewModel,
-                            onBackToMenu = { viewModel.navigateToMenu() }
+                            onBackToMenu = { viewModel.navigateToMenu() },
+                            onNavigateToStats = { viewModel.navigateToStats() }
+                        )
+                    }
+                    is Screen.Stats -> {
+                        BackHandler {
+                            viewModel.navigateToMenu()
+                        }
+                        StatsScreen(
+                            viewModel = viewModel,
+                            onBack = { viewModel.navigateToMenu() }
                         )
                     }
                 }

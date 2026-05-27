@@ -119,6 +119,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _currentScreen.value = Screen.Menu
     }
 
+    fun navigateToStats() {
+        stopTimer()
+        _currentScreen.value = Screen.Stats
+    }
+
     fun applyPendingIconChange() {
         iconManager.applyPendingIconChange()
     }
@@ -213,6 +218,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setConfettiEnabled(enabled: Boolean) {
         viewModelScope.launch { prefs.setConfettiEnabled(enabled) }
+    }
+
+    fun getBestScore(mode: GameMode): StateFlow<Int> {
+        return prefs.getBestScore(mode.id)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
     }
 
     private fun saveGame(state: GameState) {

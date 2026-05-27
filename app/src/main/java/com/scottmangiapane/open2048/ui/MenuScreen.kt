@@ -43,6 +43,7 @@ fun MenuScreen(
     onSetShowUndo: (Boolean) -> Unit,
     onSetShowStopwatch: (Boolean) -> Unit,
     onSetConfettiEnabled: (Boolean) -> Unit,
+    onNavigateToStats: () -> Unit,
     canResume: Boolean,
     hasProgress: Boolean,
 ) {
@@ -145,19 +146,29 @@ fun MenuScreen(
             }
         }
 
-        IconButton(
-            onClick = { showSettings = true },
+        Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .systemBarsPadding()
                 .padding(8.dp)
-                .zIndex(1f)
+                .zIndex(1f),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Rounded.Settings,
-                contentDescription = "Settings",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
+            IconButton(onClick = onNavigateToStats) {
+                Icon(
+                    imageVector = Icons.Rounded.BarChart,
+                    contentDescription = "Statistics",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            IconButton(onClick = { showSettings = true }) {
+                Icon(
+                    imageVector = Icons.Rounded.Settings,
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
     }
 }
