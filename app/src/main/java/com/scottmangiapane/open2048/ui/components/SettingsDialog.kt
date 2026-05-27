@@ -10,12 +10,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.scottmangiapane.open2048.model.AppTheme
@@ -32,7 +28,7 @@ fun SettingsDialog(
     onControlModeChange: (ControlMode) -> Unit,
     onShowUndoToggle: (Boolean) -> Unit,
     onShowStopwatchToggle: (Boolean) -> Unit,
-    onConfettiToggle: (Boolean) -> Unit
+    onConfettiToggle: (Boolean) -> Unit,
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -154,26 +150,6 @@ fun SettingsDialog(
                 }
             }
         }
-    }
-}
-
-fun Modifier.drawScrollbar(
-    state: androidx.compose.foundation.ScrollState,
-    color: Color,
-    width: Dp = 4.dp
-): Modifier = drawWithContent {
-    drawContent()
-    if (state.maxValue > 0) {
-        val viewPortHeight = size.height
-        val contentHeight = viewPortHeight + state.maxValue
-        val scrollbarHeight = (viewPortHeight / contentHeight) * viewPortHeight
-        val scrollbarTop = (state.value / contentHeight) * viewPortHeight
-
-        drawRect(
-            color = color,
-            topLeft = Offset(size.width - width.toPx(), scrollbarTop),
-            size = Size(width.toPx(), scrollbarHeight)
-        )
     }
 }
 
