@@ -39,10 +39,12 @@ fun GameScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
+    val hasProgress by viewModel.hasProgress.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     val density = LocalDensity.current
     val swipeThreshold = with(density) { 56.dp.toPx() }
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    var showRestartConfirmation by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.isGameOver) {
         if (!state.isGameOver) focusRequester.requestFocus()
@@ -61,6 +63,19 @@ fun GameScreen(
             onControlModeChange = { viewModel.setControlMode(it) },
             onShowUndoToggle = { viewModel.setShowUndo(it) },
             onShowStopwatchToggle = { viewModel.setShowStopwatch(it) }
+        )
+    }
+
+    if (showRestartConfirmation) {
+        GameConfirmationDialog(
+            title = "Restart Game?",
+            message = "Your current game progress will be lost.",
+            confirmText = "Restart",
+            onConfirm = {
+                viewModel.restartGame()
+                showRestartConfirmation = false
+            },
+            onDismiss = { showRestartConfirmation = false }
         )
     }
 
@@ -123,7 +138,13 @@ fun GameScreen(
             isLandscape = isLandscape,
             minDimension = minDimension,
             onMove = { viewModel.move(it) },
-            onRestart = { viewModel.restartGame() },
+            onRestart = { 
+                if (hasProgress) {
+                    showRestartConfirmation = true
+                } else {
+                    viewModel.restartGame()
+                }
+            },
             onUndo = { viewModel.undo() }
         )
 

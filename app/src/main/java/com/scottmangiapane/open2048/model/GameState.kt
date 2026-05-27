@@ -16,4 +16,4 @@ data class GameState(
     val elapsedTimeMs: Long = 0L
 )
 
-val GameState.canResume: Boolean get() = board.isNotEmpty() && !isGameOver
+val GameState.canResume: Boolean get() = board.isNotEmpty() && !isGameOver && movesCount > 0

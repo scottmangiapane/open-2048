@@ -1,5 +1,6 @@
 package com.scottmangiapane.open2048.model
 
+import androidx.compose.runtime.saveable.Saver
 import java.util.Calendar
 
 sealed class GameMode {
@@ -31,5 +32,25 @@ sealed class GameMode {
                 )
             }
         }
+    }
+
+    companion object {
+        val Saver: Saver<GameMode?, String> = Saver(
+            save = { it?.id ?: "" },
+            restore = { id ->
+                val parts = id.split("_")
+                when (parts.getOrNull(0)) {
+                    "classic" -> parts.getOrNull(1)?.toIntOrNull()?.let { Classic(it) }
+                    "blitz" -> parts.getOrNull(1)?.toIntOrNull()?.let { Blitz(it) }
+                    "daily" -> {
+                        val y = parts.getOrNull(1)?.toIntOrNull() ?: return@Saver null
+                        val m = parts.getOrNull(2)?.toIntOrNull() ?: return@Saver null
+                        val d = parts.getOrNull(3)?.toIntOrNull() ?: return@Saver null
+                        Daily(y, m, d)
+                    }
+                    else -> null
+                }
+            }
+        )
     }
 }

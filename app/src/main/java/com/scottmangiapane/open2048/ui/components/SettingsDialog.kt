@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -13,6 +14,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -52,6 +54,7 @@ fun SettingsDialog(
                 Text(
                     text = "Settings",
                     style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
                 )
@@ -78,21 +81,25 @@ fun SettingsDialog(
                         ) {
                             AppTheme.entries.forEach { theme ->
                                 val isSelected = preferences.theme == theme
-                                FilterChip(
-                                    selected = isSelected,
+                                Button(
                                     onClick = { onThemeChange(theme) },
-                                    label = { 
-                                        Text(
-                                            text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
-                                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                                        ) 
-                                    },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                        selectedLabelColor = Color.White,
-                                        containerColor = MaterialTheme.colorScheme.surface
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(40.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                        contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                                    contentPadding = PaddingValues(0.dp)
+                                ) {
+                                    Text(
+                                        text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
-                                )
+                                }
                             }
                         }
 
@@ -141,7 +148,7 @@ fun SettingsDialog(
                         contentColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Close")
+                    Text("Close", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -173,6 +180,7 @@ private fun SettingSection(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(top = 8.dp)
     )

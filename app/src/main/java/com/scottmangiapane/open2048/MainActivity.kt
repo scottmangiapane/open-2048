@@ -28,6 +28,7 @@ open class MainActivity : ComponentActivity() {
             val state by viewModel.state.collectAsStateWithLifecycle()
             val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
             val canResume by viewModel.canResume.collectAsStateWithLifecycle()
+            val hasProgress by viewModel.hasProgress.collectAsStateWithLifecycle()
             val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
 
             LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
@@ -58,7 +59,8 @@ open class MainActivity : ComponentActivity() {
                             onSetControlMode = { viewModel.setControlMode(it) },
                             onSetShowUndo = { viewModel.setShowUndo(it) },
                             onSetShowStopwatch = { viewModel.setShowStopwatch(it) },
-                            canResume = canResume
+                            canResume = canResume,
+                            hasProgress = hasProgress
                         )
                     }
                     is Screen.Game -> {

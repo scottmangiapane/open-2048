@@ -101,15 +101,27 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun saveGameState(state: GameState) {
         context.dataStore.edit { preferences ->
-            preferences[BOARD_KEY] = serializeBoard(state.board)
-            preferences[SCORE_KEY] = state.score
-            preferences[NEXT_ID_KEY] = state.nextId
-            preferences[NEXT_VALUE_SEED_KEY] = state.nextValueSeed
-            preferences[NEXT_POS_SEED_KEY] = state.nextPosSeed
-            preferences[GAME_MODE_KEY] = serializeGameMode(state.gameMode)
-            preferences[MOVES_COUNT_KEY] = state.movesCount
-            preferences[ELAPSED_TIME_KEY] = state.elapsedTimeMs
-            state.timeLeftMs?.let { preferences[TIME_LEFT_KEY] = it } ?: preferences.remove(TIME_LEFT_KEY)
+            if (state.movesCount > 0) {
+                preferences[BOARD_KEY] = serializeBoard(state.board)
+                preferences[SCORE_KEY] = state.score
+                preferences[NEXT_ID_KEY] = state.nextId
+                preferences[NEXT_VALUE_SEED_KEY] = state.nextValueSeed
+                preferences[NEXT_POS_SEED_KEY] = state.nextPosSeed
+                preferences[GAME_MODE_KEY] = serializeGameMode(state.gameMode)
+                preferences[MOVES_COUNT_KEY] = state.movesCount
+                preferences[ELAPSED_TIME_KEY] = state.elapsedTimeMs
+                state.timeLeftMs?.let { preferences[TIME_LEFT_KEY] = it } ?: preferences.remove(TIME_LEFT_KEY)
+            } else {
+                preferences.remove(BOARD_KEY)
+                preferences.remove(SCORE_KEY)
+                preferences.remove(NEXT_ID_KEY)
+                preferences.remove(NEXT_VALUE_SEED_KEY)
+                preferences.remove(NEXT_POS_SEED_KEY)
+                preferences.remove(GAME_MODE_KEY)
+                preferences.remove(TIME_LEFT_KEY)
+                preferences.remove(MOVES_COUNT_KEY)
+                preferences.remove(ELAPSED_TIME_KEY)
+            }
         }
     }
 

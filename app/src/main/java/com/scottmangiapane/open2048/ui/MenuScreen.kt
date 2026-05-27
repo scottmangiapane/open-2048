@@ -29,6 +29,7 @@ import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.ControlMode
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.model.UserPreferences
+import com.scottmangiapane.open2048.ui.components.GameConfirmationDialog
 import com.scottmangiapane.open2048.ui.components.SettingsDialog
 
 @Composable
@@ -42,11 +43,21 @@ fun MenuScreen(
     onSetShowUndo: (Boolean) -> Unit,
     onSetShowStopwatch: (Boolean) -> Unit,
     canResume: Boolean,
+    hasProgress: Boolean,
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val amber = colorResource(R.color.amber_500)
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    var pendingGameMode by rememberSaveable(stateSaver = GameMode.Saver) { mutableStateOf<GameMode?>(null) }
+
+    val handleStartGame: (GameMode) -> Unit = { mode ->
+        if (hasProgress) {
+            pendingGameMode = mode
+        } else {
+            onStartGame(mode)
+        }
+    }
 
     if (showSettings) {
         SettingsDialog(
@@ -57,6 +68,19 @@ fun MenuScreen(
             onControlModeChange = onSetControlMode,
             onShowUndoToggle = onSetShowUndo,
             onShowStopwatchToggle = onSetShowStopwatch
+        )
+    }
+
+    if (pendingGameMode != null) {
+        GameConfirmationDialog(
+            title = "Start New Game?",
+            message = "Your current game progress will be lost.",
+            confirmText = "Start New Game",
+            onConfirm = {
+                pendingGameMode?.let { onStartGame(it) }
+                pendingGameMode = null
+            },
+            onDismiss = { pendingGameMode = null }
         )
     }
 
@@ -89,15 +113,15 @@ fun MenuScreen(
                 ) {
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         ResumeSection(canResume, onResumeGame)
-                        ChallengeSection(onStartGame, amber)
+                        ChallengeSection(handleStartGame, amber)
                     }
 
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        ClassicSection(onStartGame)
+                        ClassicSection(handleStartGame)
                     }
 
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        BlitzSection(onStartGame)
+                        BlitzSection(handleStartGame)
                     }
                 }
             } else {
@@ -107,13 +131,13 @@ fun MenuScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        ChallengeSection(onStartGame, amber)
+                        ChallengeSection(handleStartGame, amber)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        ClassicSection(onStartGame)
+                        ClassicSection(handleStartGame)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        BlitzSection(onStartGame)
+                        BlitzSection(handleStartGame)
                     }
                 }
             }
@@ -217,8 +241,7 @@ private fun MenuButton(
             .fillMaxWidth()
             .height(56.dp),
         colors = ButtonDefaults.buttonColors(containerColor = containerColor),
-        shape = RoundedCornerShape(16.dp),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 0.dp),
+        shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(horizontal = 20.dp)
     ) {
         Row(

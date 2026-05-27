@@ -36,6 +36,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         .map { state -> state.canResume }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
 
+    val hasProgress: StateFlow<Boolean> = _state
+        .map { it.movesCount > 0 && !it.isGameOver }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
+
     init {
         observeTheme()
         loadInitialState()

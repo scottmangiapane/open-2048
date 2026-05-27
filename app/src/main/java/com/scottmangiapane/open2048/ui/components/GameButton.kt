@@ -34,7 +34,7 @@ fun GameButton(
             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(8.dp),
         contentPadding = padding,
         modifier = modifier
     ) {
