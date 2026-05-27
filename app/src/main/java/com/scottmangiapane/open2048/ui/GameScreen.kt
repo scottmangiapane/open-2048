@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import com.scottmangiapane.open2048.model.canResume
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -39,7 +40,8 @@ fun GameScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
-    val hasProgress by viewModel.hasProgress.collectAsStateWithLifecycle()
+    val canResume by remember { derivedStateOf { state.canResume } }
+    val hasProgress by remember { derivedStateOf { state.movesCount > 0 && !state.isGameOver } }
     var highestTileSeen by rememberSaveable { mutableIntStateOf(state.highestTile) }
     var showConfetti by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
@@ -186,7 +188,7 @@ private fun GameLayout(
         minDimension >= 840.dp -> 172.dp to 144.dp
         minDimension >= 600.dp -> 120.dp to 96.dp
         isLandscape -> 0.dp to 8.dp
-        else -> 32.dp to 16.dp
+        else -> 24.dp to 16.dp
     }
 
     val isLargeScreen = minDimension >= 600.dp

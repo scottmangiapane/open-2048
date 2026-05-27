@@ -60,20 +60,15 @@ object GameEngine {
         posSeed: Float,
         id: Int
     ): Int {
-        val size = board.size
-        val emptyCells = mutableListOf<Pair<Int, Int>>()
-        for (r in 0 until size) {
-            for (c in 0 until size) {
-                if (board[r][c] == null) emptyCells.add(r to c)
-            }
+        val emptyCells = board.flatMapIndexed { r, row ->
+            row.mapIndexedNotNull { c, tile -> if (tile == null) r to c else null }
         }
-        if (emptyCells.isNotEmpty()) {
-            val index = (posSeed * emptyCells.size).toInt().coerceIn(0, emptyCells.size - 1)
-            val (r, c) = emptyCells[index]
+        
+        return if (emptyCells.isNotEmpty()) {
+            val (r, c) = emptyCells[(posSeed * emptyCells.size).toInt().coerceIn(emptyCells.indices)]
             board[r][c] = Tile(id = id, value = value, isNew = true)
-            return id + 1
-        }
-        return id
+            id + 1
+        } else id
     }
 
     private fun addTile(
@@ -81,10 +76,7 @@ object GameEngine {
         valueSeed: Float,
         posSeed: Float,
         id: Int
-    ): Int {
-        val value = if (valueSeed < 0.9f) 2 else 4
-        return addTileWithValue(board, value, posSeed, id)
-    }
+    ): Int = addTileWithValue(board, if (valueSeed < 0.9f) 2 else 4, posSeed, id)
 
     fun move(
         board: List<List<Tile?>>,
@@ -110,7 +102,6 @@ object GameEngine {
             while (i < originalRow.size) {
                 if (i + 1 < originalRow.size && originalRow[i].value == originalRow[i + 1].value) {
                     val mergedValue = originalRow[i].value * 2
-                    // Use the ID of the tile being merged into
                     newRow.add(Tile(id = originalRow[i + 1].id, value = mergedValue))
                     scoreGained += mergedValue
                     i += 2
@@ -129,25 +120,16 @@ object GameEngine {
             Direction.DOWN -> rotate90CounterClockwise(shifted)
         }
 
-        val hasChanged = board.map { row -> row.map { it?.value } } != 
-                         finalBoard.map { row -> row.map { it?.value } }
+        val hasChanged = board.indices.any { r ->
+            board[r].indices.any { c -> board[r][c]?.value != finalBoard[r][c]?.value }
+        }
 
         return if (hasChanged) {
             val mutableFinal = finalBoard.map { it.toMutableList() }.toMutableList()
             val finalNextId = addTile(mutableFinal, valueSeed, posSeed, nextId)
-            MoveResult(
-                board = mutableFinal,
-                scoreGained = scoreGained,
-                nextId = finalNextId,
-                hasChanged = true,
-            )
+            MoveResult(mutableFinal, scoreGained, finalNextId, true)
         } else {
-            MoveResult(
-                board = board,
-                scoreGained = 0,
-                nextId = nextId,
-                hasChanged = false,
-            )
+            MoveResult(board, 0, nextId, false)
         }
     }
 

@@ -70,14 +70,14 @@ fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme) {
                 .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(6.dp)),
             contentAlignment = Alignment.Center
         ) {
-            val fontSize = when {
-                displayValue.intValue >= 1024 -> tileSize.value * 0.28f
-                displayValue.intValue >= 100 -> tileSize.value * 0.35f
-                else -> tileSize.value * 0.45f
+            val factor = when {
+                displayValue.intValue >= 1024 -> 0.28f
+                displayValue.intValue >= 100 -> 0.35f
+                else -> 0.45f
             }
             Text(
                 text = displayValue.intValue.toString(),
-                fontSize = fontSize.sp,
+                fontSize = (tileSize.value * factor).sp,
                 fontWeight = FontWeight.Bold,
                 color = textColor
             )

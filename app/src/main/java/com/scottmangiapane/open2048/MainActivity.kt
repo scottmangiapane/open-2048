@@ -5,12 +5,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.model.AppTheme
+import com.scottmangiapane.open2048.model.canResume
 import com.scottmangiapane.open2048.ui.GameScreen
 import com.scottmangiapane.open2048.ui.GameViewModel
 import com.scottmangiapane.open2048.ui.MenuScreen
@@ -27,9 +30,10 @@ open class MainActivity : ComponentActivity() {
             val viewModel: GameViewModel = viewModel()
             val state by viewModel.state.collectAsStateWithLifecycle()
             val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
-            val canResume by viewModel.canResume.collectAsStateWithLifecycle()
-            val hasProgress by viewModel.hasProgress.collectAsStateWithLifecycle()
             val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
+            
+            val canResume by remember { derivedStateOf { state.canResume } }
+            val hasProgress by remember { derivedStateOf { state.movesCount > 0 && !state.isGameOver } }
 
             LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
                 viewModel.stopTimer()

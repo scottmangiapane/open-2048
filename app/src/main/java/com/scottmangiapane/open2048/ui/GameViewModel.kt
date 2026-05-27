@@ -6,11 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.scottmangiapane.open2048.data.PreferenceRepository
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.logic.GameEngine
+import com.scottmangiapane.open2048.logic.GameTimer
 import com.scottmangiapane.open2048.model.*
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -18,10 +17,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = PreferenceRepository(application)
     private val iconManager = IconManager(application)
     private val vibrationManager = VibrationManager(application)
+    private val gameTimer = GameTimer(viewModelScope)
     
     private var previousStateForUndo: GameState? = null
     private var bestScoreJob: Job? = null
-    private var timerJob: Job? = null
     
     private val _state = MutableStateFlow(GameState())
     val state: StateFlow<GameState> = _state.asStateFlow()
@@ -31,14 +30,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     val userPreferences: StateFlow<UserPreferences> = prefs.userPreferences
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserPreferences())
-
-    val canResume: StateFlow<Boolean> = _state
-        .map { state -> state.canResume }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
-
-    val hasProgress: StateFlow<Boolean> = _state
-        .map { it.movesCount > 0 && !it.isGameOver }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
 
     init {
         observeTheme()
@@ -57,23 +48,23 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadInitialState() {
         viewModelScope.launch {
-            val saved = prefs.savedGameState.firstOrNull()
-            if (saved != null) {
-                _state.update {
-                    saved.copy(
-                        theme = it.theme,
-                        isGameOver = saved.isGameOver || GameEngine.isGameOver(saved.board) || (saved.timeLeftMs == 0L),
-                    )
-                }
-                observeBestScore(saved.gameMode)
-                if (!_state.value.isGameOver && saved.board.isNotEmpty()) {
-                    startTimer()
-                }
-            } else {
+            val saved = prefs.savedGameState.firstOrNull() ?: return@launch run {
                 val defaultMode = GameMode.Classic(4)
                 _state.update { it.copy(gameMode = defaultMode) }
                 observeBestScore(defaultMode)
                 _currentScreen.value = Screen.Menu
+            }
+
+            val isGameOver = saved.isGameOver || GameEngine.isGameOver(saved.board) || (saved.timeLeftMs == 0L)
+            _state.update {
+                saved.copy(
+                    theme = it.theme,
+                    isGameOver = isGameOver,
+                )
+            }
+            observeBestScore(saved.gameMode)
+            if (!isGameOver && saved.board.isNotEmpty()) {
+                startTimer()
             }
         }
     }
@@ -88,40 +79,31 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun startTimer() {
-        timerJob?.cancel()
-        timerJob = viewModelScope.launch {
-            var lastTick = System.currentTimeMillis()
-            while (isActive) {
-                delay(1000)
-                val currentTick = System.currentTimeMillis()
-                val delta = currentTick - lastTick
-                lastTick = currentTick
-                
-                var shouldStop = false
-                _state.update { state ->
-                    val newElapsed = state.elapsedTimeMs + delta
-                    if (state.gameMode is GameMode.Blitz) {
-                        val newTime = (state.timeLeftMs ?: 0L) - delta
-                        if (newTime <= 0) {
-                            shouldStop = true
-                            state.copy(timeLeftMs = 0, isGameOver = true, elapsedTimeMs = newElapsed)
-                        } else {
-                            state.copy(timeLeftMs = newTime, elapsedTimeMs = newElapsed)
-                        }
+        gameTimer.start { delta ->
+            var shouldStop = false
+            _state.update { state ->
+                val newElapsed = state.elapsedTimeMs + delta
+                if (state.gameMode is GameMode.Blitz) {
+                    val newTime = (state.timeLeftMs ?: 0L) - delta
+                    if (newTime <= 0) {
+                        shouldStop = true
+                        state.copy(timeLeftMs = 0, isGameOver = true, elapsedTimeMs = newElapsed)
                     } else {
-                        state.copy(elapsedTimeMs = newElapsed)
+                        state.copy(timeLeftMs = newTime, elapsedTimeMs = newElapsed)
                     }
+                } else {
+                    state.copy(elapsedTimeMs = newElapsed)
                 }
-                if (shouldStop) {
-                    saveGame(_state.value)
-                    break
-                }
+            }
+            if (shouldStop) {
+                gameTimer.stop()
+                saveGame(_state.value)
             }
         }
     }
 
     fun stopTimer() {
-        timerJob?.cancel()
+        gameTimer.stop()
         saveGame(_state.value)
     }
 
@@ -144,7 +126,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun restartGame(mode: GameMode? = null) {
         val currentMode = mode ?: _state.value.gameMode
         previousStateForUndo = null
-        timerJob?.cancel()
+        gameTimer.stop()
         
         observeBestScore(currentMode)
 
@@ -253,10 +235,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         if (!result.hasChanged) return
 
-        previousStateForUndo = currentState
         val newScore = currentState.score + result.scoreGained
         val bestScore = maxOf(currentState.bestScore, newScore)
-
         if (newScore > currentState.bestScore) {
             viewModelScope.launch { prefs.updateBestScore(currentState.gameMode.id, newScore) }
         }
@@ -264,14 +244,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val isGameOver = GameEngine.isGameOver(result.board) || (currentState.timeLeftMs == 0L)
         if (isGameOver) stopTimer()
 
-        val prefs = userPreferences.value
-        if (prefs.vibrationEnabled) {
+        if (userPreferences.value.vibrationEnabled) {
             vibrationManager.vibrateForScore(result.scoreGained)
         }
 
         val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
         val maxTile = result.board.flatten().filterNotNull().maxOfOrNull { it.value } ?: 0
 
+        previousStateForUndo = currentState
         _state.update { state ->
             state.copy(
                 board = result.board,
