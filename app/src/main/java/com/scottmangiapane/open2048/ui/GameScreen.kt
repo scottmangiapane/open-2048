@@ -57,7 +57,6 @@ fun GameScreen(
             preferences = userPreferences,
             onDismiss = { showSettings = false },
             onThemeChange = { viewModel.setTheme(it) },
-            onSoundsToggle = { viewModel.setSoundsEnabled(it) },
             onVibrationToggle = { viewModel.setVibrationEnabled(it) },
             onControlModeChange = { viewModel.setControlMode(it) },
             onShowUndoToggle = { viewModel.setShowUndo(it) },

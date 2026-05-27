@@ -51,7 +51,6 @@ class MainActivity : ComponentActivity() {
                             onStartGame = { mode -> viewModel.restartGame(mode) },
                             onResumeGame = { viewModel.resumeGame() },
                             onSetTheme = { viewModel.setTheme(it) },
-                            onSetSoundsEnabled = { viewModel.setSoundsEnabled(it) },
                             onSetVibrationEnabled = { viewModel.setVibrationEnabled(it) },
                             onSetControlMode = { viewModel.setControlMode(it) },
                             onSetShowUndo = { viewModel.setShowUndo(it) },

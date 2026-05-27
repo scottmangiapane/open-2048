@@ -16,8 +16,8 @@ import kotlin.random.Random
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = PreferenceRepository(application)
-    private val soundManager = SoundManager(application)
     private val iconManager = IconManager(application)
+    private val vibrationManager = VibrationManager(application)
     
     private var previousStateForUndo: GameState? = null
     private var bestScoreJob: Job? = null
@@ -100,7 +100,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         val newTime = (state.timeLeftMs ?: 0L) - delta
                         if (newTime <= 0) {
                             shouldStop = true
-                            if (userPreferences.value.soundsEnabled) soundManager.playGameOver()
                             state.copy(timeLeftMs = 0, isGameOver = true, elapsedTimeMs = newElapsed)
                         } else {
                             state.copy(timeLeftMs = newTime, elapsedTimeMs = newElapsed)
@@ -209,10 +208,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { prefs.setTheme(theme) }
     }
 
-    fun setSoundsEnabled(enabled: Boolean) {
-        viewModelScope.launch { prefs.setSoundsEnabled(enabled) }
-    }
-
     fun setVibrationEnabled(enabled: Boolean) {
         viewModelScope.launch { prefs.setVibrationEnabled(enabled) }
     }
@@ -260,7 +255,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val isGameOver = GameEngine.isGameOver(result.board) || (currentState.timeLeftMs == 0L)
         if (isGameOver) stopTimer()
 
-        playMoveEffects(result.scoreGained > 0, isGameOver)
+        val prefs = userPreferences.value
+        if (prefs.vibrationEnabled) {
+            vibrationManager.vibrate()
+        }
 
         val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
 
@@ -280,22 +278,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         saveGame(_state.value)
     }
 
-    private fun playMoveEffects(hasMerged: Boolean, isGameOver: Boolean) {
-        val prefs = userPreferences.value
-        if (prefs.soundsEnabled) {
-            when {
-                isGameOver -> soundManager.playGameOver()
-                hasMerged -> soundManager.playMerge()
-                else -> soundManager.playMove()
-            }
-        }
-        if (prefs.vibrationEnabled) {
-            soundManager.vibrate()
-        }
-    }
-
     override fun onCleared() {
         super.onCleared()
-        soundManager.release()
     }
 }

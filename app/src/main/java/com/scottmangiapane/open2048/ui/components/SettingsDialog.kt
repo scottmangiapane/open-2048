@@ -26,7 +26,6 @@ fun SettingsDialog(
     preferences: UserPreferences,
     onDismiss: () -> Unit,
     onThemeChange: (AppTheme) -> Unit,
-    onSoundsToggle: (Boolean) -> Unit,
     onVibrationToggle: (Boolean) -> Unit,
     onControlModeChange: (ControlMode) -> Unit,
     onShowUndoToggle: (Boolean) -> Unit,
@@ -125,7 +124,6 @@ fun SettingsDialog(
                         }
 
                         // Toggles
-                        ToggleSetting("Sounds", preferences.soundsEnabled, onSoundsToggle)
                         ToggleSetting("Vibration", preferences.vibrationEnabled, onVibrationToggle)
                         ToggleSetting("Show Stopwatch", preferences.showStopwatch, onShowStopwatchToggle)
                         ToggleSetting("Show Undo Button", preferences.showUndo, onShowUndoToggle)

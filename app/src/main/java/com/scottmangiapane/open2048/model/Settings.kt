@@ -6,7 +6,6 @@ enum class ControlMode {
 
 data class UserPreferences(
     val theme: AppTheme = AppTheme.LIGHT,
-    val soundsEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
     val controlMode: ControlMode = ControlMode.BOTH,
     val showUndo: Boolean = true,
