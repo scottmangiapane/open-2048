@@ -164,29 +164,13 @@ fun MenuScreen(
 
 @Composable
 fun Logo2048(isLandscape: Boolean) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = "2048",
-            fontSize = if (isLandscape) 40.sp else 64.sp,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.onBackground,
-            letterSpacing = if (isLandscape) (-1).sp else (-3).sp
-        )
-        Surface(
-            color = MaterialTheme.colorScheme.primary,
-            shape = RoundedCornerShape(4.dp),
-            modifier = Modifier.offset(y = if (isLandscape) (-2).dp else (-8).dp)
-        ) {
-            Text(
-                text = "OPEN SOURCE",
-                color = Color.White,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                letterSpacing = 1.5.sp
-            )
-        }
-    }
+    Text(
+        text = "2048",
+        fontSize = if (isLandscape) 48.sp else 72.sp,
+        fontWeight = FontWeight.Black,
+        color = MaterialTheme.colorScheme.onBackground,
+        letterSpacing = if (isLandscape) (-2).sp else (-4).sp
+    )
 }
 
 @Composable

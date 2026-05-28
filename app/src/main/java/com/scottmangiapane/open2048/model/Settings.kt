@@ -4,11 +4,19 @@ enum class ControlMode {
     GESTURES, ARROWS, BOTH
 }
 
+enum class AnimationSpeed(val label: String) {
+    NONE("Off"),
+    FAST("Fast"),
+    NORMAL("Normal"),
+    SLOW("Slow")
+}
+
 data class UserPreferences(
     val theme: AppTheme = AppTheme.LIGHT,
     val vibrationEnabled: Boolean = true,
     val controlMode: ControlMode = ControlMode.GESTURES,
     val showUndo: Boolean = true,
     val showStopwatch: Boolean = true,
-    val confettiEnabled: Boolean = true
+    val confettiEnabled: Boolean = true,
+    val animationSpeed: AnimationSpeed = AnimationSpeed.NORMAL
 )

@@ -1,19 +1,8 @@
 package com.scottmangiapane.open2048.ui.components
 
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,17 +13,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.scottmangiapane.open2048.model.AnimationSpeed
 import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.GameState
 import com.scottmangiapane.open2048.model.Tile
 
 @Composable
-fun BoardContainer(state: GameState, currentTheme: AppTheme) {
+fun BoardContainer(state: GameState, currentTheme: AppTheme, animationSpeed: AnimationSpeed) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -42,7 +31,7 @@ fun BoardContainer(state: GameState, currentTheme: AppTheme) {
             .background(MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(12.dp)) {
-            GameBoard(board = state.board, currentTheme = currentTheme)
+            GameBoard(board = state.board, currentTheme = currentTheme, animationSpeed = animationSpeed)
         }
 
         if (state.isGameOver) {
@@ -65,7 +54,7 @@ fun BoardContainer(state: GameState, currentTheme: AppTheme) {
 }
 
 @Composable
-private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme) {
+private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme, animationSpeed: AnimationSpeed) {
     val size = board.size
     if (size == 0) return
 
@@ -99,6 +88,19 @@ private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme) {
             }.sortedBy { it.first.id }
         }
 
+        val stiffness = when (animationSpeed) {
+            AnimationSpeed.NONE -> 1000000f // effectively instant
+            AnimationSpeed.FAST -> Spring.StiffnessHigh
+            AnimationSpeed.NORMAL -> Spring.StiffnessMedium
+            AnimationSpeed.SLOW -> Spring.StiffnessLow
+        }
+
+        val animSpec = if (animationSpeed == AnimationSpeed.NONE) {
+            snap<androidx.compose.ui.unit.Dp>()
+        } else {
+            spring(Spring.DampingRatioNoBouncy, stiffness)
+        }
+
         activeTiles.forEach { (tile, r, c) ->
             key(tile.id) {
                 val targetX = (tileSize + spacingDp) * c.toFloat()
@@ -106,12 +108,12 @@ private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme) {
                 
                 val animX by animateDpAsState(
                     targetValue = targetX,
-                    animationSpec = spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMedium),
+                    animationSpec = animSpec,
                     label = "glideX"
                 )
                 val animY by animateDpAsState(
                     targetValue = targetY,
-                    animationSpec = spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMedium),
+                    animationSpec = animSpec,
                     label = "glideY"
                 )
 
@@ -120,7 +122,12 @@ private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme) {
                         .size(tileSize)
                         .offset(x = animX, y = animY)
                 ) {
-                    TileView(tile = tile, tileSize = tileSize, currentTheme = currentTheme)
+                    TileView(
+                        tile = tile,
+                        tileSize = tileSize,
+                        currentTheme = currentTheme,
+                        animationSpeed = animationSpeed
+                    )
                 }
             }
         }

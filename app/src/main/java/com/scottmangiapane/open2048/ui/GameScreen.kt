@@ -203,7 +203,11 @@ private fun GameLayout(
                     .aspectRatio(1f)
                     .sizeIn(maxWidth = contentMaxWidth)
             ) {
-                BoardContainer(state = state, currentTheme = state.theme ?: userPreferences.theme)
+                BoardContainer(
+                    state = state,
+                    currentTheme = state.theme ?: userPreferences.theme,
+                    animationSpeed = userPreferences.animationSpeed
+                )
             }
 
             if (showControls) {
@@ -233,7 +237,11 @@ private fun GameLayout(
                     .aspectRatio(1f, matchHeightConstraintsFirst = true)
                     .sizeIn(maxWidth = contentMaxWidth)
             ) {
-                BoardContainer(state = state, currentTheme = state.theme ?: userPreferences.theme)
+                BoardContainer(
+                    state = state,
+                    currentTheme = state.theme ?: userPreferences.theme,
+                    animationSpeed = userPreferences.animationSpeed
+                )
             }
             Spacer(modifier = Modifier.height(24.dp))
             if (showControls) {

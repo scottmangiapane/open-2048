@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.scottmangiapane.open2048.model.AnimationSpeed
 import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.ControlMode
 
@@ -69,10 +70,16 @@ fun SettingsScreen(
         ) {
             // Appearance Section
             SettingsGroup(title = "APPEARANCE") {
-                ThemeSelector(
-                    currentTheme = preferences.theme,
-                    onThemeChange = { viewModel.setTheme(it) }
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    ThemeSelector(
+                        currentTheme = preferences.theme,
+                        onThemeChange = { viewModel.setTheme(it) }
+                    )
+                    AnimationSpeedSelector(
+                        currentSpeed = preferences.animationSpeed,
+                        onSpeedChange = { viewModel.setAnimationSpeed(it) }
+                    )
+                }
             }
 
             // Controls Section
@@ -179,6 +186,48 @@ private fun ThemeSelector(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnimationSpeedSelector(
+    currentSpeed: AnimationSpeed,
+    onSpeedChange: (AnimationSpeed) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = "Animation Speed",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            AnimationSpeed.entries.forEach { speed ->
+                val selected = currentSpeed == speed
+                Surface(
+                    onClick = { onSpeedChange(speed) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                    contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
+                    border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = speed.label,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
                 }
             }
         }

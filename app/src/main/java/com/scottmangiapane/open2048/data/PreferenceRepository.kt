@@ -27,6 +27,7 @@ class PreferenceRepository(private val context: Context) {
         private val SHOW_UNDO_KEY = booleanPreferencesKey("show_undo")
         private val SHOW_STOPWATCH_KEY = booleanPreferencesKey("show_stopwatch")
         private val CONFETTI_ENABLED_KEY = booleanPreferencesKey("confetti_enabled")
+        private val ANIMATION_SPEED_KEY = stringPreferencesKey("animation_speed")
         
         fun getBestScoreKey(modeId: String) = intPreferencesKey("best_score_$modeId")
         fun getHighestTileKey(modeId: String) = intPreferencesKey("highest_tile_$modeId")
@@ -48,7 +49,8 @@ class PreferenceRepository(private val context: Context) {
             controlMode = preferences[CONTROL_MODE_KEY]?.let { runCatching { ControlMode.valueOf(it) }.getOrNull() } ?: ControlMode.GESTURES,
             showUndo = preferences[SHOW_UNDO_KEY] ?: true,
             showStopwatch = preferences[SHOW_STOPWATCH_KEY] ?: true,
-            confettiEnabled = preferences[CONFETTI_ENABLED_KEY] ?: true
+            confettiEnabled = preferences[CONFETTI_ENABLED_KEY] ?: true,
+            animationSpeed = preferences[ANIMATION_SPEED_KEY]?.let { runCatching { AnimationSpeed.valueOf(it) }.getOrNull() } ?: AnimationSpeed.NORMAL
         )
     }
 
@@ -169,6 +171,10 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun setConfettiEnabled(enabled: Boolean) {
         context.dataStore.edit { it[CONFETTI_ENABLED_KEY] = enabled }
+    }
+
+    suspend fun setAnimationSpeed(speed: AnimationSpeed) {
+        context.dataStore.edit { it[ANIMATION_SPEED_KEY] = speed.name }
     }
 
     suspend fun saveGameState(state: GameState) {
