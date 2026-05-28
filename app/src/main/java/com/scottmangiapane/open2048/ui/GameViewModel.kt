@@ -82,14 +82,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         gameTimer.start { delta ->
             var shouldStop = false
 
-            // Track total time spent
-            val currentMode = _state.value.gameMode
-            viewModelScope.launch {
-                val aggregateId = if (currentMode is GameMode.Daily) "daily" else currentMode.id
-                prefs.addToTotalTime(aggregateId, delta)
+            // Track total time spent only if the game has actually started (at least one move)
+            val currentState = _state.value
+            if (currentState.movesCount > 0) {
+                viewModelScope.launch {
+                    val aggregateId = if (currentState.gameMode is GameMode.Daily) "daily" else currentState.gameMode.id
+                    prefs.addToTotalTime(aggregateId, delta)
+                }
             }
 
             _state.update { state ->
+                if (state.movesCount == 0) return@update state
+
                 val newElapsed = state.elapsedTimeMs + delta
                 if (state.gameMode is GameMode.Blitz) {
                     val newTime = (state.timeLeftMs ?: 0L) - delta
@@ -149,12 +153,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val newState = createNewGameState(currentMode)
         _state.update { newState.copy(bestScore = it.bestScore, theme = it.theme) }
         saveGame(_state.value)
-
-        // Increment games played
-        viewModelScope.launch {
-            val aggregateId = if (currentMode is GameMode.Daily) "daily" else currentMode.id
-            prefs.incrementGamesPlayed(aggregateId)
-        }
 
         _currentScreen.value = Screen.Game
         startTimer()
@@ -308,6 +306,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         )
 
         if (!result.hasChanged) return
+
+        // Increment games played on the first valid move
+        if (currentState.movesCount == 0) {
+            viewModelScope.launch {
+                val aggregateId = if (currentState.gameMode is GameMode.Daily) "daily" else currentState.gameMode.id
+                prefs.incrementGamesPlayed(aggregateId)
+            }
+        }
 
         val newScore = currentState.score + result.scoreGained
         val bestScore = maxOf(currentState.bestScore, newScore)
