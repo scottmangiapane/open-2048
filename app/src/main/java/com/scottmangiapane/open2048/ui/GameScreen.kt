@@ -53,7 +53,7 @@ fun GameScreen(
 
     LaunchedEffect(state.highestTile) {
         val target = state.gameMode.winCondition
-        if (userPreferences.confettiEnabled && state.highestTile >= target && state.highestTile > highestTileSeen) {
+        if (state.highestTile >= target && state.highestTile > highestTileSeen) {
             showConfetti = true
             highestTileSeen = state.highestTile
         } else if (state.highestTile < highestTileSeen) {

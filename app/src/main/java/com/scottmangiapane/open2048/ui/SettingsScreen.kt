@@ -121,16 +121,6 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
                     ToggleRow(
-                        label = "Confetti Effects",
-                        icon = Icons.Rounded.Celebration,
-                        checked = preferences.confettiEnabled,
-                        onCheckedChange = { viewModel.setConfettiEnabled(it) }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    ToggleRow(
                         label = "Haptic Feedback",
                         icon = Icons.Rounded.Vibration,
                         checked = preferences.vibrationEnabled,

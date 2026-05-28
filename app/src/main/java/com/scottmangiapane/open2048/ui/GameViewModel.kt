@@ -232,10 +232,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { prefs.setShowStopwatch(show) }
     }
 
-    fun setConfettiEnabled(enabled: Boolean) {
-        viewModelScope.launch { prefs.setConfettiEnabled(enabled) }
-    }
-
     fun setAnimationSpeed(speed: AnimationSpeed) {
         viewModelScope.launch { prefs.setAnimationSpeed(speed) }
     }

@@ -26,7 +26,6 @@ class PreferenceRepository(private val context: Context) {
         private val CONTROL_MODE_KEY = stringPreferencesKey("control_mode")
         private val SHOW_UNDO_KEY = booleanPreferencesKey("show_undo")
         private val SHOW_STOPWATCH_KEY = booleanPreferencesKey("show_stopwatch")
-        private val CONFETTI_ENABLED_KEY = booleanPreferencesKey("confetti_enabled")
         private val ANIMATION_SPEED_KEY = stringPreferencesKey("animation_speed")
         
         fun getBestScoreKey(modeId: String) = intPreferencesKey("best_score_$modeId")
@@ -49,7 +48,6 @@ class PreferenceRepository(private val context: Context) {
             controlMode = preferences[CONTROL_MODE_KEY]?.let { runCatching { ControlMode.valueOf(it) }.getOrNull() } ?: ControlMode.GESTURES,
             showUndo = preferences[SHOW_UNDO_KEY] ?: true,
             showStopwatch = preferences[SHOW_STOPWATCH_KEY] ?: true,
-            confettiEnabled = preferences[CONFETTI_ENABLED_KEY] ?: true,
             animationSpeed = preferences[ANIMATION_SPEED_KEY]?.let { runCatching { AnimationSpeed.valueOf(it) }.getOrNull() } ?: AnimationSpeed.NORMAL
         )
     }
@@ -167,10 +165,6 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun setShowStopwatch(show: Boolean) {
         context.dataStore.edit { it[SHOW_STOPWATCH_KEY] = show }
-    }
-
-    suspend fun setConfettiEnabled(enabled: Boolean) {
-        context.dataStore.edit { it[CONFETTI_ENABLED_KEY] = enabled }
     }
 
     suspend fun setAnimationSpeed(speed: AnimationSpeed) {
