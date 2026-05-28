@@ -36,7 +36,7 @@ fun SettingsScreen(
         topBar = {
             TopAppBar(
                 modifier = Modifier.windowInsetsPadding(
-                    WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
+                    WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal),
                 ),
                 title = {
                     Text(
@@ -70,16 +70,18 @@ fun SettingsScreen(
         ) {
             // Appearance Section
             SettingsGroup(title = "APPEARANCE") {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    ThemeSelector(
-                        currentTheme = preferences.theme,
-                        onThemeChange = { viewModel.setTheme(it) }
-                    )
-                    AnimationSpeedSelector(
-                        currentSpeed = preferences.animationSpeed,
-                        onSpeedChange = { viewModel.setAnimationSpeed(it) }
-                    )
-                }
+                ThemeSelector(
+                    currentTheme = preferences.theme,
+                    onThemeChange = { viewModel.setTheme(it) }
+                )
+            }
+
+            // Animation Section
+            SettingsGroup(title = "ANIMATION SPEED") {
+                AnimationSpeedSelector(
+                    currentSpeed = preferences.animationSpeed,
+                    onSpeedChange = { viewModel.setAnimationSpeed(it) }
+                )
             }
 
             // Controls Section
@@ -187,19 +189,11 @@ private fun AnimationSpeedSelector(
     currentSpeed: AnimationSpeed,
     onSpeedChange: (AnimationSpeed) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = "Animation Speed",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 4.dp)
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            AnimationSpeed.entries.forEach { speed ->
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        AnimationSpeed.entries.forEach { speed ->
                 val selected = currentSpeed == speed
                 Surface(
                     onClick = { onSpeedChange(speed) },
@@ -222,7 +216,6 @@ private fun AnimationSpeedSelector(
             }
         }
     }
-}
 
 @Composable
 private fun ControlModeSelector(
