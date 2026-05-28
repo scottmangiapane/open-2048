@@ -125,9 +125,9 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
     val totalWins by viewModel.getWinCount("daily").collectAsStateWithLifecycle()
 
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
         shape = RoundedCornerShape(12.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
@@ -137,8 +137,18 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("Today's Best", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                    Text(bestScore.toString(), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Black)
+                    Text(
+                        text = "Today's Best",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = bestScore.toString(),
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
                 Icon(Icons.Rounded.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(48.dp))
             }
@@ -168,9 +178,9 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
     val totalTime by viewModel.getTotalTime(mode.id).collectAsStateWithLifecycle()
 
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
         shape = RoundedCornerShape(12.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -190,7 +200,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -205,8 +215,18 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
 @Composable
 private fun StatMicroItem(modifier: Modifier = Modifier, label: String, value: String) {
     Column(modifier = modifier) {
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            fontWeight = FontWeight.Medium
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 

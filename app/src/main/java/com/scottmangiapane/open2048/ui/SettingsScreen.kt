@@ -56,7 +56,7 @@ fun SettingsScreen(
                 )
             )
         },
-        containerColor = Color.Transparent // Parent Surface in MainActivity handles this
+        containerColor = Color.Transparent
     ) { padding ->
         Column(
             modifier = Modifier
@@ -89,7 +89,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                             shape = RoundedCornerShape(12.dp)
                         )
                 ) {
@@ -101,7 +101,7 @@ fun SettingsScreen(
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
                     ToggleRow(
                         label = "Show Undo Button",
@@ -111,7 +111,7 @@ fun SettingsScreen(
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
                     ToggleRow(
                         label = "Confetti Effects",
@@ -121,7 +121,7 @@ fun SettingsScreen(
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
                     ToggleRow(
                         label = "Haptic Feedback",
@@ -170,9 +170,9 @@ private fun ThemeSelector(
                     .weight(1f)
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                 contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
-                border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
@@ -195,7 +195,7 @@ private fun ControlModeSelector(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                 shape = RoundedCornerShape(12.dp)
             )
     ) {
@@ -211,7 +211,10 @@ private fun ControlModeSelector(
                 RadioButton(
                     selected = selected,
                     onClick = { onModeChange(mode) },
-                    colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = MaterialTheme.colorScheme.primary,
+                        unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -221,14 +224,14 @@ private fun ControlModeSelector(
                         ControlMode.BOTH -> "Gestures & Arrows"
                     },
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                    color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
                 )
             }
             if (index < ControlMode.entries.size - 1) {
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                 )
             }
         }
