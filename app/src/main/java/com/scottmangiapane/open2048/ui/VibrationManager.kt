@@ -23,11 +23,11 @@ class VibrationManager(context: Context) {
      */
     fun vibrateForScore(score: Int) {
         when {
-            score == 0 -> vibrate(10, 50) // Very light tap for a move with no merge
-            score <= 8 -> vibrate(20, 100) // Light merge (2+2 or 4+4)
-            score <= 64 -> vibrate(40, 150) // Medium merge
-            score <= 512 -> vibrate(60, 200) // Strong merge
-            else -> vibrate(100, 255) // Heavy merge (1024+)
+            score == 0 -> vibrate(10, 20) // Subtle tap for standard move
+            score <= 32 -> vibrate(20, 45) // Mild merge (up to 32)
+            score <= 128 -> vibrate(40, 90) // Medium merge
+            score <= 512 -> vibrate(60, 160) // Strong merge
+            else -> vibrate(100, 220) // Heavy merge (1024+)
         }
     }
 }
