@@ -332,16 +332,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
         val maxTile = result.board.flatten().filterNotNull().maxOfOrNull { it.value } ?: 0
-        val reached2048ThisMove = maxTile >= 2048 && !currentState.hasReached2048
+        val targetTile = currentState.gameMode.winCondition
+        val reachedTargetThisMove = maxTile >= targetTile && !currentState.hasWon
         
-        val movesTo2048 = if (reached2048ThisMove) currentState.movesCount + 1 else currentState.movesTo2048
-        val timeTo2048 = if (reached2048ThisMove) currentState.elapsedTimeMs else currentState.timeTo2048
+        val movesToWin = if (reachedTargetThisMove) currentState.movesCount + 1 else currentState.movesToWin
+        val timeToWin = if (reachedTargetThisMove) currentState.elapsedTimeMs else currentState.timeToWin
 
-        if (reached2048ThisMove) {
+        if (reachedTargetThisMove) {
             viewModelScope.launch {
                 prefs.incrementWinCount(if (currentState.gameMode is GameMode.Daily) "daily" else currentState.gameMode.id)
-                prefs.updateFewestMoves(currentState.gameMode.id, movesTo2048!!)
-                prefs.updateFastestTime(currentState.gameMode.id, timeTo2048!!)
+                prefs.updateFewestMoves(currentState.gameMode.id, movesToWin!!)
+                prefs.updateFastestTime(currentState.gameMode.id, timeToWin!!)
             }
         }
 
@@ -364,9 +365,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 bestScore = bestScore,
                 movesCount = state.movesCount + 1,
                 highestTile = maxOf(state.highestTile, maxTile),
-                hasReached2048 = state.hasReached2048 || reached2048ThisMove,
-                movesTo2048 = movesTo2048,
-                timeTo2048 = timeTo2048
+                hasWon = state.hasWon || reachedTargetThisMove,
+                movesToWin = movesToWin,
+                timeToWin = timeToWin
             )
         }
         saveGame(_state.value)
