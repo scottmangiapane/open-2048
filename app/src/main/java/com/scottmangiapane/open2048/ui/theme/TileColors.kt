@@ -43,7 +43,7 @@ object TileColors {
                     512 -> R.color.tile_modern_512
                     1024 -> R.color.tile_modern_1024
                     2048 -> R.color.tile_modern_2048
-                    else -> R.color.slate_900
+                    else -> R.color.slate_50
                 }
             )
         } else {
@@ -73,7 +73,11 @@ object TileColors {
         }
         
         return if (theme == AppTheme.DARK) {
-            if (value <= 4) Color.White.copy(alpha = 0.9f) else Color.White
+            when {
+                value <= 4 -> Color.White.copy(alpha = 0.9f)
+                value > 2048 -> colorResource(R.color.slate_900)
+                else -> Color.White
+            }
         } else {
             colorResource(if (value <= 4) R.color.classic_text_dark else R.color.white)
         }
