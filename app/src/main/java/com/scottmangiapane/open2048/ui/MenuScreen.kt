@@ -67,56 +67,68 @@ fun MenuScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .displayCutoutPadding()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = if (isLandscape) 24.dp else 48.dp),
+                .padding(horizontal = 24.dp)
+                .padding(top = if (isLandscape) 8.dp else 48.dp, bottom = 8.dp)
+                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(if (isLandscape) 16.dp else 24.dp, Alignment.CenterVertically)
+            verticalArrangement = Arrangement.spacedBy(if (isLandscape) 12.dp else 24.dp, Alignment.CenterVertically)
         ) {
-            Text(
-                text = "2048",
-                fontSize = if (isLandscape) 56.sp else 64.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            Logo2048(isLandscape)
 
             if (isLandscape) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.Top
                 ) {
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        ResumeSection(canResume, onResumeGame)
-                        ChallengeSection(handleStartGame, amber)
+                        if (canResume) {
+                            MenuSection("CONTINUE") {
+                                MenuButton("Resume", Icons.Rounded.PlayArrow, onResumeGame, MaterialTheme.colorScheme.secondary)
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                        MenuSection("CHALLENGE") {
+                            MenuButton("Daily Challenge", Icons.Rounded.EmojiEvents, { handleStartGame(GameMode.Daily.today()) }, amber)
+                        }
                     }
 
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        ClassicSection(handleStartGame)
+                        MenuSection("CLASSIC") {
+                            ClassicModes(handleStartGame)
+                        }
                     }
 
                     MenuColumn(modifier = Modifier.weight(1f)) {
-                        BlitzSection(handleStartGame)
+                        MenuSection("BLITZ") {
+                            BlitzModes(handleStartGame)
+                        }
                     }
                 }
             } else {
-                if (canResume) {
-                    MenuButton("Resume Game", Icons.Rounded.PlayArrow, onResumeGame, MaterialTheme.colorScheme.secondary)
-                }
-
-                Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        ChallengeSection(handleStartGame, amber)
+                Column(
+                    modifier = Modifier.widthIn(max = 280.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (canResume) {
+                        MenuSection("CONTINUE") {
+                            MenuButton("Resume", Icons.Rounded.PlayArrow, onResumeGame, MaterialTheme.colorScheme.secondary)
+                        }
                     }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        ClassicSection(handleStartGame)
+                    MenuSection("CHALLENGE") {
+                        MenuButton("Daily Challenge", Icons.Rounded.EmojiEvents, { handleStartGame(GameMode.Daily.today()) }, amber)
                     }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        BlitzSection(handleStartGame)
+                    MenuSection("CLASSIC") {
+                        ClassicModes(handleStartGame)
+                    }
+                    MenuSection("BLITZ") {
+                        BlitzModes(handleStartGame)
                     }
                 }
             }
@@ -127,6 +139,7 @@ fun MenuScreen(
                 .align(Alignment.TopEnd)
                 .systemBarsPadding()
                 .padding(8.dp)
+                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
                 .zIndex(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -150,35 +163,55 @@ fun MenuScreen(
 }
 
 @Composable
-private fun ResumeSection(canResume: Boolean, onResumeGame: () -> Unit) {
-    if (canResume) {
-        MenuCategoryHeader("CONTINUE")
-        MenuButton("Resume", Icons.Rounded.PlayArrow, onResumeGame, MaterialTheme.colorScheme.secondary)
-        Spacer(modifier = Modifier.height(16.dp))
+fun Logo2048(isLandscape: Boolean) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = "2048",
+            fontSize = if (isLandscape) 40.sp else 64.sp,
+            fontWeight = FontWeight.Black,
+            color = MaterialTheme.colorScheme.onBackground,
+            letterSpacing = if (isLandscape) (-1).sp else (-3).sp
+        )
+        Surface(
+            color = MaterialTheme.colorScheme.primary,
+            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.offset(y = if (isLandscape) (-2).dp else (-8).dp)
+        ) {
+            Text(
+                text = "OPEN SOURCE",
+                color = Color.White,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                letterSpacing = 1.5.sp
+            )
+        }
     }
 }
 
 @Composable
-private fun ChallengeSection(onStartGame: (GameMode) -> Unit, amber: Color) {
-    MenuCategoryHeader("CHALLENGE")
-    MenuButton("Daily Challenge", Icons.Rounded.EmojiEvents, { onStartGame(GameMode.Daily.today()) }, amber)
-}
-
-@Composable
-private fun ClassicSection(onStartGame: (GameMode) -> Unit) {
-    MenuCategoryHeader("CLASSIC")
-    ClassicModes(onStartGame)
-}
-
-@Composable
-private fun BlitzSection(onStartGame: (GameMode) -> Unit) {
-    MenuCategoryHeader("BLITZ")
-    BlitzModes(onStartGame)
+private fun MenuSection(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.primary,
+            letterSpacing = 1.2.sp
+        )
+        content()
+    }
 }
 
 @Composable
 private fun ClassicModes(onStartGame: (GameMode) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         MenuButton("Classic 4x4", Icons.Rounded.Grid4x4, { onStartGame(GameMode.Classic(4)) })
         MenuButton("Small 3x3", Icons.Rounded.Grid3x3, { onStartGame(GameMode.Classic(3)) })
         MenuButton("Large 5x5", Icons.Rounded.GridView, { onStartGame(GameMode.Classic(5)) })
@@ -187,22 +220,10 @@ private fun ClassicModes(onStartGame: (GameMode) -> Unit) {
 
 @Composable
 private fun BlitzModes(onStartGame: (GameMode) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         MenuButton("2 Minute Blitz", Icons.Rounded.HourglassBottom, { onStartGame(GameMode.Blitz(2)) })
         MenuButton("5 Minute Blitz", Icons.Rounded.HourglassTop, { onStartGame(GameMode.Blitz(5)) })
     }
-}
-
-@Composable
-private fun MenuCategoryHeader(text: String) {
-    Text(
-        text = text,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.ExtraBold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 8.dp),
-        letterSpacing = 1.sp
-    )
 }
 
 @Composable
@@ -211,7 +232,13 @@ private fun MenuColumn(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
-        modifier = modifier.widthIn(max = 240.dp),
+        modifier = modifier
+            .widthIn(max = 280.dp)
+            .background(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         content = content
     )
@@ -228,10 +255,10 @@ private fun MenuButton(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(48.dp),
         colors = ButtonDefaults.buttonColors(containerColor = containerColor),
-        shape = RoundedCornerShape(8.dp),
-        contentPadding = PaddingValues(horizontal = 20.dp)
+        shape = RoundedCornerShape(10.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -241,19 +268,19 @@ private fun MenuButton(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(18.dp),
                 tint = Color.White
             )
             Text(
                 text = text,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
-                fontSize = 18.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
             // Spacer to keep text centered relative to the whole button width
-            Spacer(modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.size(18.dp))
         }
     }
 }

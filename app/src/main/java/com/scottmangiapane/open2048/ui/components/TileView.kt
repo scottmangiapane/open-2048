@@ -64,10 +64,8 @@ fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme) {
                     scaleX = scale.value
                     scaleY = scale.value
                 }
-                .shadow(2.dp, RoundedCornerShape(6.dp))
-                .clip(RoundedCornerShape(6.dp))
-                .background(backgroundColor)
-                .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(6.dp)),
+                .clip(RoundedCornerShape(8.dp))
+                .background(backgroundColor),
             contentAlignment = Alignment.Center
         ) {
             val factor = when {

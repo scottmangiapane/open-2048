@@ -38,9 +38,7 @@ fun BoardContainer(state: GameState, currentTheme: AppTheme) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .shadow(4.dp, RoundedCornerShape(8.dp))
-            .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(12.dp)) {
@@ -52,7 +50,7 @@ fun BoardContainer(state: GameState, currentTheme: AppTheme) {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
-                    .clip(RoundedCornerShape(8.dp)),
+                    .clip(RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -86,7 +84,7 @@ private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme) {
                                 .size(tileSize)
                                 .background(
                                     MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
-                                    RoundedCornerShape(6.dp)
+                                    RoundedCornerShape(8.dp)
                                 )
                         )
                     }

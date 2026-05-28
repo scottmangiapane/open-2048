@@ -60,7 +60,7 @@ fun StatsScreen(
                 .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(32.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Daily Challenge Hero Card
             val today = GameMode.Daily.today()
@@ -128,10 +128,9 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
     Surface(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
         shape = RoundedCornerShape(12.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -151,23 +150,23 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                Icon(Icons.Rounded.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(48.dp))
+                Icon(Icons.Rounded.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(40.dp))
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text("TODAY", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatMicroItem(Modifier.weight(1f), "Max Tile", highestTile.toString())
                 StatMicroItem(Modifier.weight(1f), "Fewest Moves", if (fewestMoves == Int.MAX_VALUE || fewestMoves == 0) "-" else fewestMoves.toString())
                 StatMicroItem(Modifier.weight(1f), "Fastest Time", if (fastestTime == Long.MAX_VALUE || fastestTime == 0L) "-" else formatTimeShort(fastestTime))
             }
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text("ALL TIME", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatMicroItem(Modifier.weight(1f), "Wins", totalWins.toString())
                 StatMicroItem(Modifier.weight(1f), "Played", totalPlayed.toString())
                 StatMicroItem(Modifier.weight(1f), "Total Time", formatTimeShort(totalTime))
@@ -189,7 +188,6 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
     Surface(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
         shape = RoundedCornerShape(12.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

@@ -34,7 +34,7 @@ fun GameButton(
             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         contentPadding = padding,
         modifier = modifier
     ) {
@@ -54,7 +54,7 @@ fun ControlButton(
         colors = IconButtonDefaults.filledIconButtonColors(
             containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
         ),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(12.dp)
     ) {
         Icon(icon, null, tint = Color.White)
     }

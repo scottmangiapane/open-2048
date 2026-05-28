@@ -65,7 +65,7 @@ fun SettingsScreen(
                 .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(32.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Appearance Section
             SettingsGroup(title = "APPEARANCE") {
@@ -160,7 +160,7 @@ private fun ThemeSelector(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         AppTheme.entries.forEach { theme ->
             val selected = currentTheme == theme
@@ -168,11 +168,10 @@ private fun ThemeSelector(
                 onClick = { onThemeChange(theme) },
                 modifier = Modifier
                     .weight(1f)
-                    .height(56.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(12.dp),
                 color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
-                border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
@@ -205,7 +204,7 @@ private fun ControlModeSelector(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onModeChange(mode) }
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RadioButton(
@@ -224,7 +223,7 @@ private fun ControlModeSelector(
                         ControlMode.BOTH -> "Gestures & Arrows"
                     },
                     style = MaterialTheme.typography.bodyLarge,
-                    color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
                 )
             }
@@ -249,7 +248,7 @@ private fun ToggleRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onCheckedChange(!checked) }
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

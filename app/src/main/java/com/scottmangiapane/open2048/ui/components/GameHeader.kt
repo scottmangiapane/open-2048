@@ -1,10 +1,6 @@
 package com.scottmangiapane.open2048.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,38 +23,38 @@ fun HeaderSection(
     showUndo: Boolean = true,
     showStopwatch: Boolean = true
 ) {
-    val titleSize = if (isLandscape) 56.sp else 64.sp
+    val titleSize = if (isLandscape) 48.sp else 56.sp
     val buttonPadding = if (isLandscape) PaddingValues(horizontal = 16.dp, vertical = 8.dp) 
                         else PaddingValues(horizontal = 24.dp, vertical = 12.dp)
     val alignment = if (isLandscape) Alignment.End else Alignment.CenterHorizontally
 
     Column(
         horizontalAlignment = alignment,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Column(horizontalAlignment = alignment) {
             Text(
                 text = "2048",
                 fontSize = titleSize,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onBackground,
+                letterSpacing = (-3).sp
             )
             
             val modeText = when (val mode = state.gameMode) {
-                is GameMode.Daily -> "Daily ${mode.month}/${mode.day}"
-                is GameMode.Blitz -> "${mode.durationMinutes}m Blitz"
-                is GameMode.Classic -> if (mode.size != 4) "${mode.size}x${mode.size}" else ""
+                is GameMode.Daily -> "DAILY CHALLENGE"
+                is GameMode.Blitz -> "${mode.durationMinutes}M BLITZ"
+                is GameMode.Classic -> if (mode.size != 4) "${mode.size}x${mode.size} CLASSIC" else "CLASSIC"
             }
             
-            if (modeText.isNotEmpty()) {
-                Text(
-                    text = modeText,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.offset(y = if (isLandscape) 0.dp else (-8).dp)
-                )
-            }
+            Text(
+                text = modeText,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = 1.sp,
+                modifier = Modifier.offset(y = if (isLandscape) 0.dp else (-8).dp)
+            )
         }
 
         if (state.gameMode is GameMode.Blitz) {
@@ -67,7 +63,10 @@ fun HeaderSection(
             StopwatchDisplay(elapsedTimeMs = state.elapsedTimeMs)
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.padding(top = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             ScoreCard(label = "SCORE", score = state.score)
             ScoreCard(
                 label = if (state.gameMode is GameMode.Daily) "DAY BEST" else "BEST",
@@ -75,7 +74,7 @@ fun HeaderSection(
             )
             ScoreCard(label = "MOVES", score = state.movesCount)
         }
-
+        
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (showUndo) {
                 val canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs > 0)
@@ -112,8 +111,9 @@ private fun formatTime(ms: Long, showHours: Boolean = false): String {
     val minutes = (totalSeconds % 3600) / 60
     val seconds = totalSeconds % 60
     
+    val locale = java.util.Locale.getDefault()
     return when {
-        showHours && hours > 0 -> "%d:%02d:%02d".format(hours, minutes, seconds)
-        else -> "%02d:%02d".format(minutes, seconds)
+        showHours && hours > 0 -> String.format(locale, "%d:%02d:%02d", hours, minutes, seconds)
+        else -> String.format(locale, "%02d:%02d", minutes, seconds)
     }
 }
