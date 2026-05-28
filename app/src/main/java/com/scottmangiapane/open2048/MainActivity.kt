@@ -22,6 +22,7 @@ import com.scottmangiapane.open2048.ui.GameScreen
 import com.scottmangiapane.open2048.ui.GameViewModel
 import com.scottmangiapane.open2048.ui.MenuScreen
 import com.scottmangiapane.open2048.ui.StatsScreen
+import com.scottmangiapane.open2048.ui.SettingsScreen
 import com.scottmangiapane.open2048.ui.Screen
 import com.scottmangiapane.open2048.ui.theme.Open2048Theme
 
@@ -35,7 +36,6 @@ open class MainActivity : ComponentActivity() {
             val viewModel: GameViewModel = viewModel()
             val state by viewModel.state.collectAsStateWithLifecycle()
             val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
-            val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
             
             val canResume by remember { derivedStateOf { state.canResume } }
             val hasProgress by remember { derivedStateOf { state.movesCount > 0 && !state.isGameOver } }
@@ -64,16 +64,10 @@ open class MainActivity : ComponentActivity() {
                     when (currentScreen) {
                         is Screen.Menu -> {
                             MenuScreen(
-                                userPreferences = userPreferences,
                                 onStartGame = { mode -> viewModel.restartGame(mode) },
                                 onResumeGame = { viewModel.resumeGame() },
-                                onSetTheme = { viewModel.setTheme(it) },
-                                onSetVibrationEnabled = { viewModel.setVibrationEnabled(it) },
-                                onSetControlMode = { viewModel.setControlMode(it) },
-                                onSetShowUndo = { viewModel.setShowUndo(it) },
-                                onSetShowStopwatch = { viewModel.setShowStopwatch(it) },
-                                onSetConfettiEnabled = { viewModel.setConfettiEnabled(it) },
                                 onNavigateToStats = { viewModel.navigateToStats() },
+                                onNavigateToSettings = { viewModel.navigateToSettings() },
                                 canResume = canResume,
                                 hasProgress = hasProgress
                             )
@@ -92,6 +86,15 @@ open class MainActivity : ComponentActivity() {
                                 viewModel.navigateToMenu()
                             }
                             StatsScreen(
+                                viewModel = viewModel,
+                                onBack = { viewModel.navigateToMenu() }
+                            )
+                        }
+                        is Screen.Settings -> {
+                            BackHandler {
+                                viewModel.navigateToMenu()
+                            }
+                            SettingsScreen(
                                 viewModel = viewModel,
                                 onBack = { viewModel.navigateToMenu() }
                             )

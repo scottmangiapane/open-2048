@@ -12,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import com.scottmangiapane.open2048.model.canResume
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -40,14 +39,12 @@ fun GameScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
-    val canResume by remember { derivedStateOf { state.canResume } }
     val hasProgress by remember { derivedStateOf { state.movesCount > 0 && !state.isGameOver } }
     var highestTileSeen by rememberSaveable { mutableIntStateOf(state.highestTile) }
     var showConfetti by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val density = LocalDensity.current
     val swipeThreshold = with(density) { 56.dp.toPx() }
-    var showSettings by rememberSaveable { mutableStateOf(false) }
     var showRestartConfirmation by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.isGameOver) {
@@ -67,19 +64,6 @@ fun GameScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val minDimension = minOf(configuration.screenWidthDp.dp, configuration.screenHeightDp.dp)
-
-    if (showSettings) {
-        SettingsDialog(
-            preferences = userPreferences,
-            onDismiss = { showSettings = false },
-            onThemeChange = { viewModel.setTheme(it) },
-            onVibrationToggle = { viewModel.setVibrationEnabled(it) },
-            onControlModeChange = { viewModel.setControlMode(it) },
-            onShowUndoToggle = { viewModel.setShowUndo(it) },
-            onShowStopwatchToggle = { viewModel.setShowStopwatch(it) },
-            onConfettiToggle = { viewModel.setConfettiEnabled(it) }
-        )
-    }
 
     if (showRestartConfirmation) {
         GameConfirmationDialog(
@@ -164,8 +148,7 @@ fun GameScreen(
         )
 
         GameControls(
-            onBackToMenu = onBackToMenu,
-            onShowSettings = { showSettings = true }
+            onBackToMenu = onBackToMenu
         )
 
         if (showConfetti) {
@@ -261,8 +244,7 @@ private fun GameLayout(
 
 @Composable
 private fun GameControls(
-    onBackToMenu: () -> Unit,
-    onShowSettings: () -> Unit
+    onBackToMenu: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         IconButton(
@@ -272,17 +254,6 @@ private fun GameControls(
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back to Menu",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        IconButton(
-            onClick = onShowSettings,
-            modifier = Modifier.align(Alignment.TopEnd)
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Settings,
-                contentDescription = "Settings",
                 tint = MaterialTheme.colorScheme.onBackground
             )
         }

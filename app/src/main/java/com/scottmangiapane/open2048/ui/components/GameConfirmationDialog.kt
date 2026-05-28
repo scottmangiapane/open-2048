@@ -51,13 +51,11 @@ fun GameConfirmationDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 val scrollState = rememberScrollState()
-                val scrollbarColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
 
                 Box(
                     modifier = Modifier
                         .weight(1f, fill = false)
                         .padding(horizontal = 24.dp)
-                        .drawScrollbar(scrollState, scrollbarColor)
                         .verticalScroll(scrollState)
                 ) {
                     Text(

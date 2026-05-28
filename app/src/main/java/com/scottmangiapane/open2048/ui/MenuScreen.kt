@@ -25,32 +25,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.scottmangiapane.open2048.R
-import com.scottmangiapane.open2048.model.AppTheme
-import com.scottmangiapane.open2048.model.ControlMode
 import com.scottmangiapane.open2048.model.GameMode
-import com.scottmangiapane.open2048.model.UserPreferences
 import com.scottmangiapane.open2048.ui.components.GameConfirmationDialog
-import com.scottmangiapane.open2048.ui.components.SettingsDialog
 
 @Composable
 fun MenuScreen(
-    userPreferences: UserPreferences,
     onStartGame: (GameMode) -> Unit,
     onResumeGame: () -> Unit,
-    onSetTheme: (AppTheme) -> Unit,
-    onSetVibrationEnabled: (Boolean) -> Unit,
-    onSetControlMode: (ControlMode) -> Unit,
-    onSetShowUndo: (Boolean) -> Unit,
-    onSetShowStopwatch: (Boolean) -> Unit,
-    onSetConfettiEnabled: (Boolean) -> Unit,
     onNavigateToStats: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     canResume: Boolean,
     hasProgress: Boolean,
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val amber = colorResource(R.color.amber_500)
-    var showSettings by rememberSaveable { mutableStateOf(false) }
     var pendingGameMode by rememberSaveable(stateSaver = GameMode.Saver) { mutableStateOf<GameMode?>(null) }
 
     val handleStartGame: (GameMode) -> Unit = { mode ->
@@ -59,19 +48,6 @@ fun MenuScreen(
         } else {
             onStartGame(mode)
         }
-    }
-
-    if (showSettings) {
-        SettingsDialog(
-            preferences = userPreferences,
-            onDismiss = { showSettings = false },
-            onThemeChange = onSetTheme,
-            onVibrationToggle = onSetVibrationEnabled,
-            onControlModeChange = onSetControlMode,
-            onShowUndoToggle = onSetShowUndo,
-            onShowStopwatchToggle = onSetShowStopwatch,
-            onConfettiToggle = onSetConfettiEnabled
-        )
     }
 
     if (pendingGameMode != null) {
@@ -162,7 +138,7 @@ fun MenuScreen(
                 )
             }
 
-            IconButton(onClick = { showSettings = true }) {
+            IconButton(onClick = onNavigateToSettings) {
                 Icon(
                     imageVector = Icons.Rounded.Settings,
                     contentDescription = "Settings",

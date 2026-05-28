@@ -7,17 +7,17 @@
     </style>
 
     <style name="Theme.Open2048.Light" parent="Theme.Open2048">
-        <item name="android:windowBackground">@color/slate_50</item>
-        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/slate_50</item>
+        <item name="android:windowBackground">@color/slate_200</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/slate_200</item>
     </style>
 
     <style name="Theme.Open2048.Dark" parent="Theme.Open2048">
-        <item name="android:windowBackground">@color/slate_950</item>
-        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/slate_950</item>
+        <item name="android:windowBackground">@color/slate_900</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/slate_900</item>
     </style>
 
     <style name="Theme.Open2048.Classic" parent="Theme.Open2048">
-        <item name="android:windowBackground">@color/classic_bg</item>
-        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/classic_bg</item>
+        <item name="android:windowBackground">@color/classic_board</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/classic_board</item>
     </style>
 </resources>

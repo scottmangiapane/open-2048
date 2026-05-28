@@ -4,4 +4,5 @@ sealed class Screen {
     data object Menu : Screen()
     data object Game : Screen()
     data object Stats : Screen()
+    data object Settings : Screen()
 }

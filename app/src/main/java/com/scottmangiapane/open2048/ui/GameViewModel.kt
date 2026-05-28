@@ -131,6 +131,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _currentScreen.value = Screen.Stats
     }
 
+    fun navigateToSettings() {
+        _currentScreen.value = Screen.Settings
+    }
+
     fun applyPendingIconChange() {
         iconManager.applyPendingIconChange()
     }
