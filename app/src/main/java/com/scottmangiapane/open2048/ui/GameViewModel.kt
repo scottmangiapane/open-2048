@@ -81,6 +81,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private fun startTimer() {
         gameTimer.start { delta ->
             var shouldStop = false
+
+            // Track total time spent
+            val currentMode = _state.value.gameMode
+            viewModelScope.launch {
+                val aggregateId = if (currentMode is GameMode.Daily) "daily" else currentMode.id
+                prefs.addToTotalTime(aggregateId, delta)
+            }
+
             _state.update { state ->
                 val newElapsed = state.elapsedTimeMs + delta
                 if (state.gameMode is GameMode.Blitz) {
@@ -120,7 +128,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun navigateToStats() {
-        stopTimer()
         _currentScreen.value = Screen.Stats
     }
 
@@ -138,6 +145,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val newState = createNewGameState(currentMode)
         _state.update { newState.copy(bestScore = it.bestScore, theme = it.theme) }
         saveGame(_state.value)
+
+        // Increment games played
+        viewModelScope.launch {
+            val aggregateId = if (currentMode is GameMode.Daily) "daily" else currentMode.id
+            prefs.incrementGamesPlayed(aggregateId)
+        }
+
         _currentScreen.value = Screen.Game
         startTimer()
     }
@@ -220,9 +234,55 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { prefs.setConfettiEnabled(enabled) }
     }
 
+    private val statsFlows = mutableMapOf<String, StateFlow<*>>()
+
     fun getBestScore(mode: GameMode): StateFlow<Int> {
-        return prefs.getBestScore(mode.id)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        return statsFlows.getOrPut("best_${mode.id}") {
+            prefs.getBestScore(mode.id)
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        } as StateFlow<Int>
+    }
+
+    fun getHighestTile(mode: GameMode): StateFlow<Int> {
+        return statsFlows.getOrPut("highest_${mode.id}") {
+            prefs.getIntStat(PreferenceRepository.getHighestTileKey(mode.id))
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        } as StateFlow<Int>
+    }
+
+    fun getFewestMoves(mode: GameMode): StateFlow<Int> {
+        return statsFlows.getOrPut("moves_${mode.id}") {
+            prefs.getIntStat(PreferenceRepository.getFewestMovesKey(mode.id))
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        } as StateFlow<Int>
+    }
+
+    fun getFastestTime(mode: GameMode): StateFlow<Long> {
+        return statsFlows.getOrPut("time_${mode.id}") {
+            prefs.getLongStat(PreferenceRepository.getFastestTimeKey(mode.id))
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+        } as StateFlow<Long>
+    }
+
+    fun getWinCount(modeId: String): StateFlow<Int> {
+        return statsFlows.getOrPut("wins_$modeId") {
+            prefs.getIntStat(PreferenceRepository.getWinCountKey(modeId))
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        } as StateFlow<Int>
+    }
+
+    fun getGamesPlayed(modeId: String): StateFlow<Int> {
+        return statsFlows.getOrPut("played_$modeId") {
+            prefs.getIntStat(PreferenceRepository.getGamesPlayedKey(modeId))
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        } as StateFlow<Int>
+    }
+
+    fun getTotalTime(modeId: String): StateFlow<Long> {
+        return statsFlows.getOrPut("total_time_$modeId") {
+            prefs.getLongStat(PreferenceRepository.getTotalTimeKey(modeId))
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+        } as StateFlow<Long>
     }
 
     private fun saveGame(state: GameState) {
@@ -260,6 +320,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
         val maxTile = result.board.flatten().filterNotNull().maxOfOrNull { it.value } ?: 0
+        val reached2048ThisMove = maxTile >= 2048 && !currentState.hasReached2048
+        
+        val movesTo2048 = if (reached2048ThisMove) currentState.movesCount + 1 else currentState.movesTo2048
+        val timeTo2048 = if (reached2048ThisMove) currentState.elapsedTimeMs else currentState.timeTo2048
+
+        if (reached2048ThisMove) {
+            viewModelScope.launch {
+                prefs.incrementWinCount(if (currentState.gameMode is GameMode.Daily) "daily" else currentState.gameMode.id)
+                prefs.updateFewestMoves(currentState.gameMode.id, movesTo2048!!)
+                prefs.updateFastestTime(currentState.gameMode.id, timeTo2048!!)
+            }
+        }
+
+        if (maxTile > currentState.highestTile) {
+            viewModelScope.launch {
+                prefs.updateHighestTile(currentState.gameMode.id, maxTile)
+            }
+        }
 
         previousStateForUndo = currentState
         _state.update { state ->
@@ -273,7 +351,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 nextPosSeed = nextP,
                 bestScore = bestScore,
                 movesCount = state.movesCount + 1,
-                highestTile = maxOf(state.highestTile, maxTile)
+                highestTile = maxOf(state.highestTile, maxTile),
+                hasReached2048 = state.hasReached2048 || reached2048ThisMove,
+                movesTo2048 = movesTo2048,
+                timeTo2048 = timeTo2048
             )
         }
         saveGame(_state.value)

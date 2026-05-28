@@ -5,9 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,41 +57,45 @@ open class MainActivity : ComponentActivity() {
             }
 
             Open2048Theme(theme = state.theme ?: activityTheme) {
-                when (currentScreen) {
-                    is Screen.Menu -> {
-                        MenuScreen(
-                            userPreferences = userPreferences,
-                            onStartGame = { mode -> viewModel.restartGame(mode) },
-                            onResumeGame = { viewModel.resumeGame() },
-                            onSetTheme = { viewModel.setTheme(it) },
-                            onSetVibrationEnabled = { viewModel.setVibrationEnabled(it) },
-                            onSetControlMode = { viewModel.setControlMode(it) },
-                            onSetShowUndo = { viewModel.setShowUndo(it) },
-                            onSetShowStopwatch = { viewModel.setShowStopwatch(it) },
-                            onSetConfettiEnabled = { viewModel.setConfettiEnabled(it) },
-                            onNavigateToStats = { viewModel.navigateToStats() },
-                            canResume = canResume,
-                            hasProgress = hasProgress
-                        )
-                    }
-                    is Screen.Game -> {
-                        BackHandler {
-                            viewModel.navigateToMenu()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    when (currentScreen) {
+                        is Screen.Menu -> {
+                            MenuScreen(
+                                userPreferences = userPreferences,
+                                onStartGame = { mode -> viewModel.restartGame(mode) },
+                                onResumeGame = { viewModel.resumeGame() },
+                                onSetTheme = { viewModel.setTheme(it) },
+                                onSetVibrationEnabled = { viewModel.setVibrationEnabled(it) },
+                                onSetControlMode = { viewModel.setControlMode(it) },
+                                onSetShowUndo = { viewModel.setShowUndo(it) },
+                                onSetShowStopwatch = { viewModel.setShowStopwatch(it) },
+                                onSetConfettiEnabled = { viewModel.setConfettiEnabled(it) },
+                                onNavigateToStats = { viewModel.navigateToStats() },
+                                canResume = canResume,
+                                hasProgress = hasProgress
+                            )
                         }
-                        GameScreen(
-                            viewModel = viewModel,
-                            onBackToMenu = { viewModel.navigateToMenu() },
-                            onNavigateToStats = { viewModel.navigateToStats() }
-                        )
-                    }
-                    is Screen.Stats -> {
-                        BackHandler {
-                            viewModel.navigateToMenu()
+                        is Screen.Game -> {
+                            BackHandler {
+                                viewModel.navigateToMenu()
+                            }
+                            GameScreen(
+                                viewModel = viewModel,
+                                onBackToMenu = { viewModel.navigateToMenu() }
+                            )
                         }
-                        StatsScreen(
-                            viewModel = viewModel,
-                            onBack = { viewModel.navigateToMenu() }
-                        )
+                        is Screen.Stats -> {
+                            BackHandler {
+                                viewModel.navigateToMenu()
+                            }
+                            StatsScreen(
+                                viewModel = viewModel,
+                                onBack = { viewModel.navigateToMenu() }
+                            )
+                        }
                     }
                 }
             }

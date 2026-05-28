@@ -29,6 +29,16 @@ class PreferenceRepository(private val context: Context) {
         private val CONFETTI_ENABLED_KEY = booleanPreferencesKey("confetti_enabled")
         
         fun getBestScoreKey(modeId: String) = intPreferencesKey("best_score_$modeId")
+        fun getHighestTileKey(modeId: String) = intPreferencesKey("highest_tile_$modeId")
+        fun getFewestMovesKey(modeId: String) = intPreferencesKey("fewest_moves_$modeId")
+        fun getFastestTimeKey(modeId: String) = longPreferencesKey("fastest_time_$modeId")
+        fun getWinCountKey(modeId: String) = intPreferencesKey("win_count_$modeId")
+        fun getGamesPlayedKey(modeId: String) = intPreferencesKey("games_played_$modeId")
+        fun getTotalTimeKey(modeId: String) = longPreferencesKey("total_time_$modeId")
+
+        private val HAS_REACHED_2048_KEY = booleanPreferencesKey("has_reached_2048")
+        private val MOVES_TO_2048_KEY = intPreferencesKey("moves_to_2048")
+        private val TIME_TO_2048_KEY = longPreferencesKey("time_to_2048")
     }
 
     val userPreferences: Flow<UserPreferences> = context.dataStore.data.map { preferences ->
@@ -71,15 +81,69 @@ class PreferenceRepository(private val context: Context) {
             timeLeftMs = preferences[TIME_LEFT_KEY],
             movesCount = preferences[MOVES_COUNT_KEY] ?: 0,
             elapsedTimeMs = preferences[ELAPSED_TIME_KEY] ?: 0L,
-            highestTile = preferences[HIGHEST_TILE_KEY] ?: 0
+            highestTile = preferences[HIGHEST_TILE_KEY] ?: 0,
+            hasReached2048 = preferences[HAS_REACHED_2048_KEY] ?: false,
+            movesTo2048 = preferences[MOVES_TO_2048_KEY],
+            timeTo2048 = preferences[TIME_TO_2048_KEY]
         )
     }
+
+    fun getIntStat(key: Preferences.Key<Int>): Flow<Int> = context.dataStore.data.map { it[key] ?: 0 }
+    fun getLongStat(key: Preferences.Key<Long>): Flow<Long> = context.dataStore.data.map { it[key] ?: 0L }
 
     suspend fun updateBestScore(modeId: String, score: Int) {
         val key = getBestScoreKey(modeId)
         context.dataStore.edit { preferences ->
             val currentBest = preferences[key] ?: 0
             if (score > currentBest) preferences[key] = score
+        }
+    }
+
+    suspend fun updateHighestTile(modeId: String, tile: Int) {
+        val key = getHighestTileKey(modeId)
+        context.dataStore.edit { preferences ->
+            val current = preferences[key] ?: 0
+            if (tile > current) preferences[key] = tile
+        }
+    }
+
+    suspend fun updateFewestMoves(modeId: String, moves: Int) {
+        val key = getFewestMovesKey(modeId)
+        context.dataStore.edit { preferences ->
+            val current = preferences[key] ?: Int.MAX_VALUE
+            if (moves < current) preferences[key] = moves
+        }
+    }
+
+    suspend fun updateFastestTime(modeId: String, timeMs: Long) {
+        val key = getFastestTimeKey(modeId)
+        context.dataStore.edit { preferences ->
+            val current = preferences[key] ?: Long.MAX_VALUE
+            if (timeMs < current) preferences[key] = timeMs
+        }
+    }
+
+    suspend fun incrementWinCount(modeId: String) {
+        val key = getWinCountKey(modeId)
+        context.dataStore.edit { preferences ->
+            val current = preferences[key] ?: 0
+            preferences[key] = current + 1
+        }
+    }
+
+    suspend fun incrementGamesPlayed(modeId: String) {
+        val key = getGamesPlayedKey(modeId)
+        context.dataStore.edit { preferences ->
+            val current = preferences[key] ?: 0
+            preferences[key] = current + 1
+        }
+    }
+
+    suspend fun addToTotalTime(modeId: String, timeMs: Long) {
+        val key = getTotalTimeKey(modeId)
+        context.dataStore.edit { preferences ->
+            val current = preferences[key] ?: 0L
+            preferences[key] = current + timeMs
         }
     }
 
@@ -119,6 +183,9 @@ class PreferenceRepository(private val context: Context) {
                 preferences[MOVES_COUNT_KEY] = state.movesCount
                 preferences[ELAPSED_TIME_KEY] = state.elapsedTimeMs
                 preferences[HIGHEST_TILE_KEY] = state.highestTile
+                preferences[HAS_REACHED_2048_KEY] = state.hasReached2048
+                state.movesTo2048?.let { preferences[MOVES_TO_2048_KEY] = it } ?: preferences.remove(MOVES_TO_2048_KEY)
+                state.timeTo2048?.let { preferences[TIME_TO_2048_KEY] = it } ?: preferences.remove(TIME_TO_2048_KEY)
                 state.timeLeftMs?.let { preferences[TIME_LEFT_KEY] = it } ?: preferences.remove(TIME_LEFT_KEY)
             } else {
                 preferences.remove(BOARD_KEY)
@@ -131,6 +198,9 @@ class PreferenceRepository(private val context: Context) {
                 preferences.remove(MOVES_COUNT_KEY)
                 preferences.remove(ELAPSED_TIME_KEY)
                 preferences.remove(HIGHEST_TILE_KEY)
+                preferences.remove(HAS_REACHED_2048_KEY)
+                preferences.remove(MOVES_TO_2048_KEY)
+                preferences.remove(TIME_TO_2048_KEY)
             }
         }
     }

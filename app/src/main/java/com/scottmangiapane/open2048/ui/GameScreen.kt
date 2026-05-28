@@ -37,7 +37,6 @@ import kotlin.math.abs
 fun GameScreen(
     viewModel: GameViewModel = viewModel(),
     onBackToMenu: () -> Unit,
-    onNavigateToStats: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
@@ -166,8 +165,7 @@ fun GameScreen(
 
         GameControls(
             onBackToMenu = onBackToMenu,
-            onShowSettings = { showSettings = true },
-            onShowStats = onNavigateToStats
+            onShowSettings = { showSettings = true }
         )
 
         if (showConfetti) {
@@ -264,8 +262,7 @@ private fun GameLayout(
 @Composable
 private fun GameControls(
     onBackToMenu: () -> Unit,
-    onShowSettings: () -> Unit,
-    onShowStats: () -> Unit
+    onShowSettings: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         IconButton(
@@ -279,25 +276,15 @@ private fun GameControls(
             )
         }
 
-        Row(
-            modifier = Modifier.align(Alignment.TopEnd),
-            verticalAlignment = Alignment.CenterVertically
+        IconButton(
+            onClick = onShowSettings,
+            modifier = Modifier.align(Alignment.TopEnd)
         ) {
-            IconButton(onClick = onShowStats) {
-                Icon(
-                    imageVector = Icons.Rounded.BarChart,
-                    contentDescription = "Statistics",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-
-            IconButton(onClick = onShowSettings) {
-                Icon(
-                    imageVector = Icons.Rounded.Settings,
-                    contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+            Icon(
+                imageVector = Icons.Rounded.Settings,
+                contentDescription = "Settings",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
         }
     }
 }
