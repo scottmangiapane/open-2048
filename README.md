@@ -1,7 +1,9 @@
 # Open 2048
 
 <p align="center">
-  <img src="app_icon.svg" width="140" alt="Open 2048 Logo">
+  <kbd>
+    <img src="app_icon.svg" width="140" alt="Open 2048 Logo">
+  </kbd>
 </p>
 
 <p align="center">
