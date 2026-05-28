@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,13 +45,13 @@ fun StatsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         },
-        containerColor = Color.Transparent // Parent Surface in MainActivity handles this
+        containerColor = androidx.compose.ui.graphics.Color.Transparent
     ) { padding ->
         Column(
             modifier = Modifier
@@ -123,6 +122,8 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
     val fastestTime by viewModel.getFastestTime(mode).collectAsStateWithLifecycle()
     
     val totalWins by viewModel.getWinCount("daily").collectAsStateWithLifecycle()
+    val totalPlayed by viewModel.getGamesPlayed("daily").collectAsStateWithLifecycle()
+    val totalTime by viewModel.getTotalTime("daily").collectAsStateWithLifecycle()
 
     Surface(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
@@ -155,16 +156,21 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            Text("TODAY", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+            Spacer(modifier = Modifier.height(12.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                StatMicroItem(Modifier.weight(1f), "Highest Tile", highestTile.toString())
-                StatMicroItem(Modifier.weight(1f), "Fewest Moves", if (fewestMoves == Int.MAX_VALUE) "-" else fewestMoves.toString())
+                StatMicroItem(Modifier.weight(1f), "Max Tile", highestTile.toString())
+                StatMicroItem(Modifier.weight(1f), "Fewest Moves", if (fewestMoves == Int.MAX_VALUE || fewestMoves == 0) "-" else fewestMoves.toString())
+                StatMicroItem(Modifier.weight(1f), "Fastest Time", if (fastestTime == Long.MAX_VALUE || fastestTime == 0L) "-" else formatTimeShort(fastestTime))
             }
             
+            Spacer(modifier = Modifier.height(24.dp))
+            Text("ALL TIME", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
             Spacer(modifier = Modifier.height(12.dp))
-            
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                StatMicroItem(Modifier.weight(1f), "Fastest Time", if (fastestTime == Long.MAX_VALUE) "-" else formatTimeShort(fastestTime))
-                StatMicroItem(Modifier.weight(1f), "Total Wins", totalWins.toString())
+                StatMicroItem(Modifier.weight(1f), "Wins", totalWins.toString())
+                StatMicroItem(Modifier.weight(1f), "Played", totalPlayed.toString())
+                StatMicroItem(Modifier.weight(1f), "Total Time", formatTimeShort(totalTime))
             }
         }
     }
@@ -174,6 +180,9 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
 private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel) {
     val bestScore by viewModel.getBestScore(mode).collectAsStateWithLifecycle()
     val highestTile by viewModel.getHighestTile(mode).collectAsStateWithLifecycle()
+    val fewestMoves by viewModel.getFewestMoves(mode).collectAsStateWithLifecycle()
+    val fastestTime by viewModel.getFastestTime(mode).collectAsStateWithLifecycle()
+    val wins by viewModel.getWinCount(mode.id).collectAsStateWithLifecycle()
     val played by viewModel.getGamesPlayed(mode.id).collectAsStateWithLifecycle()
     val totalTime by viewModel.getTotalTime(mode.id).collectAsStateWithLifecycle()
 
@@ -189,7 +198,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 Text(
                     text = bestScore.toString(),
                     style = MaterialTheme.typography.titleLarge,
@@ -205,6 +214,14 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatMicroItem(Modifier.weight(1f), "Max Tile", highestTile.toString())
+                StatMicroItem(Modifier.weight(1f), "Fewest Moves", if (fewestMoves == Int.MAX_VALUE || fewestMoves == 0) "-" else fewestMoves.toString())
+                StatMicroItem(Modifier.weight(1f), "Fastest Time", if (fastestTime == Long.MAX_VALUE || fastestTime == 0L) "-" else formatTimeShort(fastestTime))
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                StatMicroItem(Modifier.weight(1f), "Wins", wins.toString())
                 StatMicroItem(Modifier.weight(1f), "Played", played.toString())
                 StatMicroItem(Modifier.weight(1f), "Total Time", formatTimeShort(totalTime))
             }

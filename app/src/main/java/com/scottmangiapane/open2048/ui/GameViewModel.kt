@@ -307,11 +307,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         if (!result.hasChanged) return
 
-        // Increment games played on the first valid move
+        // Increment games played and set initial highest tile on the first valid move
         if (currentState.movesCount == 0) {
             viewModelScope.launch {
                 val aggregateId = if (currentState.gameMode is GameMode.Daily) "daily" else currentState.gameMode.id
                 prefs.incrementGamesPlayed(aggregateId)
+                prefs.updateHighestTile(currentState.gameMode.id, currentState.highestTile)
             }
         }
 
