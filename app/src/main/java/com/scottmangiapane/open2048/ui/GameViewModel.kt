@@ -236,55 +236,56 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { prefs.setConfettiEnabled(enabled) }
     }
 
-    private val statsFlows = mutableMapOf<String, StateFlow<*>>()
+    private val intStatsFlows = mutableMapOf<String, StateFlow<Int>>()
+    private val longStatsFlows = mutableMapOf<String, StateFlow<Long>>()
 
     fun getBestScore(mode: GameMode): StateFlow<Int> {
-        return statsFlows.getOrPut("best_${mode.id}") {
+        return intStatsFlows.getOrPut("best_${mode.id}") {
             prefs.getBestScore(mode.id)
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-        } as StateFlow<Int>
+        }
     }
 
     fun getHighestTile(mode: GameMode): StateFlow<Int> {
-        return statsFlows.getOrPut("highest_${mode.id}") {
+        return intStatsFlows.getOrPut("highest_${mode.id}") {
             prefs.getIntStat(PreferenceRepository.getHighestTileKey(mode.id))
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-        } as StateFlow<Int>
+        }
     }
 
     fun getFewestMoves(mode: GameMode): StateFlow<Int> {
-        return statsFlows.getOrPut("moves_${mode.id}") {
+        return intStatsFlows.getOrPut("moves_${mode.id}") {
             prefs.getIntStat(PreferenceRepository.getFewestMovesKey(mode.id))
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-        } as StateFlow<Int>
+        }
     }
 
     fun getFastestTime(mode: GameMode): StateFlow<Long> {
-        return statsFlows.getOrPut("time_${mode.id}") {
+        return longStatsFlows.getOrPut("time_${mode.id}") {
             prefs.getLongStat(PreferenceRepository.getFastestTimeKey(mode.id))
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
-        } as StateFlow<Long>
+        }
     }
 
     fun getWinCount(modeId: String): StateFlow<Int> {
-        return statsFlows.getOrPut("wins_$modeId") {
+        return intStatsFlows.getOrPut("wins_$modeId") {
             prefs.getIntStat(PreferenceRepository.getWinCountKey(modeId))
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-        } as StateFlow<Int>
+        }
     }
 
     fun getGamesPlayed(modeId: String): StateFlow<Int> {
-        return statsFlows.getOrPut("played_$modeId") {
+        return intStatsFlows.getOrPut("played_$modeId") {
             prefs.getIntStat(PreferenceRepository.getGamesPlayedKey(modeId))
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-        } as StateFlow<Int>
+        }
     }
 
     fun getTotalTime(modeId: String): StateFlow<Long> {
-        return statsFlows.getOrPut("total_time_$modeId") {
+        return longStatsFlows.getOrPut("total_time_$modeId") {
             prefs.getLongStat(PreferenceRepository.getTotalTimeKey(modeId))
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
-        } as StateFlow<Long>
+        }
     }
 
     private fun saveGame(state: GameState) {
