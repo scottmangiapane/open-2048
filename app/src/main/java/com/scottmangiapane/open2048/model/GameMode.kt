@@ -11,8 +11,8 @@ sealed class GameMode {
     data class Classic(override val size: Int) : GameMode() {
         override val id: String = "classic_$size"
         override val winCondition: Int = when (size) {
-            3 -> 512
-            5 -> 4096
+            3 -> 256
+            5 -> 8192
             else -> 2048
         }
     }
