@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scottmangiapane.open2048.model.AnimationSpeed
 import com.scottmangiapane.open2048.model.AppTheme
@@ -41,8 +40,7 @@ fun SettingsScreen(
                 title = {
                     Text(
                         text = "Settings",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleLarge
                     )
                 },
                 navigationIcon = {
@@ -143,9 +141,7 @@ private fun SettingsGroup(
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.primary,
-            letterSpacing = 1.2.sp,
             modifier = Modifier.padding(start = 4.dp)
         )
         content()
@@ -175,8 +171,8 @@ private fun ThemeSelector(
                 Box(contentAlignment = Alignment.Center) {
                     Text(
                         text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Bold
                     )
                 }
             }
@@ -207,8 +203,8 @@ private fun AnimationSpeedSelector(
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = speed.label,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Bold
                         )
                     }
                 }

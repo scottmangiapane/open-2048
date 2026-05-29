@@ -49,10 +49,8 @@ fun HeaderSection(
             
             Text(
                 text = modeText,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.ExtraBold,
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
-                letterSpacing = 1.sp,
                 modifier = Modifier.offset(y = if (isLandscape) 0.dp else (-8).dp)
             )
         }

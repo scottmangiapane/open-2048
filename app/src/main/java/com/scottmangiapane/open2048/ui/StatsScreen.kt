@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scottmangiapane.open2048.model.GameMode
 import java.util.concurrent.TimeUnit
@@ -35,8 +34,7 @@ fun StatsScreen(
                 title = {
                     Text(
                         text = "Statistics",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleLarge
                     )
                 },
                 navigationIcon = {
@@ -105,9 +103,7 @@ private fun StatsSection(
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary,
-                letterSpacing = 1.2.sp
+                color = MaterialTheme.colorScheme.primary
             )
         }
         content()
@@ -140,8 +136,7 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
                     Text(
                         text = "Today's Best",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                     Text(
                         text = bestScore.toString(),
@@ -155,16 +150,14 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
                     Text(
                         text = "WIN AT ${mode.winCondition}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 0.5.sp
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("TODAY", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+            Text("TODAY", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatMicroItem(Modifier.weight(1f), "Max Tile", highestTile.toString())
@@ -173,7 +166,7 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
             }
             
             Spacer(modifier = Modifier.height(16.dp))
-            Text("ALL TIME", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+            Text("ALL TIME", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatMicroItem(Modifier.weight(1f), "Wins", totalWins.toString())
@@ -210,9 +203,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
                     Text(
                         text = "WIN AT ${mode.winCondition}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 0.5.sp
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                     )
                 }
                 Text(
@@ -251,8 +242,7 @@ private fun StatMicroItem(modifier: Modifier = Modifier, label: String, value: S
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            fontWeight = FontWeight.Medium
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
         Text(
             text = value,

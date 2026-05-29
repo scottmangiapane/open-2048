@@ -184,10 +184,8 @@ private fun MenuSection(
     ) {
         Text(
             text = title,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = MaterialTheme.colorScheme.primary,
-            letterSpacing = 1.2.sp
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary
         )
         content()
     }
@@ -259,7 +257,7 @@ private fun MenuButton(
                 text = text,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )

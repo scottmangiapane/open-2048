@@ -25,10 +25,8 @@ fun ScoreCard(label: String, score: Int) {
     ) {
         Text(
             text = label,
-            fontSize = 11.sp,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 0.5.sp
         )
         Text(
             text = score.toString(),
