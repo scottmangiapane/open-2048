@@ -202,8 +202,7 @@ private fun AnimationSpeedSelector(
                         .height(44.dp),
                     shape = RoundedCornerShape(12.dp),
                     color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                    contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
-                    border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                    contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
