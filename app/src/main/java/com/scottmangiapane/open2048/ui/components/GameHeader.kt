@@ -97,8 +97,7 @@ private fun TimerDisplay(timeLeftMs: Long) {
 private fun StopwatchDisplay(elapsedTimeMs: Long) {
     Text(
         text = "TIME: ${formatTime(elapsedTimeMs, showHours = true)}",
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary
     )
 }

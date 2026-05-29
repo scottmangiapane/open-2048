@@ -171,8 +171,8 @@ private fun ThemeSelector(
                 Box(contentAlignment = Alignment.Center) {
                     Text(
                         text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Bold
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
                     )
                 }
             }
@@ -203,8 +203,8 @@ private fun AnimationSpeedSelector(
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = speed.label,
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Bold
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
                         )
                     }
                 }
