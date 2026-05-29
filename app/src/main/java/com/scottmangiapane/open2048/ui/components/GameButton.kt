@@ -38,7 +38,11 @@ fun GameButton(
         contentPadding = padding,
         modifier = modifier
     ) {
-        Text(text, fontWeight = FontWeight.Bold)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 

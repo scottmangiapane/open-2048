@@ -147,7 +147,7 @@ fun MenuScreen(
                 Icon(
                     imageVector = Icons.Rounded.BarChart,
                     contentDescription = "Statistics",
-                    tint = MaterialTheme.colorScheme.onBackground
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -155,7 +155,7 @@ fun MenuScreen(
                 Icon(
                     imageVector = Icons.Rounded.Settings,
                     contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.onBackground
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -217,7 +217,7 @@ private fun MenuColumn(
         modifier = modifier
             .widthIn(max = 280.dp)
             .background(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(10.dp),
@@ -239,7 +239,7 @@ private fun MenuButton(
             .fillMaxWidth()
             .height(48.dp),
         colors = ButtonDefaults.buttonColors(containerColor = containerColor),
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(12.dp),
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
         Row(

@@ -44,8 +44,8 @@ fun StatsScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
@@ -88,7 +88,7 @@ private fun StatsSection(
     icon: ImageVector,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -215,7 +215,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
 

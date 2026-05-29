@@ -263,7 +263,7 @@ private fun GameControls(
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back to Menu",
-                tint = MaterialTheme.colorScheme.onBackground
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
     }
