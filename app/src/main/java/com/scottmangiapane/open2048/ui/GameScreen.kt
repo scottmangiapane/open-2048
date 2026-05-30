@@ -2,9 +2,12 @@ package com.scottmangiapane.open2048.ui
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
@@ -15,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -29,6 +33,7 @@ import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.ControlMode
 import com.scottmangiapane.open2048.model.GameState
 import com.scottmangiapane.open2048.model.UserPreferences
+import com.scottmangiapane.open2048.ui.components.appFocusBorder
 import com.scottmangiapane.open2048.ui.components.*
 import kotlin.math.abs
 
@@ -47,8 +52,17 @@ fun GameScreen(
     val swipeThreshold = with(density) { 56.dp.toPx() }
     var showRestartConfirmation by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(state.isGameOver) {
-        if (!state.isGameOver) focusRequester.requestFocus()
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val minDimension = minOf(configuration.screenWidthDp.dp, configuration.screenHeightDp.dp)
+    val isTV = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK == Configuration.UI_MODE_TYPE_TELEVISION
+
+    // On TV/remote, we want to allow focus to move between buttons and the board.
+    // We only request initial focus on the board to start playing immediately.
+    LaunchedEffect(isTV) {
+        if (isTV) {
+            focusRequester.requestFocus()
+        }
     }
 
     LaunchedEffect(state.highestTile) {
@@ -61,10 +75,6 @@ fun GameScreen(
             highestTileSeen = state.highestTile
         }
     }
-
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val minDimension = minOf(configuration.screenWidthDp.dp, configuration.screenHeightDp.dp)
 
     if (showRestartConfirmation) {
         GameConfirmationDialog(
@@ -85,24 +95,6 @@ fun GameScreen(
             .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding()
             .displayCutoutPadding()
-            .focusRequester(focusRequester)
-            .focusable()
-            .onKeyEvent { keyEvent ->
-                if (keyEvent.type == KeyEventType.KeyDown) {
-                    val direction = when (keyEvent.key) {
-                        Key.DirectionUp -> Direction.UP
-                        Key.DirectionDown -> Direction.DOWN
-                        Key.DirectionLeft -> Direction.LEFT
-                        Key.DirectionRight -> Direction.RIGHT
-                        else -> null
-                    }
-                    direction?.let {
-                        viewModel.move(it)
-                        return@onKeyEvent true
-                    }
-                }
-                false
-            }
             .then(
                 if (userPreferences.controlMode != ControlMode.ARROWS) {
                     Modifier.pointerInput(Unit) {
@@ -137,6 +129,8 @@ fun GameScreen(
             userPreferences = userPreferences,
             isLandscape = isLandscape,
             minDimension = minDimension,
+            isTV = isTV,
+            focusRequester = focusRequester,
             onMove = { viewModel.move(it) },
             onRestart = { 
                 if (hasProgress) {
@@ -164,6 +158,8 @@ private fun GameLayout(
     userPreferences: UserPreferences,
     isLandscape: Boolean,
     minDimension: Dp,
+    isTV: Boolean,
+    focusRequester: FocusRequester,
     onMove: (Direction) -> Unit,
     onRestart: () -> Unit,
     onUndo: () -> Unit
@@ -171,13 +167,21 @@ private fun GameLayout(
     val (hPadding, vPadding) = when {
         minDimension >= 840.dp -> 172.dp to 144.dp
         minDimension >= 600.dp -> 120.dp to 96.dp
-        isLandscape -> 0.dp to 8.dp
+        isLandscape -> 48.dp to 24.dp // Increased for TV/Landscape overscan safety
         else -> 24.dp to 16.dp
     }
 
     val isLargeScreen = minDimension >= 600.dp
     val contentMaxWidth = if (isLargeScreen) 500.dp else 600.dp
     val showControls = userPreferences.controlMode != ControlMode.GESTURES
+
+    val restartFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(state.isGameOver, isTV) {
+        if (state.isGameOver && isTV) {
+            restartFocusRequester.requestFocus()
+        }
+    }
 
     if (isLandscape) {
         Row(
@@ -194,7 +198,8 @@ private fun GameLayout(
                 onUndo = onUndo,
                 isLandscape = true,
                 showUndo = userPreferences.showUndo,
-                showStopwatch = userPreferences.showStopwatch
+                showStopwatch = userPreferences.showStopwatch,
+                restartFocusRequester = restartFocusRequester
             )
 
             Box(
@@ -206,7 +211,9 @@ private fun GameLayout(
                 BoardContainer(
                     state = state,
                     currentTheme = state.theme ?: userPreferences.theme,
-                    animationSpeed = userPreferences.animationSpeed
+                    animationSpeed = userPreferences.animationSpeed,
+                    focusRequester = focusRequester,
+                    onMove = onMove
                 )
             }
 
@@ -228,7 +235,8 @@ private fun GameLayout(
                 onUndo = onUndo,
                 isLandscape = false,
                 showUndo = userPreferences.showUndo,
-                showStopwatch = userPreferences.showStopwatch
+                showStopwatch = userPreferences.showStopwatch,
+                restartFocusRequester = restartFocusRequester
             )
             Spacer(modifier = Modifier.height(if (isLargeScreen) 32.dp else 16.dp))
             Box(
@@ -240,7 +248,9 @@ private fun GameLayout(
                 BoardContainer(
                     state = state,
                     currentTheme = state.theme ?: userPreferences.theme,
-                    animationSpeed = userPreferences.animationSpeed
+                    animationSpeed = userPreferences.animationSpeed,
+                    focusRequester = focusRequester,
+                    onMove = onMove
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -256,9 +266,14 @@ private fun GameControls(
     onBackToMenu: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val isFocused by interactionSource.collectIsFocusedAsState()
         IconButton(
             onClick = onBackToMenu,
-            modifier = Modifier.align(Alignment.TopStart)
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .appFocusBorder(isFocused = isFocused),
+            interactionSource = interactionSource
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,

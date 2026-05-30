@@ -6,6 +6,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,7 +24,8 @@ fun HeaderSection(
     onUndo: () -> Unit,
     isLandscape: Boolean,
     showUndo: Boolean = true,
-    showStopwatch: Boolean = true
+    showStopwatch: Boolean = true,
+    restartFocusRequester: FocusRequester? = null
 ) {
     val titleSize = if (isLandscape) 48.sp else 56.sp
     val buttonPadding = if (isLandscape) PaddingValues(horizontal = 16.dp, vertical = 8.dp) 
@@ -78,7 +82,12 @@ fun HeaderSection(
                 val canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs > 0)
                 GameButton(text = "Undo", onClick = onUndo, padding = buttonPadding, enabled = canUndo)
             }
-            GameButton(text = "New Game", onClick = onRestart, padding = buttonPadding)
+            GameButton(
+                text = "New Game",
+                onClick = onRestart,
+                padding = buttonPadding,
+                modifier = if (restartFocusRequester != null) Modifier.focusRequester(restartFocusRequester) else Modifier
+            )
         }
     }
 }

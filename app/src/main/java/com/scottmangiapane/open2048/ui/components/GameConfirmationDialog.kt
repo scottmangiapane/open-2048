@@ -1,12 +1,17 @@
 package com.scottmangiapane.open2048.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -74,23 +79,38 @@ fun GameConfirmationDialog(
                     horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val cancelInteractionSource = remember { MutableInteractionSource() }
+                    val cancelFocused by cancelInteractionSource.collectIsFocusedAsState()
                     TextButton(
                         onClick = onDismiss,
+                        interactionSource = cancelInteractionSource,
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier.appFocusBorder(
+                            isFocused = cancelFocused,
+                            shape = RoundedCornerShape(8.dp)
                         )
                     ) {
                         Text("Cancel", fontWeight = FontWeight.Bold)
                     }
                     
+                    val confirmInteractionSource = remember { MutableInteractionSource() }
+                    val confirmFocused by confirmInteractionSource.collectIsFocusedAsState()
                     Button(
                         onClick = onConfirm,
+                        interactionSource = confirmInteractionSource,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = Color.White
                         ),
                         shape = RoundedCornerShape(8.dp),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                        modifier = Modifier.appFocusBorder(
+                            isFocused = confirmFocused,
+                            color = MaterialTheme.colorScheme.secondary,
+                            shape = RoundedCornerShape(8.dp)
+                        )
                     ) {
                         Text(confirmText, fontWeight = FontWeight.Bold)
                     }

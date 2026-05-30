@@ -1,7 +1,13 @@
 package com.scottmangiapane.open2048.ui
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,8 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scottmangiapane.open2048.model.AnimationSpeed
 import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.ControlMode
+import com.scottmangiapane.open2048.ui.components.appFocusBorder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,8 +50,18 @@ fun SettingsScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isFocused by interactionSource.collectIsFocusedAsState()
+                    IconButton(
+                        onClick = onBack,
+                        interactionSource = interactionSource,
+                        modifier = Modifier.appFocusBorder(isFocused = isFocused)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack, 
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -159,11 +175,19 @@ private fun ThemeSelector(
     ) {
         AppTheme.entries.forEach { theme ->
             val selected = currentTheme == theme
+            val interactionSource = remember { MutableInteractionSource() }
+            val isFocused by interactionSource.collectIsFocusedAsState()
+
             Surface(
                 onClick = { onThemeChange(theme) },
                 modifier = Modifier
                     .weight(1f)
-                    .height(44.dp),
+                    .height(44.dp)
+                    .appFocusBorder(
+                        isFocused = isFocused,
+                        color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                    ),
+                interactionSource = interactionSource,
                 shape = RoundedCornerShape(12.dp),
                 color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                 contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface
@@ -191,11 +215,19 @@ private fun AnimationSpeedSelector(
     ) {
         AnimationSpeed.entries.forEach { speed ->
                 val selected = currentSpeed == speed
+                val interactionSource = remember { MutableInteractionSource() }
+                val isFocused by interactionSource.collectIsFocusedAsState()
+
                 Surface(
                     onClick = { onSpeedChange(speed) },
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp),
+                        .height(44.dp)
+                        .appFocusBorder(
+                            isFocused = isFocused,
+                            color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                        ),
+                    interactionSource = interactionSource,
                     shape = RoundedCornerShape(12.dp),
                     color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                     contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface
@@ -227,10 +259,17 @@ private fun ControlModeSelector(
     ) {
         ControlMode.entries.forEachIndexed { index, mode ->
             val selected = currentMode == mode
+            val interactionSource = remember { MutableInteractionSource() }
+            val isFocused by interactionSource.collectIsFocusedAsState()
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onModeChange(mode) }
+                    .appFocusBorder(isFocused = isFocused)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = LocalIndication.current
+                    ) { onModeChange(mode) }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -271,10 +310,17 @@ private fun ToggleRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
+            .appFocusBorder(isFocused = isFocused)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current
+            ) { onCheckedChange(!checked) }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

@@ -1,5 +1,9 @@
 package com.scottmangiapane.open2048.ui
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,15 +12,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scottmangiapane.open2048.model.GameMode
+import com.scottmangiapane.open2048.ui.components.appFocusBorder
 import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,8 +43,18 @@ fun StatsScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isFocused by interactionSource.collectIsFocusedAsState()
+                    IconButton(
+                        onClick = onBack,
+                        interactionSource = interactionSource,
+                        modifier = Modifier.appFocusBorder(isFocused = isFocused)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack, 
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -51,12 +66,13 @@ fun StatsScreen(
         },
         containerColor = androidx.compose.ui.graphics.Color.Transparent
     ) { padding ->
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -121,10 +137,16 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
     val totalPlayed by viewModel.getGamesPlayed("daily").collectAsStateWithLifecycle()
     val totalTime by viewModel.getTotalTime("daily").collectAsStateWithLifecycle()
 
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+
     Surface(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .appFocusBorder(isFocused = isFocused)
+            .focusable(interactionSource = interactionSource)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -187,10 +209,16 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
     val played by viewModel.getGamesPlayed(mode.id).collectAsStateWithLifecycle()
     val totalTime by viewModel.getTotalTime(mode.id).collectAsStateWithLifecycle()
 
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+
     Surface(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .appFocusBorder(isFocused = isFocused)
+            .focusable(interactionSource = interactionSource)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
