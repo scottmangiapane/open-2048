@@ -20,6 +20,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val gameTimer = GameTimer(viewModelScope)
 
     val hasVibrator: Boolean = vibrationManager.hasVibrator
+    val hasDpad: Boolean = android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_CENTER) ||
+            android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_UP) ||
+            android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_DOWN) ||
+            android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_LEFT) ||
+            android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_RIGHT)
+
+    init {
+        observeTheme()
+        loadInitialState()
+    }
     
     private var previousStateForUndo: GameState? = null
     private var bestScoreJob: Job? = null
@@ -32,11 +42,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     val userPreferences: StateFlow<UserPreferences> = prefs.userPreferences
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserPreferences())
-
-    init {
-        observeTheme()
-        loadInitialState()
-    }
 
     private fun observeTheme() {
         viewModelScope.launch {

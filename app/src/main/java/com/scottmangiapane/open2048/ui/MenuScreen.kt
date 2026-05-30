@@ -52,14 +52,6 @@ fun MenuScreen(
     var pendingGameMode by rememberSaveable(stateSaver = GameMode.Saver) { mutableStateOf<GameMode?>(null) }
 
     val initialFocusRequester = remember { FocusRequester() }
-    val isTV = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK == Configuration.UI_MODE_TYPE_TELEVISION
-    LaunchedEffect(canResume, isTV) {
-        if (isTV) {
-            // Use a small delay to ensure the UI is ready and the requester is attached
-            kotlinx.coroutines.delay(100)
-            initialFocusRequester.requestFocus()
-        }
-    }
 
     val handleStartGame: (GameMode) -> Unit = { mode ->
         if (hasProgress) {

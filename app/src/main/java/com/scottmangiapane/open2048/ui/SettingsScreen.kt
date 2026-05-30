@@ -99,11 +99,13 @@ fun SettingsScreen(
             }
 
             // Controls Section
-            SettingsGroup(title = "CONTROLS") {
-                ControlModeSelector(
-                    currentMode = preferences.controlMode,
-                    onModeChange = { viewModel.setControlMode(it) }
-                )
+            if (!viewModel.hasDpad) {
+                SettingsGroup(title = "CONTROLS") {
+                    ControlModeSelector(
+                        currentMode = preferences.controlMode,
+                        onModeChange = { viewModel.setControlMode(it) }
+                    )
+                }
             }
 
             // Gameplay Section

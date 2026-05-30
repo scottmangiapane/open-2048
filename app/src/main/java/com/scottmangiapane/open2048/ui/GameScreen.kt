@@ -2,8 +2,6 @@ package com.scottmangiapane.open2048.ui
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
@@ -19,10 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.*
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,19 +43,17 @@ fun GameScreen(
     var highestTileSeen by rememberSaveable { mutableIntStateOf(state.highestTile) }
     var showConfetti by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    val density = LocalDensity.current
-    val swipeThreshold = with(density) { 56.dp.toPx() }
     var showRestartConfirmation by rememberSaveable { mutableStateOf(false) }
+    var forcePlayModeOnNextFocus by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val minDimension = minOf(configuration.screenWidthDp.dp, configuration.screenHeightDp.dp)
-    val isTV = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK == Configuration.UI_MODE_TYPE_TELEVISION
+    val hasDpad = viewModel.hasDpad
 
-    // On TV/remote, we want to allow focus to move between buttons and the board.
-    // We only request initial focus on the board to start playing immediately.
-    LaunchedEffect(isTV) {
-        if (isTV) {
+    // On D-pad/TV/Keyboard devices, we want to start playing immediately.
+    LaunchedEffect(hasDpad) {
+        if (hasDpad) {
             focusRequester.requestFocus()
         }
     }
@@ -84,6 +77,8 @@ fun GameScreen(
             onConfirm = {
                 viewModel.restartGame()
                 showRestartConfirmation = false
+                forcePlayModeOnNextFocus = true
+                focusRequester.requestFocus()
             },
             onDismiss = { showRestartConfirmation = false }
         )
@@ -95,41 +90,13 @@ fun GameScreen(
             .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding()
             .displayCutoutPadding()
-            .then(
-                if (userPreferences.controlMode != ControlMode.ARROWS) {
-                    Modifier.pointerInput(Unit) {
-                        var totalDragX = 0f
-                        var totalDragY = 0f
-                        detectDragGestures(
-                            onDragEnd = {
-                                val direction = when {
-                                    (abs(totalDragX) > abs(totalDragY)) && (abs(totalDragX) > swipeThreshold) -> {
-                                        if (totalDragX > 0) Direction.RIGHT else Direction.LEFT
-                                    }
-                                    abs(totalDragY) > swipeThreshold -> {
-                                        if (totalDragY > 0) Direction.DOWN else Direction.UP
-                                    }
-                                    else -> null
-                                }
-                                direction?.let { viewModel.move(it) }
-                                totalDragX = 0f
-                                totalDragY = 0f
-                            }
-                        ) { change, dragAmount ->
-                            change.consume()
-                            totalDragX += dragAmount.x
-                            totalDragY += dragAmount.y
-                        }
-                    }
-                } else Modifier
-            )
     ) {
         GameLayout(
             state = state,
             userPreferences = userPreferences,
             isLandscape = isLandscape,
             minDimension = minDimension,
-            isTV = isTV,
+            hasDpad = hasDpad,
             focusRequester = focusRequester,
             onMove = { viewModel.move(it) },
             onRestart = { 
@@ -137,9 +104,21 @@ fun GameScreen(
                     showRestartConfirmation = true
                 } else {
                     viewModel.restartGame()
+                    forcePlayModeOnNextFocus = true
+                    focusRequester.requestFocus()
                 }
             },
-            onUndo = { viewModel.undo() }
+            onUndo = { viewModel.undo() },
+            onMoveFocusToBoard = { 
+                forcePlayModeOnNextFocus = true
+                focusRequester.requestFocus() 
+            },
+            onBoardFocusGained = { isPlaying ->
+                if (forcePlayModeOnNextFocus) {
+                    forcePlayModeOnNextFocus = false
+                }
+            },
+            forcePlayMode = forcePlayModeOnNextFocus
         )
 
         GameControls(
@@ -158,11 +137,14 @@ private fun GameLayout(
     userPreferences: UserPreferences,
     isLandscape: Boolean,
     minDimension: Dp,
-    isTV: Boolean,
+    hasDpad: Boolean,
     focusRequester: FocusRequester,
     onMove: (Direction) -> Unit,
     onRestart: () -> Unit,
-    onUndo: () -> Unit
+    onUndo: () -> Unit,
+    onMoveFocusToBoard: () -> Unit,
+    onBoardFocusGained: (Boolean) -> Unit,
+    forcePlayMode: Boolean
 ) {
     val (hPadding, vPadding) = when {
         minDimension >= 840.dp -> 172.dp to 144.dp
@@ -173,15 +155,12 @@ private fun GameLayout(
 
     val isLargeScreen = minDimension >= 600.dp
     val contentMaxWidth = if (isLargeScreen) 500.dp else 600.dp
-    val showControls = userPreferences.controlMode != ControlMode.GESTURES
+    
+    // On D-pad devices, we always hide on-screen controls. Otherwise follow user preference.
+    val showControls = !hasDpad && userPreferences.controlMode != ControlMode.GESTURES
 
     val restartFocusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(state.isGameOver, isTV) {
-        if (state.isGameOver && isTV) {
-            restartFocusRequester.requestFocus()
-        }
-    }
+    val undoFocusRequester = remember { FocusRequester() }
 
     if (isLandscape) {
         Row(
@@ -199,7 +178,9 @@ private fun GameLayout(
                 isLandscape = true,
                 showUndo = userPreferences.showUndo,
                 showStopwatch = userPreferences.showStopwatch,
-                restartFocusRequester = restartFocusRequester
+                restartFocusRequester = restartFocusRequester,
+                undoFocusRequester = undoFocusRequester,
+                onMoveFocusToBoard = onMoveFocusToBoard
             )
 
             Box(
@@ -212,8 +193,11 @@ private fun GameLayout(
                     state = state,
                     currentTheme = state.theme ?: userPreferences.theme,
                     animationSpeed = userPreferences.animationSpeed,
+                    controlMode = userPreferences.controlMode,
                     focusRequester = focusRequester,
-                    onMove = onMove
+                    autoPlay = hasDpad || forcePlayMode,
+                    onMove = onMove,
+                    onFocusGained = onBoardFocusGained
                 )
             }
 
@@ -236,7 +220,9 @@ private fun GameLayout(
                 isLandscape = false,
                 showUndo = userPreferences.showUndo,
                 showStopwatch = userPreferences.showStopwatch,
-                restartFocusRequester = restartFocusRequester
+                restartFocusRequester = restartFocusRequester,
+                undoFocusRequester = undoFocusRequester,
+                onMoveFocusToBoard = onMoveFocusToBoard
             )
             Spacer(modifier = Modifier.height(if (isLargeScreen) 32.dp else 16.dp))
             Box(
@@ -249,8 +235,11 @@ private fun GameLayout(
                     state = state,
                     currentTheme = state.theme ?: userPreferences.theme,
                     animationSpeed = userPreferences.animationSpeed,
+                    controlMode = userPreferences.controlMode,
                     focusRequester = focusRequester,
-                    onMove = onMove
+                    autoPlay = hasDpad || forcePlayMode,
+                    onMove = onMove,
+                    onFocusGained = onBoardFocusGained
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))

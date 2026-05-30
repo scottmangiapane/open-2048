@@ -1,9 +1,11 @@
 package com.scottmangiapane.open2048.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -25,7 +27,9 @@ fun HeaderSection(
     isLandscape: Boolean,
     showUndo: Boolean = true,
     showStopwatch: Boolean = true,
-    restartFocusRequester: FocusRequester? = null
+    restartFocusRequester: FocusRequester? = null,
+    undoFocusRequester: FocusRequester? = null,
+    onMoveFocusToBoard: () -> Unit = {}
 ) {
     val titleSize = if (isLandscape) 48.sp else 56.sp
     val buttonPadding = if (isLandscape) PaddingValues(horizontal = 16.dp, vertical = 8.dp) 
@@ -80,7 +84,20 @@ fun HeaderSection(
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (showUndo) {
                 val canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs > 0)
-                GameButton(text = "Undo", onClick = onUndo, padding = buttonPadding, enabled = canUndo)
+                val interactionSource = remember { MutableInteractionSource() }
+                val isFocused by interactionSource.collectIsFocusedAsState()
+
+                GameButton(
+                    text = "Undo",
+                    onClick = {
+                        onUndo()
+                        onMoveFocusToBoard()
+                    },
+                    padding = buttonPadding,
+                    enabled = canUndo,
+                    modifier = (if (undoFocusRequester != null) Modifier.focusRequester(undoFocusRequester) else Modifier)
+                        .appFocusBorder(isFocused = isFocused)
+                )
             }
             GameButton(
                 text = "New Game",
