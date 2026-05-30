@@ -8,6 +8,8 @@ import android.os.Vibrator
 class VibrationManager(context: Context) {
     private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
+    val hasVibrator: Boolean = vibrator.hasVibrator()
+
     fun vibrate(durationMs: Long = 50, amplitude: Int = -1) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val finalAmplitude = if (amplitude == -1) VibrationEffect.DEFAULT_AMPLITUDE else amplitude.coerceIn(1, 255)

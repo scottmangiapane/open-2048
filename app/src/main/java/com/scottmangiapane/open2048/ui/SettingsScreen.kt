@@ -132,16 +132,18 @@ fun SettingsScreen(
                         checked = preferences.showUndo,
                         onCheckedChange = { viewModel.setShowUndo(it) }
                     )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    ToggleRow(
-                        label = "Haptic Feedback",
-                        icon = Icons.Rounded.Vibration,
-                        checked = preferences.vibrationEnabled,
-                        onCheckedChange = { viewModel.setVibrationEnabled(it) }
-                    )
+                    if (viewModel.hasVibrator) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                        )
+                        ToggleRow(
+                            label = "Haptic Feedback",
+                            icon = Icons.Rounded.Vibration,
+                            checked = preferences.vibrationEnabled,
+                            onCheckedChange = { viewModel.setVibrationEnabled(it) }
+                        )
+                    }
                 }
             }
         }

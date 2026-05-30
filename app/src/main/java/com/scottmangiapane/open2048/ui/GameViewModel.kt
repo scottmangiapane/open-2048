@@ -18,6 +18,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val iconManager = IconManager(application)
     private val vibrationManager = VibrationManager(application)
     private val gameTimer = GameTimer(viewModelScope)
+
+    val hasVibrator: Boolean = vibrationManager.hasVibrator
     
     private var previousStateForUndo: GameState? = null
     private var bestScoreJob: Job? = null
