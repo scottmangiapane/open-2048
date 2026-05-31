@@ -2,6 +2,8 @@ package com.scottmangiapane.open2048.model
 
 import androidx.compose.runtime.saveable.Saver
 import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 
 sealed class GameMode {
     abstract val size: Int
@@ -33,7 +35,8 @@ sealed class GameMode {
         
         companion object {
             fun today(): Daily {
-                val cal = Calendar.getInstance()
+                // Use UTC and US locale to ensure consistency across different devices and calendar systems
+                val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.US)
                 return Daily(
                     cal.get(Calendar.YEAR),
                     cal.get(Calendar.MONTH) + 1,
