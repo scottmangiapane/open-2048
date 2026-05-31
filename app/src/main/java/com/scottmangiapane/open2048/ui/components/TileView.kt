@@ -88,7 +88,7 @@ fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme, animationSpeed: A
             Text(
                 text = displayValue.intValue.toString(),
                 fontSize = (tileSize.value * factor).sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Black,
                 color = textColor
             )
         }

@@ -1,11 +1,8 @@
 package com.scottmangiapane.open2048.ui
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
@@ -27,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scottmangiapane.open2048.model.AnimationSpeed
 import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.ControlMode
+import com.scottmangiapane.open2048.ui.components.SelectableButton
 import com.scottmangiapane.open2048.ui.components.appFocusBorder
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,7 +113,7 @@ fun SettingsScreen(
                         .fillMaxWidth()
                         .background(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(8.dp)
                         )
                 ) {
                     ToggleRow(
@@ -178,32 +176,12 @@ private fun ThemeSelector(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         AppTheme.entries.forEach { theme ->
-            val selected = currentTheme == theme
-            val interactionSource = remember { MutableInteractionSource() }
-            val isFocused by interactionSource.collectIsFocusedAsState()
-
-            Surface(
+            SelectableButton(
+                text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
+                selected = currentTheme == theme,
                 onClick = { onThemeChange(theme) },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(44.dp)
-                    .appFocusBorder(
-                        isFocused = isFocused,
-                        color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
-                    ),
-                interactionSource = interactionSource,
-                shape = RoundedCornerShape(12.dp),
-                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
-                    )
-                }
-            }
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
@@ -218,32 +196,12 @@ private fun AnimationSpeedSelector(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         AnimationSpeed.entries.forEach { speed ->
-                val selected = currentSpeed == speed
-                val interactionSource = remember { MutableInteractionSource() }
-                val isFocused by interactionSource.collectIsFocusedAsState()
-
-                Surface(
+                SelectableButton(
+                    text = speed.label,
+                    selected = currentSpeed == speed,
                     onClick = { onSpeedChange(speed) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp)
-                        .appFocusBorder(
-                            isFocused = isFocused,
-                            color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
-                        ),
-                    interactionSource = interactionSource,
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                    contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = speed.label,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
-                        )
-                    }
-                }
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
@@ -258,7 +216,7 @@ private fun ControlModeSelector(
             .fillMaxWidth()
             .background(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(8.dp)
             )
     ) {
         ControlMode.entries.forEachIndexed { index, mode ->
@@ -274,7 +232,7 @@ private fun ControlModeSelector(
                         interactionSource = interactionSource,
                         indication = LocalIndication.current
                     ) { onModeChange(mode) }
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RadioButton(
@@ -294,7 +252,7 @@ private fun ControlModeSelector(
                     },
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                    fontWeight = FontWeight.Bold
                 )
             }
             if (index < ControlMode.entries.size - 1) {
@@ -325,7 +283,7 @@ private fun ToggleRow(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current
             ) { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -340,7 +298,8 @@ private fun ToggleRow(
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold
             )
         }
         Switch(

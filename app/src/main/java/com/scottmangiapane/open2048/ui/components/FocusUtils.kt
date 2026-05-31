@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun Modifier.appFocusBorder(
     isFocused: Boolean,
-    shape: Shape = RoundedCornerShape(12.dp),
+    shape: Shape = RoundedCornerShape(8.dp),
     color: Color = MaterialTheme.colorScheme.primary
 ): Modifier {
     return if (isFocused) {

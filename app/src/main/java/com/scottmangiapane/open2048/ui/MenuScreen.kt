@@ -2,11 +2,6 @@ package com.scottmangiapane.open2048.ui
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.focusable
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,22 +15,22 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import com.scottmangiapane.open2048.R
 import com.scottmangiapane.open2048.model.GameMode
+import com.scottmangiapane.open2048.ui.components.GameButton
 import com.scottmangiapane.open2048.ui.components.GameConfirmationDialog
 import com.scottmangiapane.open2048.ui.components.appFocusBorder
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 
 @Composable
 fun MenuScreen(
@@ -107,7 +102,8 @@ fun MenuScreen(
                         Icon(
                             imageVector = Icons.Rounded.BarChart,
                             contentDescription = "Statistics",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
 
@@ -121,7 +117,8 @@ fun MenuScreen(
                         Icon(
                             imageVector = Icons.Rounded.Settings,
                             contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 }
@@ -139,22 +136,24 @@ fun MenuScreen(
                             MenuColumn(modifier = Modifier.weight(1f)) {
                                 if (canResume) {
                                     MenuSection("CONTINUE") {
-                                        MenuButton(
+                                        GameButton(
                                             text = "Resume",
                                             icon = Icons.Rounded.PlayArrow,
                                             onClick = onResumeGame,
                                             containerColor = MaterialTheme.colorScheme.secondary,
+                                            fullWidth = true,
                                             modifier = Modifier.focusRequester(initialFocusRequester)
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(16.dp))
                                 }
                                 MenuSection("CHALLENGE") {
-                                    MenuButton(
+                                    GameButton(
                                         text = "Daily Challenge",
                                         icon = Icons.Rounded.EmojiEvents,
                                         onClick = { handleStartGame(GameMode.Daily.today()) },
                                         containerColor = amber,
+                                        fullWidth = true,
                                         modifier = if (!canResume) Modifier.focusRequester(initialFocusRequester) else Modifier
                                     )
                                 }
@@ -180,21 +179,23 @@ fun MenuScreen(
                         ) {
                             if (canResume) {
                                 MenuSection("CONTINUE") {
-                                    MenuButton(
+                                    GameButton(
                                         text = "Resume",
                                         icon = Icons.Rounded.PlayArrow,
                                         onClick = onResumeGame,
                                         containerColor = MaterialTheme.colorScheme.secondary,
+                                        fullWidth = true,
                                         modifier = Modifier.focusRequester(initialFocusRequester)
                                     )
                                 }
                             }
                             MenuSection("CHALLENGE") {
-                                MenuButton(
+                                GameButton(
                                     text = "Daily Challenge",
                                     icon = Icons.Rounded.EmojiEvents,
                                     onClick = { handleStartGame(GameMode.Daily.today()) },
                                     containerColor = amber,
+                                    fullWidth = true,
                                     modifier = if (!canResume) Modifier.focusRequester(initialFocusRequester) else Modifier
                                 )
                             }
@@ -215,10 +216,8 @@ fun MenuScreen(
 fun Logo2048(isLandscape: Boolean) {
     Text(
         text = "2048",
-        fontSize = if (isLandscape) 48.sp else 72.sp,
-        fontWeight = FontWeight.Black,
-        color = MaterialTheme.colorScheme.onBackground,
-        letterSpacing = if (isLandscape) (-2).sp else (-4).sp
+        style = if (isLandscape) MaterialTheme.typography.displayMedium else MaterialTheme.typography.displayLarge,
+        color = MaterialTheme.colorScheme.onBackground
     )
 }
 
@@ -243,17 +242,17 @@ private fun MenuSection(
 @Composable
 private fun ClassicModes(onStartGame: (GameMode) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        MenuButton("Classic 4x4", Icons.Rounded.Grid4x4, { onStartGame(GameMode.Classic(4)) })
-        MenuButton("Small 3x3", Icons.Rounded.Grid3x3, { onStartGame(GameMode.Classic(3)) })
-        MenuButton("Large 5x5", Icons.Rounded.GridView, { onStartGame(GameMode.Classic(5)) })
+        GameButton("Classic 4x4", { onStartGame(GameMode.Classic(4)) }, fullWidth = true, icon = Icons.Rounded.Grid4x4)
+        GameButton("Small 3x3", { onStartGame(GameMode.Classic(3)) }, fullWidth = true, icon = Icons.Rounded.Grid3x3)
+        GameButton("Large 5x5", { onStartGame(GameMode.Classic(5)) }, fullWidth = true, icon = Icons.Rounded.GridView)
     }
 }
 
 @Composable
 private fun BlitzModes(onStartGame: (GameMode) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        MenuButton("2 Minute Blitz", Icons.Rounded.HourglassBottom, { onStartGame(GameMode.Blitz(2)) })
-        MenuButton("5 Minute Blitz", Icons.Rounded.HourglassTop, { onStartGame(GameMode.Blitz(5)) })
+        GameButton("2 Minute Blitz", { onStartGame(GameMode.Blitz(2)) }, fullWidth = true, icon = Icons.Rounded.HourglassBottom)
+        GameButton("5 Minute Blitz", { onStartGame(GameMode.Blitz(5)) }, fullWidth = true, icon = Icons.Rounded.HourglassTop)
     }
 }
 
@@ -267,67 +266,10 @@ private fun MenuColumn(
             .widthIn(max = 280.dp)
             .background(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(8.dp)
             )
             .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         content = content
     )
-}
-
-@Composable
-private fun MenuButton(
-    text: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.primary
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
-
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .appFocusBorder(
-                isFocused = isFocused,
-                color = if (containerColor == MaterialTheme.colorScheme.primary) {
-                    MaterialTheme.colorScheme.secondary
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            ),
-        interactionSource = interactionSource,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = Color.White
-        ),
-        shape = RoundedCornerShape(12.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = Color.White
-            )
-            Text(
-                text = text,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            // Spacer to keep text centered relative to the whole button width
-            Spacer(modifier = Modifier.size(18.dp))
-        }
-    }
 }

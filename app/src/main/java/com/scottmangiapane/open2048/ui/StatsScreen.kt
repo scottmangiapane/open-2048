@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scottmangiapane.open2048.model.GameMode
@@ -142,7 +141,7 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
 
     Surface(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
             .appFocusBorder(isFocused = isFocused)
@@ -163,7 +162,6 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
                     Text(
                         text = bestScore.toString(),
                         style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.Black,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -214,7 +212,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
 
     Surface(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
             .appFocusBorder(isFocused = isFocused)
@@ -227,7 +225,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     Text(
                         text = "WIN AT ${mode.winCondition}",
                         style = MaterialTheme.typography.labelSmall,
@@ -236,8 +234,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
                 }
                 Text(
                     text = bestScore.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -275,7 +272,6 @@ private fun StatMicroItem(modifier: Modifier = Modifier, label: String, value: S
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
     }

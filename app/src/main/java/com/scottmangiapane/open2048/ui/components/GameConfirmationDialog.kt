@@ -15,7 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
@@ -32,7 +31,7 @@ fun GameConfirmationDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 24.dp),
-            shape = MaterialTheme.shapes.extraLarge,
+            shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background
             ),
@@ -48,7 +47,6 @@ fun GameConfirmationDialog(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
@@ -79,41 +77,18 @@ fun GameConfirmationDialog(
                     horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val cancelInteractionSource = remember { MutableInteractionSource() }
-                    val cancelFocused by cancelInteractionSource.collectIsFocusedAsState()
-                    TextButton(
+                    GameButton(
+                        text = "Cancel",
                         onClick = onDismiss,
-                        interactionSource = cancelInteractionSource,
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.primary
-                        ),
-                        modifier = Modifier.appFocusBorder(
-                            isFocused = cancelFocused,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                    ) {
-                        Text("Cancel", fontWeight = FontWeight.Bold)
-                    }
+                        isTextButton = true
+                    )
                     
-                    val confirmInteractionSource = remember { MutableInteractionSource() }
-                    val confirmFocused by confirmInteractionSource.collectIsFocusedAsState()
-                    Button(
+                    GameButton(
+                        text = confirmText,
                         onClick = onConfirm,
-                        interactionSource = confirmInteractionSource,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(8.dp),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
-                        modifier = Modifier.appFocusBorder(
-                            isFocused = confirmFocused,
-                            color = MaterialTheme.colorScheme.secondary,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                    ) {
-                        Text(confirmText, fontWeight = FontWeight.Bold)
-                    }
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    )
                 }
             }
         }

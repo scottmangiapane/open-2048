@@ -82,7 +82,7 @@ fun BoardContainer(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .onKeyEvent { keyEvent ->
                 if (keyEvent.type != KeyEventType.KeyDown || state.isGameOver) return@onKeyEvent false
@@ -170,13 +170,12 @@ fun BoardContainer(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
-                    .clip(RoundedCornerShape(12.dp)),
+                    .clip(RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = if (state.timeLeftMs == 0L) "Time's Up!" else "Game Over!",
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.displayMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }

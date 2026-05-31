@@ -31,9 +31,8 @@ fun HeaderSection(
     undoFocusRequester: FocusRequester? = null,
     onMoveFocusToBoard: () -> Unit = {}
 ) {
-    val titleSize = if (isLandscape) 48.sp else 56.sp
-    val buttonPadding = if (isLandscape) PaddingValues(horizontal = 16.dp, vertical = 8.dp) 
-                        else PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+    val buttonPadding = if (isLandscape) PaddingValues(horizontal = 16.dp, vertical = 6.dp) 
+                        else PaddingValues(horizontal = 20.dp, vertical = 8.dp)
     val alignment = if (isLandscape) Alignment.End else Alignment.CenterHorizontally
 
     Column(
@@ -43,10 +42,8 @@ fun HeaderSection(
         Column(horizontalAlignment = alignment) {
             Text(
                 text = "2048",
-                fontSize = titleSize,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onBackground,
-                letterSpacing = (-3).sp
+                style = if (isLandscape) MaterialTheme.typography.displayMedium else MaterialTheme.typography.displayLarge,
+                color = MaterialTheme.colorScheme.onBackground
             )
             
             val modeText = when (val mode = state.gameMode) {
@@ -113,8 +110,7 @@ fun HeaderSection(
 private fun TimerDisplay(timeLeftMs: Long) {
     Text(
         text = formatTime(timeLeftMs),
-        fontSize = 32.sp,
-        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.displaySmall,
         color = if (timeLeftMs < 10000) colorResource(R.color.rose_500) else MaterialTheme.colorScheme.primary
     )
 }

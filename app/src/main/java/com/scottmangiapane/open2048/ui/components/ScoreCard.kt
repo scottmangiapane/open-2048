@@ -17,7 +17,7 @@ fun ScoreCard(label: String, score: Int) {
     Column(
         modifier = Modifier
             .widthIn(min = 80.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
             .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
