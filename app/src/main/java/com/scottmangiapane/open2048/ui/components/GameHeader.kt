@@ -11,6 +11,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.scottmangiapane.open2048.R
+import com.scottmangiapane.open2048.logic.TimeUtils
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.model.GameState
 
@@ -101,7 +102,7 @@ fun HeaderSection(
 @Composable
 private fun TimerDisplay(timeLeftMs: Long) {
     Text(
-        text = formatTime(timeLeftMs),
+        text = TimeUtils.formatDuration(timeLeftMs),
         style = MaterialTheme.typography.displaySmall,
         color = if (timeLeftMs < 10000) colorResource(R.color.rose_500) else MaterialTheme.colorScheme.primary
     )
@@ -110,21 +111,8 @@ private fun TimerDisplay(timeLeftMs: Long) {
 @Composable
 private fun StopwatchDisplay(elapsedTimeMs: Long) {
     Text(
-        text = "TIME: ${formatTime(elapsedTimeMs, showHours = true)}",
+        text = "TIME: ${TimeUtils.formatDuration(elapsedTimeMs, showHours = true)}",
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary
     )
-}
-
-private fun formatTime(ms: Long, showHours: Boolean = false): String {
-    val totalSeconds = ms / 1000
-    val hours = totalSeconds / 3600
-    val minutes = (totalSeconds % 3600) / 60
-    val seconds = totalSeconds % 60
-    
-    val locale = java.util.Locale.getDefault()
-    return when {
-        showHours && hours > 0 -> String.format(locale, "%d:%02d:%02d", hours, minutes, seconds)
-        else -> String.format(locale, "%02d:%02d", minutes, seconds)
-    }
 }

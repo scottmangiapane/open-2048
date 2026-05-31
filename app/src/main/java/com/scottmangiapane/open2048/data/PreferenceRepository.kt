@@ -64,7 +64,7 @@ class PreferenceRepository(private val context: Context) {
         val modeString = preferences[GAME_MODE_KEY] ?: return@map null
         
         val board = deserializeBoard(boardString)
-        val mode = deserializeGameMode(modeString)
+        val mode = GameMode.fromId(modeString)
         
         if (board.isEmpty() || mode == null) return@map null
 
@@ -180,7 +180,7 @@ class PreferenceRepository(private val context: Context) {
                 preferences[NEXT_ID_KEY] = state.nextId
                 preferences[NEXT_VALUE_SEED_KEY] = state.nextValueSeed
                 preferences[NEXT_POS_SEED_KEY] = state.nextPosSeed
-                preferences[GAME_MODE_KEY] = serializeGameMode(state.gameMode)
+                preferences[GAME_MODE_KEY] = state.gameMode.id
                 preferences[MOVES_COUNT_KEY] = state.movesCount
                 preferences[ELAPSED_TIME_KEY] = state.elapsedTimeMs
                 preferences[HIGHEST_TILE_KEY] = state.highestTile
@@ -225,26 +225,5 @@ class PreferenceRepository(private val context: Context) {
         }
         val size = sqrt(flatList.size.toDouble()).toInt()
         return if (size * size == flatList.size) flatList.chunked(size) else emptyList()
-    }
-
-    private fun serializeGameMode(mode: GameMode): String = when (mode) {
-        is GameMode.Classic -> "classic:${mode.size}"
-        is GameMode.Blitz -> "blitz:${mode.durationMinutes}"
-        is GameMode.Daily -> "daily:${mode.year}:${mode.month}:${mode.day}"
-    }
-
-    private fun deserializeGameMode(data: String): GameMode? {
-        val parts = data.split(":")
-        return when (parts.getOrNull(0)) {
-            "classic" -> parts.getOrNull(1)?.toIntOrNull()?.let { GameMode.Classic(it) }
-            "blitz" -> parts.getOrNull(1)?.toIntOrNull()?.let { GameMode.Blitz(it) }
-            "daily" -> {
-                val y = parts.getOrNull(1)?.toIntOrNull() ?: return null
-                val m = parts.getOrNull(2)?.toIntOrNull() ?: return null
-                val d = parts.getOrNull(3)?.toIntOrNull() ?: return null
-                GameMode.Daily(y, m, d)
-            }
-            else -> null
-        }
     }
 }

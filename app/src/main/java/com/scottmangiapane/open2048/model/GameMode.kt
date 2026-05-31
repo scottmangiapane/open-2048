@@ -7,6 +7,7 @@ sealed class GameMode {
     abstract val size: Int
     abstract val id: String
     abstract val winCondition: Int
+    val statsId: String get() = if (this is Daily) "daily" else id
 
     data class Classic(override val size: Int) : GameMode() {
         override val id: String = "classic_$size"
@@ -43,22 +44,24 @@ sealed class GameMode {
     }
 
     companion object {
+        fun fromId(id: String): GameMode? {
+            val parts = id.split("_")
+            return when (parts.getOrNull(0)) {
+                "classic" -> parts.getOrNull(1)?.toIntOrNull()?.let { Classic(it) }
+                "blitz" -> parts.getOrNull(1)?.toIntOrNull()?.let { Blitz(it) }
+                "daily" -> {
+                    val y = parts.getOrNull(1)?.toIntOrNull() ?: return null
+                    val m = parts.getOrNull(2)?.toIntOrNull() ?: return null
+                    val d = parts.getOrNull(3)?.toIntOrNull() ?: return null
+                    Daily(y, m, d)
+                }
+                else -> null
+            }
+        }
+
         val Saver: Saver<GameMode?, String> = Saver(
             save = { it?.id ?: "" },
-            restore = { id ->
-                val parts = id.split("_")
-                when (parts.getOrNull(0)) {
-                    "classic" -> parts.getOrNull(1)?.toIntOrNull()?.let { Classic(it) }
-                    "blitz" -> parts.getOrNull(1)?.toIntOrNull()?.let { Blitz(it) }
-                    "daily" -> {
-                        val y = parts.getOrNull(1)?.toIntOrNull() ?: return@Saver null
-                        val m = parts.getOrNull(2)?.toIntOrNull() ?: return@Saver null
-                        val d = parts.getOrNull(3)?.toIntOrNull() ?: return@Saver null
-                        Daily(y, m, d)
-                    }
-                    else -> null
-                }
-            }
+            restore = { fromId(it) }
         )
     }
 }

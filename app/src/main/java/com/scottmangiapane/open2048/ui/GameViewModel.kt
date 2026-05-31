@@ -90,8 +90,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val currentState = _state.value
             if (currentState.movesCount > 0) {
                 viewModelScope.launch {
-                    val aggregateId = if (currentState.gameMode is GameMode.Daily) "daily" else currentState.gameMode.id
-                    prefs.addToTotalTime(aggregateId, delta)
+                    prefs.addToTotalTime(currentState.gameMode.statsId, delta)
                 }
             }
 
@@ -243,53 +242,44 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val intStatsFlows = mutableMapOf<String, StateFlow<Int>>()
     private val longStatsFlows = mutableMapOf<String, StateFlow<Long>>()
 
-    fun getBestScore(mode: GameMode): StateFlow<Int> {
-        return intStatsFlows.getOrPut("best_${mode.id}") {
-            prefs.getBestScore(mode.id)
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    private fun <T> getStatFlow(
+        key: String,
+        cache: MutableMap<String, StateFlow<T>>,
+        defaultValue: T,
+        flowProvider: () -> Flow<T>
+    ): StateFlow<T> {
+        return cache.getOrPut(key) {
+            flowProvider()
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), defaultValue)
         }
     }
 
-    fun getHighestTile(mode: GameMode): StateFlow<Int> {
-        return intStatsFlows.getOrPut("highest_${mode.id}") {
-            prefs.getIntStat(PreferenceRepository.getHighestTileKey(mode.id))
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-        }
+    fun getBestScore(mode: GameMode): StateFlow<Int> = getStatFlow("best_${mode.id}", intStatsFlows, 0) {
+        prefs.getBestScore(mode.id)
     }
 
-    fun getFewestMoves(mode: GameMode): StateFlow<Int> {
-        return intStatsFlows.getOrPut("moves_${mode.id}") {
-            prefs.getIntStat(PreferenceRepository.getFewestMovesKey(mode.id))
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-        }
+    fun getHighestTile(mode: GameMode): StateFlow<Int> = getStatFlow("highest_${mode.id}", intStatsFlows, 0) {
+        prefs.getIntStat(PreferenceRepository.getHighestTileKey(mode.id))
     }
 
-    fun getFastestTime(mode: GameMode): StateFlow<Long> {
-        return longStatsFlows.getOrPut("time_${mode.id}") {
-            prefs.getLongStat(PreferenceRepository.getFastestTimeKey(mode.id))
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
-        }
+    fun getFewestMoves(mode: GameMode): StateFlow<Int> = getStatFlow("moves_${mode.id}", intStatsFlows, 0) {
+        prefs.getIntStat(PreferenceRepository.getFewestMovesKey(mode.id))
     }
 
-    fun getWinCount(modeId: String): StateFlow<Int> {
-        return intStatsFlows.getOrPut("wins_$modeId") {
-            prefs.getIntStat(PreferenceRepository.getWinCountKey(modeId))
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-        }
+    fun getFastestTime(mode: GameMode): StateFlow<Long> = getStatFlow("time_${mode.id}", longStatsFlows, 0L) {
+        prefs.getLongStat(PreferenceRepository.getFastestTimeKey(mode.id))
     }
 
-    fun getGamesPlayed(modeId: String): StateFlow<Int> {
-        return intStatsFlows.getOrPut("played_$modeId") {
-            prefs.getIntStat(PreferenceRepository.getGamesPlayedKey(modeId))
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-        }
+    fun getWinCount(modeId: String): StateFlow<Int> = getStatFlow("wins_$modeId", intStatsFlows, 0) {
+        prefs.getIntStat(PreferenceRepository.getWinCountKey(modeId))
     }
 
-    fun getTotalTime(modeId: String): StateFlow<Long> {
-        return longStatsFlows.getOrPut("total_time_$modeId") {
-            prefs.getLongStat(PreferenceRepository.getTotalTimeKey(modeId))
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
-        }
+    fun getGamesPlayed(modeId: String): StateFlow<Int> = getStatFlow("played_$modeId", intStatsFlows, 0) {
+        prefs.getIntStat(PreferenceRepository.getGamesPlayedKey(modeId))
+    }
+
+    fun getTotalTime(modeId: String): StateFlow<Long> = getStatFlow("total_time_$modeId", longStatsFlows, 0L) {
+        prefs.getLongStat(PreferenceRepository.getTotalTimeKey(modeId))
     }
 
     private fun saveGame(state: GameState) {
@@ -315,8 +305,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // Increment games played and set initial highest tile on the first valid move
         if (currentState.movesCount == 0) {
             viewModelScope.launch {
-                val aggregateId = if (currentState.gameMode is GameMode.Daily) "daily" else currentState.gameMode.id
-                prefs.incrementGamesPlayed(aggregateId)
+                prefs.incrementGamesPlayed(currentState.gameMode.statsId)
                 prefs.updateHighestTile(currentState.gameMode.id, currentState.highestTile)
             }
         }
@@ -344,7 +333,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         if (reachedTargetThisMove) {
             viewModelScope.launch {
-                prefs.incrementWinCount(if (currentState.gameMode is GameMode.Daily) "daily" else currentState.gameMode.id)
+                prefs.incrementWinCount(currentState.gameMode.statsId)
                 prefs.updateFewestMoves(currentState.gameMode.id, movesToWin!!)
                 prefs.updateFastestTime(currentState.gameMode.id, timeToWin!!)
             }

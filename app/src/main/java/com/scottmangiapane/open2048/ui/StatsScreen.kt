@@ -17,9 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.scottmangiapane.open2048.logic.TimeUtils
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.ui.components.appFocusBorder
-import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +31,7 @@ fun StatsScreen(
         topBar = {
             TopAppBar(
                 modifier = Modifier.windowInsetsPadding(
-                    WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
+                    WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal),
                 ),
                 title = {
                     Text(
@@ -179,8 +179,8 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
             Spacer(modifier = Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatMicroItem(Modifier.weight(1f), "Max Tile", highestTile.toString())
-                StatMicroItem(Modifier.weight(1f), "Fewest Moves", if (fewestMoves == Int.MAX_VALUE || fewestMoves == 0) "-" else fewestMoves.toString())
-                StatMicroItem(Modifier.weight(1f), "Fastest Time", if (fastestTime == Long.MAX_VALUE || fastestTime == 0L) "-" else formatTimeShort(fastestTime))
+                StatMicroItem(Modifier.weight(1f), "Fewest Moves", if ((fewestMoves == Int.MAX_VALUE) || fewestMoves == 0) "-" else fewestMoves.toString())
+                StatMicroItem(Modifier.weight(1f), "Fastest Time", if (fastestTime == Long.MAX_VALUE || fastestTime == 0L) "-" else TimeUtils.formatDurationAbbreviated(fastestTime))
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -189,7 +189,7 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatMicroItem(Modifier.weight(1f), "Wins", totalWins.toString())
                 StatMicroItem(Modifier.weight(1f), "Played", totalPlayed.toString())
-                StatMicroItem(Modifier.weight(1f), "Total Time", formatTimeShort(totalTime))
+                StatMicroItem(Modifier.weight(1f), "Total Time", TimeUtils.formatDurationAbbreviated(totalTime))
             }
         }
     }
@@ -244,8 +244,8 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatMicroItem(Modifier.weight(1f), "Max Tile", highestTile.toString())
-                StatMicroItem(Modifier.weight(1f), "Fewest Moves", if (fewestMoves == Int.MAX_VALUE || fewestMoves == 0) "-" else fewestMoves.toString())
-                StatMicroItem(Modifier.weight(1f), "Fastest Time", if (fastestTime == Long.MAX_VALUE || fastestTime == 0L) "-" else formatTimeShort(fastestTime))
+                StatMicroItem(Modifier.weight(1f), "Fewest Moves", if ((fewestMoves == Int.MAX_VALUE) || fewestMoves == 0) "-" else fewestMoves.toString())
+                StatMicroItem(Modifier.weight(1f), "Fastest Time", if (fastestTime == Long.MAX_VALUE || fastestTime == 0L) "-" else TimeUtils.formatDurationAbbreviated(fastestTime))
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -253,7 +253,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatMicroItem(Modifier.weight(1f), "Wins", wins.toString())
                 StatMicroItem(Modifier.weight(1f), "Played", played.toString())
-                StatMicroItem(Modifier.weight(1f), "Total Time", formatTimeShort(totalTime))
+                StatMicroItem(Modifier.weight(1f), "Total Time", TimeUtils.formatDurationAbbreviated(totalTime))
             }
         }
     }
@@ -272,18 +272,5 @@ private fun StatMicroItem(modifier: Modifier = Modifier, label: String, value: S
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
-    }
-}
-
-private fun formatTimeShort(ms: Long): String {
-    val hours = TimeUnit.MILLISECONDS.toHours(ms)
-    val minutes = TimeUnit.MILLISECONDS.toMinutes(ms) % 60
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(ms) % 60
-    
-    val locale = java.util.Locale.getDefault()
-    return when {
-        hours > 0 -> String.format(locale, "%dh %dm", hours, minutes)
-        minutes > 0 -> String.format(locale, "%dm %ds", minutes, seconds)
-        else -> String.format(locale, "%ds", seconds)
     }
 }
