@@ -17,20 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.scottmangiapane.open2048.R
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.ui.components.GameButton
 import com.scottmangiapane.open2048.ui.components.GameConfirmationDialog
-import com.scottmangiapane.open2048.ui.components.appFocusBorder
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import com.scottmangiapane.open2048.ui.components.MenuIconButton
 
 @Composable
 fun MenuScreen(
@@ -44,7 +38,7 @@ fun MenuScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val amber = colorResource(R.color.amber_500)
-    var pendingGameMode by rememberSaveable(stateSaver = GameMode.Saver) { mutableStateOf<GameMode?>(null) }
+    var pendingGameMode by rememberSaveable(stateSaver = GameMode.Saver) { mutableStateOf(null) }
 
     val initialFocusRequester = remember { FocusRequester() }
 
@@ -74,144 +68,119 @@ fun MenuScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(if (isLandscape) Modifier else Modifier.verticalScroll(rememberScrollState()))
+                .padding(horizontal = 24.dp)
+                .padding(top = if (isLandscape) 8.dp else 48.dp, bottom = 8.dp)
+                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(if (isLandscape) 12.dp else 24.dp, Alignment.CenterVertically)
+        ) {
+            // Settings/Stats Row
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .then(if (isLandscape) Modifier else Modifier.verticalScroll(rememberScrollState()))
-                    .padding(horizontal = 24.dp)
-                    .padding(top = if (isLandscape) 8.dp else 48.dp, bottom = 8.dp)
-                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(if (isLandscape) 12.dp else 24.dp, Alignment.CenterVertically)
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Settings/Stats Row integrated into the main flow to avoid focus traps
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val statsInteractionSource = remember { MutableInteractionSource() }
-                    val statsFocused by statsInteractionSource.collectIsFocusedAsState()
-                    IconButton(
-                        onClick = onNavigateToStats,
-                        modifier = Modifier.appFocusBorder(isFocused = statsFocused),
-                        interactionSource = statsInteractionSource
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.BarChart,
-                            contentDescription = "Statistics",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-
-                    val settingsInteractionSource = remember { MutableInteractionSource() }
-                    val settingsFocused by settingsInteractionSource.collectIsFocusedAsState()
-                    IconButton(
-                        onClick = onNavigateToSettings,
-                        modifier = Modifier.appFocusBorder(isFocused = settingsFocused),
-                        interactionSource = settingsInteractionSource
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
+                MenuIconButton(onClick = onNavigateToStats) {
+                    Icon(
+                        imageVector = Icons.Rounded.BarChart,
+                        contentDescription = "Statistics",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
 
-                Logo2048(isLandscape)
+                MenuIconButton(onClick = onNavigateToSettings) {
+                    Icon(
+                        imageVector = Icons.Rounded.Settings,
+                        contentDescription = "Settings",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
 
-                // Wrap the main content in a Box to control D-pad navigation flow
-                Box(modifier = Modifier.weight(1f, fill = false)) {
-                    if (isLandscape) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            MenuColumn(modifier = Modifier.weight(1f)) {
-                                if (canResume) {
-                                    MenuSection("CONTINUE") {
-                                        GameButton(
-                                            text = "Resume",
-                                            icon = Icons.Rounded.PlayArrow,
-                                            onClick = onResumeGame,
-                                            containerColor = MaterialTheme.colorScheme.secondary,
-                                            fullWidth = true,
-                                            modifier = Modifier.focusRequester(initialFocusRequester)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                }
-                                MenuSection("CHALLENGE") {
-                                    GameButton(
-                                        text = "Daily Challenge",
-                                        icon = Icons.Rounded.EmojiEvents,
-                                        onClick = { handleStartGame(GameMode.Daily.today()) },
-                                        containerColor = amber,
-                                        fullWidth = true,
-                                        modifier = if (!canResume) Modifier.focusRequester(initialFocusRequester) else Modifier
-                                    )
-                                }
-                            }
+            Logo2048(isLandscape)
 
-                            MenuColumn(modifier = Modifier.weight(1f)) {
-                                MenuSection("CLASSIC") {
-                                    ClassicModes(handleStartGame)
-                                }
-                            }
+            // Main Content
+            val menuContent = @Composable {
+                if (canResume) {
+                    MenuSection("CONTINUE") {
+                        GameButton(
+                            text = "Resume",
+                            icon = Icons.Rounded.PlayArrow,
+                            onClick = onResumeGame,
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            fullWidth = true,
+                            modifier = Modifier.focusRequester(initialFocusRequester)
+                        )
+                    }
+                    if (!isLandscape) Spacer(modifier = Modifier.height(16.dp))
+                }
+                MenuSection("CHALLENGE") {
+                    GameButton(
+                        text = "Daily Challenge",
+                        icon = Icons.Rounded.EmojiEvents,
+                        onClick = { handleStartGame(GameMode.Daily.today()) },
+                        containerColor = amber,
+                        fullWidth = true,
+                        modifier = if (!canResume) Modifier.focusRequester(initialFocusRequester) else Modifier
+                    )
+                }
+                if (isLandscape) {
+                    // In landscape, Classic and Blitz are in their own columns, 
+                    // but we handle them differently below.
+                } else {
+                    MenuSection("CLASSIC") {
+                        ClassicModes(handleStartGame)
+                    }
+                    MenuSection("BLITZ") {
+                        BlitzModes(handleStartGame)
+                    }
+                }
+            }
 
-                            MenuColumn(modifier = Modifier.weight(1f)) {
-                                MenuSection("BLITZ") {
-                                    BlitzModes(handleStartGame)
-                                }
-                            }
+            Box(modifier = Modifier.weight(1f, fill = false)) {
+                if (isLandscape) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        MenuColumn(modifier = Modifier.weight(1f)) {
+                            menuContent()
                         }
-                    } else {
-                        Column(
-                            modifier = Modifier.widthIn(max = 280.dp),
-                            verticalArrangement = Arrangement.spacedBy(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            if (canResume) {
-                                MenuSection("CONTINUE") {
-                                    GameButton(
-                                        text = "Resume",
-                                        icon = Icons.Rounded.PlayArrow,
-                                        onClick = onResumeGame,
-                                        containerColor = MaterialTheme.colorScheme.secondary,
-                                        fullWidth = true,
-                                        modifier = Modifier.focusRequester(initialFocusRequester)
-                                    )
-                                }
-                            }
-                            MenuSection("CHALLENGE") {
-                                GameButton(
-                                    text = "Daily Challenge",
-                                    icon = Icons.Rounded.EmojiEvents,
-                                    onClick = { handleStartGame(GameMode.Daily.today()) },
-                                    containerColor = amber,
-                                    fullWidth = true,
-                                    modifier = if (!canResume) Modifier.focusRequester(initialFocusRequester) else Modifier
-                                )
-                            }
+
+                        MenuColumn(modifier = Modifier.weight(1f)) {
                             MenuSection("CLASSIC") {
                                 ClassicModes(handleStartGame)
                             }
+                        }
+
+                        MenuColumn(modifier = Modifier.weight(1f)) {
                             MenuSection("BLITZ") {
                                 BlitzModes(handleStartGame)
                             }
                         }
                     }
+                } else {
+                    Column(
+                        modifier = Modifier.widthIn(max = 280.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        menuContent()
+                    }
                 }
             }
         }
     }
-
+}
 @Composable
 fun Logo2048(isLandscape: Boolean) {
     Text(

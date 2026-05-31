@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
@@ -16,21 +15,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scottmangiapane.open2048.logic.Direction
-import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.ControlMode
 import com.scottmangiapane.open2048.model.GameState
 import com.scottmangiapane.open2048.model.UserPreferences
-import com.scottmangiapane.open2048.ui.components.appFocusBorder
 import com.scottmangiapane.open2048.ui.components.*
-import kotlin.math.abs
 
 @Composable
 fun GameScreen(
@@ -39,10 +33,12 @@ fun GameScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
-    val hasProgress by remember { derivedStateOf { state.movesCount > 0 && !state.isGameOver } }
+    val hasProgress by remember { derivedStateOf { (state.movesCount > 0) && !state.isGameOver } }
     var highestTileSeen by rememberSaveable { mutableIntStateOf(state.highestTile) }
-    var showConfetti by remember { mutableStateOf(false) }
+    var showConfetti by remember { mutableStateOf(value = false) }
     val focusRequester = remember { FocusRequester() }
+    val restartFocusRequester = remember { FocusRequester() }
+    val undoFocusRequester = remember { FocusRequester() }
     var showRestartConfirmation by rememberSaveable { mutableStateOf(false) }
     var forcePlayModeOnNextFocus by remember { mutableStateOf(false) }
 
@@ -69,6 +65,19 @@ fun GameScreen(
         }
     }
 
+    LaunchedEffect(state.isGameOver) {
+        if (state.isGameOver) {
+            restartFocusRequester.requestFocus()
+        }
+    }
+
+    // Re-focus board when game is restarted or undone
+    LaunchedEffect(state.isGameOver, forcePlayModeOnNextFocus) {
+        if (!state.isGameOver && forcePlayModeOnNextFocus) {
+            focusRequester.requestFocus()
+        }
+    }
+
     if (showRestartConfirmation) {
         GameConfirmationDialog(
             title = "Restart Game?",
@@ -80,7 +89,9 @@ fun GameScreen(
                 forcePlayModeOnNextFocus = true
                 focusRequester.requestFocus()
             },
-            onDismiss = { showRestartConfirmation = false }
+            onDismiss = {
+                showRestartConfirmation = false
+            }
         )
     }
 
@@ -98,6 +109,8 @@ fun GameScreen(
             minDimension = minDimension,
             hasDpad = hasDpad,
             focusRequester = focusRequester,
+            restartFocusRequester = restartFocusRequester,
+            undoFocusRequester = undoFocusRequester,
             onMove = { viewModel.move(it) },
             onRestart = { 
                 if (hasProgress) {
@@ -113,7 +126,7 @@ fun GameScreen(
                 forcePlayModeOnNextFocus = true
                 focusRequester.requestFocus() 
             },
-            onBoardFocusGained = { isPlaying ->
+            onBoardFocusGained = { _ ->
                 if (forcePlayModeOnNextFocus) {
                     forcePlayModeOnNextFocus = false
                 }
@@ -139,6 +152,8 @@ private fun GameLayout(
     minDimension: Dp,
     hasDpad: Boolean,
     focusRequester: FocusRequester,
+    restartFocusRequester: FocusRequester,
+    undoFocusRequester: FocusRequester,
     onMove: (Direction) -> Unit,
     onRestart: () -> Unit,
     onUndo: () -> Unit,
@@ -149,18 +164,52 @@ private fun GameLayout(
     val (hPadding, vPadding) = when {
         minDimension >= 840.dp -> 172.dp to 144.dp
         minDimension >= 600.dp -> 120.dp to 96.dp
-        isLandscape -> 48.dp to 24.dp // Increased for TV/Landscape overscan safety
+        isLandscape -> 48.dp to 24.dp
         else -> 24.dp to 16.dp
     }
 
     val isLargeScreen = minDimension >= 600.dp
     val contentMaxWidth = if (isLargeScreen) 500.dp else 600.dp
-    
-    // On D-pad devices, we always hide on-screen controls. Otherwise follow user preference.
     val showControls = !hasDpad && userPreferences.controlMode != ControlMode.GESTURES
 
-    val restartFocusRequester = remember { FocusRequester() }
-    val undoFocusRequester = remember { FocusRequester() }
+    val header = @Composable {
+        HeaderSection(
+            state = state,
+            onRestart = onRestart,
+            onUndo = onUndo,
+            isLandscape = isLandscape,
+            showUndo = userPreferences.showUndo,
+            showStopwatch = userPreferences.showStopwatch,
+            restartFocusRequester = restartFocusRequester,
+            undoFocusRequester = undoFocusRequester,
+            onMoveFocusToBoard = onMoveFocusToBoard
+        )
+    }
+
+    val board: @Composable (Modifier) -> Unit = { modifier ->
+        Box(
+            modifier = modifier
+                .aspectRatio(1f, matchHeightConstraintsFirst = !isLandscape)
+                .sizeIn(maxWidth = contentMaxWidth)
+        ) {
+            BoardContainer(
+                state = state,
+                currentTheme = state.theme ?: userPreferences.theme,
+                animationSpeed = userPreferences.animationSpeed,
+                controlMode = userPreferences.controlMode,
+                focusRequester = focusRequester,
+                autoPlay = hasDpad || forcePlayMode,
+                onMove = onMove,
+                onFocusGained = onBoardFocusGained
+            )
+        }
+    }
+
+    val controls = @Composable {
+        if (showControls) {
+            DirectionalControls(isLandscape = isLandscape, onMove = onMove)
+        }
+    }
 
     if (isLandscape) {
         Row(
@@ -171,39 +220,9 @@ private fun GameLayout(
             horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 48.dp else 24.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            HeaderSection(
-                state = state,
-                onRestart = onRestart,
-                onUndo = onUndo,
-                isLandscape = true,
-                showUndo = userPreferences.showUndo,
-                showStopwatch = userPreferences.showStopwatch,
-                restartFocusRequester = restartFocusRequester,
-                undoFocusRequester = undoFocusRequester,
-                onMoveFocusToBoard = onMoveFocusToBoard
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight(0.95f)
-                    .aspectRatio(1f)
-                    .sizeIn(maxWidth = contentMaxWidth)
-            ) {
-                BoardContainer(
-                    state = state,
-                    currentTheme = state.theme ?: userPreferences.theme,
-                    animationSpeed = userPreferences.animationSpeed,
-                    controlMode = userPreferences.controlMode,
-                    focusRequester = focusRequester,
-                    autoPlay = hasDpad || forcePlayMode,
-                    onMove = onMove,
-                    onFocusGained = onBoardFocusGained
-                )
-            }
-
-            if (showControls) {
-                DirectionalControls(isLandscape = true, onMove = onMove)
-            }
+            header()
+            board(Modifier.fillMaxHeight(0.95f))
+            controls()
         }
     } else {
         Column(
@@ -213,39 +232,11 @@ private fun GameLayout(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            HeaderSection(
-                state = state,
-                onRestart = onRestart,
-                onUndo = onUndo,
-                isLandscape = false,
-                showUndo = userPreferences.showUndo,
-                showStopwatch = userPreferences.showStopwatch,
-                restartFocusRequester = restartFocusRequester,
-                undoFocusRequester = undoFocusRequester,
-                onMoveFocusToBoard = onMoveFocusToBoard
-            )
+            header()
             Spacer(modifier = Modifier.height(if (isLargeScreen) 32.dp else 16.dp))
-            Box(
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .aspectRatio(1f, matchHeightConstraintsFirst = true)
-                    .sizeIn(maxWidth = contentMaxWidth)
-            ) {
-                BoardContainer(
-                    state = state,
-                    currentTheme = state.theme ?: userPreferences.theme,
-                    animationSpeed = userPreferences.animationSpeed,
-                    controlMode = userPreferences.controlMode,
-                    focusRequester = focusRequester,
-                    autoPlay = hasDpad || forcePlayMode,
-                    onMove = onMove,
-                    onFocusGained = onBoardFocusGained
-                )
-            }
+            board(Modifier.weight(1f, fill = false))
             Spacer(modifier = Modifier.height(24.dp))
-            if (showControls) {
-                DirectionalControls(isLandscape = false, onMove = onMove)
-            }
+            controls()
         }
     }
 }

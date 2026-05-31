@@ -8,6 +8,7 @@ import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.logic.GameEngine
 import com.scottmangiapane.open2048.logic.GameTimer
 import com.scottmangiapane.open2048.model.*
+import com.scottmangiapane.open2048.ui.components.DeviceUtils
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -20,11 +21,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val gameTimer = GameTimer(viewModelScope)
 
     val hasVibrator: Boolean = vibrationManager.hasVibrator
-    val hasDpad: Boolean = android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_CENTER) ||
-            android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_UP) ||
-            android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_DOWN) ||
-            android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_LEFT) ||
-            android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_DPAD_RIGHT)
+    val hasDpad: Boolean = DeviceUtils.hasDpad
 
     init {
         observeTheme()

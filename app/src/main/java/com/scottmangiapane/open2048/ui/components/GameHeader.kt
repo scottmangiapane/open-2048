@@ -1,7 +1,5 @@
 package com.scottmangiapane.open2048.ui.components
 
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -10,11 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.scottmangiapane.open2048.R
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.model.GameState
@@ -81,8 +76,6 @@ fun HeaderSection(
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (showUndo) {
                 val canUndo = state.canUndo && (state.timeLeftMs == null || state.timeLeftMs > 0)
-                val interactionSource = remember { MutableInteractionSource() }
-                val isFocused by interactionSource.collectIsFocusedAsState()
 
                 GameButton(
                     text = "Undo",
@@ -92,8 +85,7 @@ fun HeaderSection(
                     },
                     padding = buttonPadding,
                     enabled = canUndo,
-                    modifier = (if (undoFocusRequester != null) Modifier.focusRequester(undoFocusRequester) else Modifier)
-                        .appFocusBorder(isFocused = isFocused)
+                    modifier = if (undoFocusRequester != null) Modifier.focusRequester(undoFocusRequester) else Modifier
                 )
             }
             GameButton(

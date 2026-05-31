@@ -6,6 +6,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.scottmangiapane.open2048.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlin.math.sqrt
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
@@ -222,7 +223,7 @@ class PreferenceRepository(private val context: Context) {
                 Tile(id, value)
             }
         }
-        val size = kotlin.math.sqrt(flatList.size.toDouble()).toInt()
+        val size = sqrt(flatList.size.toDouble()).toInt()
         return if (size * size == flatList.size) flatList.chunked(size) else emptyList()
     }
 

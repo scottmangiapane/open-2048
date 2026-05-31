@@ -10,6 +10,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+
 @Composable
 fun Modifier.appFocusBorder(
     isFocused: Boolean,
@@ -22,4 +28,20 @@ fun Modifier.appFocusBorder(
     } else {
         this
     }
+}
+
+@Composable
+fun MenuIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.appFocusBorder(isFocused = isFocused),
+        interactionSource = interactionSource,
+        content = content
+    )
 }
