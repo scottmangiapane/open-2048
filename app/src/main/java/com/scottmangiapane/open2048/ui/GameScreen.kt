@@ -162,14 +162,14 @@ private fun GameLayout(
     forcePlayMode: Boolean
 ) {
     val (hPadding, vPadding) = when {
-        minDimension >= 840.dp -> 172.dp to 144.dp
-        minDimension >= 600.dp -> 120.dp to 96.dp
-        isLandscape -> 48.dp to 24.dp
-        else -> 24.dp to 16.dp
+        minDimension >= 840.dp -> 48.dp to 32.dp
+        minDimension >= 600.dp -> 32.dp to 24.dp
+        isLandscape -> 24.dp to 16.dp
+        else -> 16.dp to 16.dp
     }
 
     val isLargeScreen = minDimension >= 600.dp
-    val contentMaxWidth = if (isLargeScreen) 500.dp else 600.dp
+    val contentMaxWidth = if (isLargeScreen) 800.dp else 600.dp
     val showControls = !hasDpad && userPreferences.controlMode != ControlMode.GESTURES
 
     val header = @Composable {
@@ -187,21 +187,26 @@ private fun GameLayout(
     }
 
     val board: @Composable (Modifier) -> Unit = { modifier ->
-        Box(
-            modifier = modifier
-                .aspectRatio(1f, matchHeightConstraintsFirst = !isLandscape)
-                .sizeIn(maxWidth = contentMaxWidth)
+        BoxWithConstraints(
+            modifier = modifier.sizeIn(maxWidth = contentMaxWidth)
         ) {
-            BoardContainer(
-                state = state,
-                currentTheme = state.theme ?: userPreferences.theme,
-                animationSpeed = userPreferences.animationSpeed,
-                controlMode = userPreferences.controlMode,
-                focusRequester = focusRequester,
-                autoPlay = hasDpad || forcePlayMode,
-                onMove = onMove,
-                onFocusGained = onBoardFocusGained
-            )
+            val boardSize = if (maxWidth < maxHeight) maxWidth else maxHeight
+            Box(
+                modifier = Modifier
+                    .size(boardSize)
+                    .align(Alignment.Center)
+            ) {
+                BoardContainer(
+                    state = state,
+                    currentTheme = state.theme ?: userPreferences.theme,
+                    animationSpeed = userPreferences.animationSpeed,
+                    controlMode = userPreferences.controlMode,
+                    focusRequester = focusRequester,
+                    autoPlay = hasDpad || forcePlayMode,
+                    onMove = onMove,
+                    onFocusGained = onBoardFocusGained
+                )
+            }
         }
     }
 
@@ -215,13 +220,12 @@ private fun GameLayout(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = hPadding, vertical = vPadding)
-                .padding(end = 48.dp),
+                .padding(horizontal = hPadding, vertical = vPadding),
             horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 48.dp else 24.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically
         ) {
             header()
-            board(Modifier.fillMaxHeight(0.95f))
+            board(Modifier.weight(1f, fill = false).fillMaxHeight(0.95f))
             controls()
         }
     } else {
@@ -233,9 +237,9 @@ private fun GameLayout(
             verticalArrangement = Arrangement.Center
         ) {
             header()
-            Spacer(modifier = Modifier.height(if (isLargeScreen) 32.dp else 16.dp))
-            board(Modifier.weight(1f, fill = false))
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(if (isLargeScreen) 24.dp else 16.dp))
+            board(Modifier.weight(1f, fill = false).fillMaxWidth())
+            Spacer(modifier = Modifier.height(if (isLargeScreen) 24.dp else 16.dp))
             controls()
         }
     }
