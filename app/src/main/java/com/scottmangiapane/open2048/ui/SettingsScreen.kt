@@ -97,7 +97,7 @@ fun SettingsScreen(
             }
 
             // Controls Section
-            if (!viewModel.hasDpad) {
+            if (viewModel.hasTouch) {
                 SettingsGroup(title = "CONTROLS") {
                     ControlModeSelector(
                         currentMode = preferences.controlMode,

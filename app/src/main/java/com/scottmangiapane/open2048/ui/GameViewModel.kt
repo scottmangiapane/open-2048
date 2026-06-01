@@ -21,7 +21,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val gameTimer = GameTimer(viewModelScope)
 
     val hasVibrator: Boolean = vibrationManager.hasVibrator
-    val hasDpad: Boolean = DeviceUtils.hasDpad
+    val hasTouch: Boolean = DeviceUtils.hasTouch(application)
 
     init {
         observeTheme()

@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,11 +47,16 @@ fun GameScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val minDimension = minOf(configuration.screenWidthDp.dp, configuration.screenHeightDp.dp)
-    val hasDpad = viewModel.hasDpad
+    
+    val inputModeManager = LocalInputModeManager.current
+    val isKeyboardMode = inputModeManager.inputMode == InputMode.Keyboard
+    val hasTouch = viewModel.hasTouch
 
-    // On D-pad/TV/Keyboard devices, we want to start playing immediately.
-    LaunchedEffect(hasDpad) {
-        if (hasDpad) {
+    // We want to auto-capture input on non-touch devices, or when in keyboard mode
+    val shouldCaptureInput = !hasTouch || isKeyboardMode
+
+    LaunchedEffect(shouldCaptureInput) {
+        if (shouldCaptureInput) {
             focusRequester.requestFocus()
         }
     }
@@ -107,7 +114,8 @@ fun GameScreen(
             userPreferences = userPreferences,
             isLandscape = isLandscape,
             minDimension = minDimension,
-            hasDpad = hasDpad,
+            hasTouch = hasTouch,
+            isKeyboardMode = isKeyboardMode,
             focusRequester = focusRequester,
             restartFocusRequester = restartFocusRequester,
             undoFocusRequester = undoFocusRequester,
@@ -150,7 +158,8 @@ private fun GameLayout(
     userPreferences: UserPreferences,
     isLandscape: Boolean,
     minDimension: Dp,
-    hasDpad: Boolean,
+    hasTouch: Boolean,
+    isKeyboardMode: Boolean,
     focusRequester: FocusRequester,
     restartFocusRequester: FocusRequester,
     undoFocusRequester: FocusRequester,
@@ -170,7 +179,7 @@ private fun GameLayout(
 
     val isLargeScreen = minDimension >= 600.dp
     val contentMaxWidth = if (isLargeScreen) 800.dp else 600.dp
-    val showControls = !hasDpad && userPreferences.controlMode != ControlMode.GESTURES
+    val showControls = hasTouch && userPreferences.controlMode != ControlMode.GESTURES
 
     val header = @Composable {
         HeaderSection(
@@ -202,7 +211,8 @@ private fun GameLayout(
                     animationSpeed = userPreferences.animationSpeed,
                     controlMode = userPreferences.controlMode,
                     focusRequester = focusRequester,
-                    autoPlay = hasDpad || forcePlayMode,
+                    autoPlay = !hasTouch || isKeyboardMode || forcePlayMode,
+                    hasTouch = hasTouch,
                     onMove = onMove,
                     onFocusGained = onBoardFocusGained
                 )

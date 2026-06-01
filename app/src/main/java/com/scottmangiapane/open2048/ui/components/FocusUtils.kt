@@ -16,13 +16,17 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.input.InputMode
+
 @Composable
 fun Modifier.appFocusBorder(
     isFocused: Boolean,
     shape: Shape = RoundedCornerShape(8.dp),
     color: Color = MaterialTheme.colorScheme.primary
 ): Modifier {
-    return if (isFocused) {
+    val inputMode = LocalInputModeManager.current.inputMode
+    return if (isFocused && inputMode == InputMode.Keyboard) {
         this.clip(shape)
             .border(width = 3.dp, color = color, shape = shape)
     } else {

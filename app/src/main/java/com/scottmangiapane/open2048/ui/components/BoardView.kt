@@ -22,6 +22,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.unit.dp
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.model.AnimationSpeed
@@ -39,6 +41,7 @@ fun BoardContainer(
     controlMode: ControlMode = ControlMode.BOTH,
     focusRequester: FocusRequester? = null,
     autoPlay: Boolean = false,
+    hasTouch: Boolean = true,
     onMove: (Direction) -> Unit = {},
     onFocusGained: ((isPlaying: Boolean) -> Unit)? = null
 ) {
@@ -46,6 +49,8 @@ fun BoardContainer(
     var isPlayingMode by remember(state.board.isEmpty()) { 
         mutableStateOf(autoPlay) 
     }
+
+    val inputModeManager = LocalInputModeManager.current
 
     // Sync autoPlay -> isPlayingMode when it becomes true (e.g. forced focus)
     LaunchedEffect(autoPlay) {
@@ -58,7 +63,7 @@ fun BoardContainer(
 
     LaunchedEffect(isFocused) {
         if (isFocused) {
-            // If autoPlay is set (like on TV), we default to playing mode on focus gain
+            // If autoPlay is set, we default to playing mode on focus gain
             if (autoPlay) isPlayingMode = true
             onFocusGained?.invoke(isPlayingMode)
         } else {
@@ -67,7 +72,7 @@ fun BoardContainer(
         }
     }
 
-    // Navigation mode visuals are for D-pad users to see they are "selecting" the board 
+    // Navigation mode visuals are for Keyboard/D-pad users to see they are "selecting" the board 
     // but not yet "interacting" with it.
     val showNavigationVisuals = isFocused && !isPlayingMode
 
@@ -86,7 +91,9 @@ fun BoardContainer(
 
                 when (keyEvent.key) {
                     Key.Back, Key.Escape -> {
-                        if (isPlayingMode) {
+                        // We swallow Back/Escape only if we are in "playing mode" AND
+                        // the device is either non-touch OR we are actively in Keyboard mode.
+                        if (isPlayingMode && (!hasTouch || inputModeManager.inputMode == InputMode.Keyboard)) {
                             isPlayingMode = false
                             return@onKeyEvent true
                         }
