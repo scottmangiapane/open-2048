@@ -206,7 +206,7 @@ private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme, animatio
                             modifier = Modifier
                                 .size(tileSize)
                                 .background(
-                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                                    MaterialTheme.colorScheme.surface,
                                     RoundedCornerShape(8.dp)
                                 )
                         )

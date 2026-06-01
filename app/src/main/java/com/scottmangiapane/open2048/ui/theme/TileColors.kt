@@ -69,7 +69,7 @@ object TileColors {
     @Composable
     fun getTextColor(value: Int, theme: AppTheme): Color {
         if (theme == AppTheme.CLASSIC) {
-            return colorResource(if (value <= 4) R.color.classic_text_dark else R.color.white)
+            return colorResource(if (value <= 4) R.color.classic_text_dark else R.color.classic_text_light)
         }
         
         return if (theme == AppTheme.DARK) {
@@ -79,7 +79,7 @@ object TileColors {
                 else -> Color.White
             }
         } else {
-            colorResource(if (value <= 4) R.color.classic_text_dark else R.color.white)
+            colorResource(if (value <= 4) R.color.classic_text_dark else R.color.classic_text_light)
         }
     }
 }

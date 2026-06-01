@@ -47,7 +47,7 @@ fun Open2048Theme(
         )
         AppTheme.CLASSIC -> lightColorScheme(
             primary = colorResource(R.color.classic_button_brown),
-            onPrimary = Color.White,
+            onPrimary = colorResource(R.color.classic_text_light),
             secondary = colorResource(R.color.classic_resume_blue),
             onSecondary = Color.White,
             tertiary = colorResource(R.color.tile_classic_8),
