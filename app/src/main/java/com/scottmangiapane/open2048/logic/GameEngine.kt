@@ -58,7 +58,7 @@ object GameEngine {
         board: MutableList<MutableList<Tile?>>,
         value: Int,
         posSeed: Float,
-        id: Int
+        id: Int,
     ): Int {
         val emptyCells = board.flatMapIndexed { r, row ->
             row.mapIndexedNotNull { c, tile -> if (tile == null) r to c else null }
@@ -100,7 +100,7 @@ object GameEngine {
             val newRow = mutableListOf<Tile>()
             var i = 0
             while (i < originalRow.size) {
-                if (i + 1 < originalRow.size && originalRow[i].value == originalRow[i + 1].value) {
+                if ((i + 1 < originalRow.size) && (originalRow[i].value == originalRow[i + 1].value)) {
                     val mergedValue = originalRow[i].value * 2
                     newRow.add(Tile(id = originalRow[i + 1].id, value = mergedValue))
                     scoreGained += mergedValue
@@ -127,7 +127,7 @@ object GameEngine {
         return if (hasChanged) {
             val mutableFinal = finalBoard.map { it.toMutableList() }.toMutableList()
             val finalNextId = addTile(mutableFinal, valueSeed, posSeed, nextId)
-            MoveResult(mutableFinal, scoreGained, finalNextId, true)
+            MoveResult(mutableFinal, scoreGained, finalNextId, hasChanged = true)
         } else {
             MoveResult(board, 0, nextId, false)
         }

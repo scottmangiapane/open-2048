@@ -38,7 +38,7 @@ open class MainActivity : ComponentActivity() {
             val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
             
             val canResume by remember { derivedStateOf { state.canResume } }
-            val hasProgress by remember { derivedStateOf { state.movesCount > 0 && !state.isGameOver } }
+            val hasProgress by remember { derivedStateOf { (state.movesCount > 0) && !state.isGameOver } }
 
             LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
                 viewModel.stopTimer()
@@ -59,7 +59,7 @@ open class MainActivity : ComponentActivity() {
             Open2048Theme(theme = state.theme ?: activityTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     when (currentScreen) {
                         is Screen.Menu -> {
@@ -69,7 +69,7 @@ open class MainActivity : ComponentActivity() {
                                 onNavigateToStats = { viewModel.navigateToStats() },
                                 onNavigateToSettings = { viewModel.navigateToSettings() },
                                 canResume = canResume,
-                                hasProgress = hasProgress
+                                hasProgress = hasProgress,
                             )
                         }
                         is Screen.Game -> {
@@ -78,8 +78,7 @@ open class MainActivity : ComponentActivity() {
                             }
                             GameScreen(
                                 viewModel = viewModel,
-                                onBackToMenu = { viewModel.navigateToMenu() }
-                            )
+                            ) { viewModel.navigateToMenu() }
                         }
                         is Screen.Stats -> {
                             BackHandler {
@@ -87,8 +86,7 @@ open class MainActivity : ComponentActivity() {
                             }
                             StatsScreen(
                                 viewModel = viewModel,
-                                onBack = { viewModel.navigateToMenu() }
-                            )
+                            ) { viewModel.navigateToMenu() }
                         }
                         is Screen.Settings -> {
                             BackHandler {
@@ -96,8 +94,7 @@ open class MainActivity : ComponentActivity() {
                             }
                             SettingsScreen(
                                 viewModel = viewModel,
-                                onBack = { viewModel.navigateToMenu() }
-                            )
+                            ) { viewModel.navigateToMenu() }
                         }
                     }
                 }

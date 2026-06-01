@@ -7,7 +7,6 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,7 +40,7 @@ fun GameScreen(
     val focusRequester = remember { FocusRequester() }
     val restartFocusRequester = remember { FocusRequester() }
     val undoFocusRequester = remember { FocusRequester() }
-    var showRestartConfirmation by rememberSaveable { mutableStateOf(false) }
+    var showRestartConfirmation by rememberSaveable { mutableStateOf(value = false) }
     var forcePlayModeOnNextFocus by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
@@ -63,7 +62,7 @@ fun GameScreen(
 
     LaunchedEffect(state.highestTile) {
         val target = state.gameMode.winCondition
-        if (state.highestTile >= target && state.highestTile > highestTileSeen) {
+        if ((state.highestTile >= target) && (state.highestTile > highestTileSeen)) {
             showConfetti = true
             highestTileSeen = state.highestTile
         } else if (state.highestTile < highestTileSeen) {
@@ -96,10 +95,9 @@ fun GameScreen(
                 forcePlayModeOnNextFocus = true
                 focusRequester.requestFocus()
             },
-            onDismiss = {
-                showRestartConfirmation = false
-            }
-        )
+        ) {
+            showRestartConfirmation = false
+        }
     }
 
     Box(

@@ -16,7 +16,7 @@ import com.scottmangiapane.open2048.model.AppTheme
 @Composable
 fun Open2048Theme(
     theme: AppTheme = AppTheme.LIGHT,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = when (theme) {
         AppTheme.DARK -> darkColorScheme(

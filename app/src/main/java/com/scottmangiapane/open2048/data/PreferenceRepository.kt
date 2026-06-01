@@ -49,7 +49,7 @@ class PreferenceRepository(private val context: Context) {
             controlMode = preferences[CONTROL_MODE_KEY]?.let { runCatching { ControlMode.valueOf(it) }.getOrNull() } ?: ControlMode.GESTURES,
             showUndo = preferences[SHOW_UNDO_KEY] ?: true,
             showStopwatch = preferences[SHOW_STOPWATCH_KEY] ?: true,
-            animationSpeed = preferences[ANIMATION_SPEED_KEY]?.let { runCatching { AnimationSpeed.valueOf(it) }.getOrNull() } ?: AnimationSpeed.NORMAL
+            animationSpeed = preferences[ANIMATION_SPEED_KEY]?.let { runCatching { AnimationSpeed.valueOf(it) }.getOrNull() } ?: AnimationSpeed.NORMAL,
         )
     }
 
@@ -66,7 +66,7 @@ class PreferenceRepository(private val context: Context) {
         val board = deserializeBoard(boardString)
         val mode = GameMode.fromId(modeString)
         
-        if (board.isEmpty() || mode == null) return@map null
+        if ((board.isEmpty()) || (mode == null)) return@map null
 
         val themeString = preferences[THEME_KEY] ?: AppTheme.LIGHT.name
         val theme = runCatching { AppTheme.valueOf(themeString) }.getOrNull() ?: AppTheme.LIGHT

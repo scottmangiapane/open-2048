@@ -25,7 +25,7 @@ object TileColors {
                     2048 -> R.color.tile_classic_2048
                     4096 -> R.color.tile_classic_4096
                     else -> R.color.tile_classic_super
-                }
+                },
             )
         }
 
@@ -44,7 +44,7 @@ object TileColors {
                     1024 -> R.color.tile_modern_1024
                     2048 -> R.color.tile_modern_2048
                     else -> R.color.slate_50
-                }
+                },
             )
         } else {
             colorResource(
@@ -61,7 +61,7 @@ object TileColors {
                     1024 -> R.color.tile_classic_1024
                     2048 -> R.color.tile_classic_2048
                     else -> R.color.slate_900
-                }
+                },
             )
         }
     }

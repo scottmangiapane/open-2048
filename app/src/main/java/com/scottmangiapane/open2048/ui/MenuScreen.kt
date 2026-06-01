@@ -9,7 +9,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.rounded.BarChart
+import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Grid4x4
+import androidx.compose.material.icons.rounded.Grid3x3
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.HourglassBottom
+import androidx.compose.material.icons.rounded.HourglassTop
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -59,8 +65,9 @@ fun MenuScreen(
                 pendingGameMode?.let { onStartGame(it) }
                 pendingGameMode = null
             },
-            onDismiss = { pendingGameMode = null }
-        )
+        ) {
+            pendingGameMode = null
+        }
     }
 
     // Request focus on the initial button when the screen is shown

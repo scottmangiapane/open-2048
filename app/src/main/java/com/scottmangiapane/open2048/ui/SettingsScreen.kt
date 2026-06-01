@@ -44,7 +44,7 @@ fun SettingsScreen(
                 title = {
                     Text(
                         text = "Settings",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge,
                     )
                 },
                 navigationIcon = {
@@ -84,8 +84,7 @@ fun SettingsScreen(
             SettingsGroup(title = "APPEARANCE") {
                 ThemeSelector(
                     currentTheme = preferences.theme,
-                    onThemeChange = { viewModel.setTheme(it) }
-                )
+                ) { viewModel.setTheme(it) }
             }
 
             // Animation Section
@@ -255,7 +254,7 @@ private fun ControlModeSelector(
                     fontWeight = FontWeight.Bold
                 )
             }
-            if (index < ControlMode.entries.size - 1) {
+            if (index < (ControlMode.entries.size - 1)) {
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)

@@ -188,7 +188,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             timeLeftMs = (mode as? GameMode.Blitz)?.let { it.durationMinutes * 60 * 1000L },
             movesCount = 0,
             elapsedTimeMs = 0L,
-            highestTile = initialBoard.flatten().filterNotNull().maxOfOrNull { it.value } ?: 0
+            highestTile = initialBoard.flatten().filterNotNull().maxOfOrNull { it.value } ?: 0,
         )
     }
 
@@ -326,7 +326,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val (nextV, nextP) = generateNextSeeds(currentState.gameMode, result.nextId)
         val maxTile = result.board.flatten().filterNotNull().maxOfOrNull { it.value } ?: 0
         val targetTile = currentState.gameMode.winCondition
-        val reachedTargetThisMove = maxTile >= targetTile && !currentState.hasWon
+        val reachedTargetThisMove = (maxTile >= targetTile) && !currentState.hasWon
         
         val movesToWin = if (reachedTargetThisMove) currentState.movesCount + 1 else currentState.movesToWin
         val timeToWin = if (reachedTargetThisMove) currentState.elapsedTimeMs else currentState.timeToWin
@@ -364,9 +364,5 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             )
         }
         saveGame(_state.value)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-    }
+}
 }

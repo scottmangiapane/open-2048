@@ -78,7 +78,7 @@ fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme, animationSpeed: A
                 }
                 .clip(RoundedCornerShape(8.dp))
                 .background(backgroundColor),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             val factor = when {
                 displayValue.intValue >= 1024 -> 0.28f
