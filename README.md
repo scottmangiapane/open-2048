@@ -1,58 +1,50 @@
 # Open 2048
 
 <p align="center">
-  <kbd>
-    <img src="app_icon.svg" width="140" alt="Open 2048 Logo">
-  </kbd>
+  <img src="app_icon.svg" width="140" alt="Open 2048 Logo">
 </p>
 
 <p align="center">
-  <strong>A modern, open-source, and ad-free 2048 experience for Android.</strong>
+  <strong>A modern, open-source, and ad-free 2048 experience for Android and Android TV.</strong>
 </p>
 
 ---
 
-**Open 2048** is a high-polish, lightweight port of the classic puzzle game. Built with **Jetpack Compose**, it combines a professional "Modern Flat" aesthetic with a deep suite of statistics and customizable gameplay.
+**Open 2048** is a lightweight and polished port of the classic puzzle game. Built with **Jetpack Compose**, it offers a clean "Modern Flat" aesthetic combined with detailed statistics and customizable gameplay.
 
-## ✨ Key Features
+## Features
 
-- 🚫 **Ad-Free & Private**: No trackers, no interruptions, no unnecessary permissions.
-- 🎨 **Minimalist Design**: A clean, shadow-free UI with Light, Dark, and Classic themes.
-- 🏁 **Adaptive Win Conditions**: Tailored goals for every board size (3x3, 4x4, 5x5).
-- 🕒 **Diverse Game Modes**:
-  - **Classic**: The timeless challenge across three board sizes.
-  - **Daily Challenge**: A unique board every day. Compete with the community!
-  - **Blitz**: High-speed gameplay with 2 and 5-minute timed modes.
-- 📊 **Pro Statistics**: Detailed tracking of Best Scores, Wins, Fewest Moves, and Fastest Times.
-- ⚙️ **Fully Customizable**:
-  - **Animation Speed**: Choose between instant (snap), fast, normal, or slow transitions.
-  - **Flexible Controls**: Swipe gestures, on-screen buttons, or both.
-  - **Haptic Feedback**: Refined, subtle tactile response for every move and merge.
+- **Ad-Free & Private**: No trackers, no interruptions, and no unnecessary permissions.
+- **Minimalist Design**: A shadow-free UI with Light, Dark, and Classic themes.
+- **Android TV Support**: Fully optimized for the big screen with D-pad navigation.
+- **Multiple Game Modes**:
+  - **Classic**: The timeless challenge across multiple board sizes.
+  - **Daily Challenge**: A unique, high-difficulty board generated every day.
+  - **Blitz**: Timed gameplay modes (2 and 5 minutes).
+- **Comprehensive Statistics**: Track your best scores, total wins, fewest moves, and fastest times.
+- **Customization**:
+  - **Animation Speed**: Choose between instant, fast, normal, or slow transitions.
+  - **Controls**: Support for swipe gestures, on-screen buttons, or both.
+  - **Haptic Feedback**: Subtle tactile responses for moves and merges.
 
-## 🚀 Installation
+## Installation
 
-Download the latest `.apk` from the [Releases](https://github.com/scottmangiapane/open-2048/releases) page to sideload on your Android device.
+You can download the latest `.apk` from the [Releases](https://github.com/scottmangiapane/open-2048/releases) page.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Language**: [Kotlin](https://kotlinlang.org/)
 - **UI Framework**: [Jetpack Compose](https://developer.android.com/jetpack/compose)
 - **Architecture**: MVVM with StateFlow
-- **Persistence**: Jetpack DataStore (Preferences)
-- **Animation**: Compose Motion APIs
+- **Storage**: Jetpack DataStore (Preferences)
+- **Animations**: Compose Animation APIs
 
-## 🏗 Development
+## Development
 
-1. **Clone**: `git clone https://github.com/scottmangiapane/open-2048.git`
-2. **Open**: Use **Android Studio Ladybug** (or newer).
-3. **Run**: Build and deploy to an emulator or physical device.
+1. **Clone the repository**: `git clone https://github.com/scottmangiapane/open-2048.git`
+2. **Open in Android Studio**: Use **Android Studio Ladybug** or newer.
+3. **Build and Run**: Deploy to an emulator or physical device.
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-<p align="center">
-  Crafted with care for the puzzle community.
-</p>
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
