@@ -20,7 +20,7 @@ class GameModeTest {
         assertEquals("classic_4", mode.statsId)
         
         assertEquals(256, GameMode.Classic(3).winCondition)
-        assertEquals(8192, GameMode.Classic(5).winCondition)
+        assertEquals(16384, GameMode.Classic(5).winCondition)
         assertEquals(2048, GameMode.Classic(6).winCondition)
     }
 
@@ -29,11 +29,11 @@ class GameModeTest {
         val mode = GameMode.Blitz(5)
         assertEquals("blitz_5", mode.id)
         assertEquals(4, mode.size)
-        assertEquals(2048, mode.winCondition)
+        assertEquals(1024, mode.winCondition)
         assertEquals("blitz_5", mode.statsId)
         
-        assertEquals(1024, GameMode.Blitz(2).winCondition)
-        assertEquals(2048, GameMode.Blitz(3).winCondition)
+        assertEquals(512, GameMode.Blitz(2).winCondition)
+        assertEquals(1024, GameMode.Blitz(3).winCondition)
     }
 
     @Test

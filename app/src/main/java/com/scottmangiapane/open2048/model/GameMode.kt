@@ -15,7 +15,7 @@ sealed class GameMode {
         override val id: String = "classic_$size"
         override val winCondition: Int = when (size) {
             3 -> 256
-            5 -> 8192
+            5 -> 16384
             else -> 2048
         }
     }
@@ -23,7 +23,7 @@ sealed class GameMode {
     data class Blitz(val durationMinutes: Int) : GameMode() {
         override val size: Int = 4
         override val id: String = "blitz_$durationMinutes"
-        override val winCondition: Int = if (durationMinutes == 2) 1024 else 2048
+        override val winCondition: Int = if (durationMinutes <= 2) 512 else 1024
     }
 
     data class Daily(val year: Int, val month: Int, val day: Int) : GameMode() {
