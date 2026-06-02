@@ -447,4 +447,43 @@ class GameViewModelTest {
         assertEquals(4, vm.state.value.score)
         verify { vibrationManager.vibrateForScore(4) }
     }
+
+    @Test
+    fun testMoveVibrationDisabled() {
+        val b = listOf(
+            listOf(Tile(1, 2), Tile(2, 2)),
+            listOf(null, null)
+        )
+        // Set vibration disabled in preferences
+        every { prefs.userPreferences } returns flowOf(UserPreferences(vibrationEnabled = false))
+        
+        val state = GameState(board = b, gameMode = GameMode.Classic(2), movesCount = 1)
+        every { prefs.savedGameState } returns flowOf(state)
+        val vm = GameViewModel(application, prefs, iconManager, vibrationManager, gameTimer)
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        vm.move(Direction.LEFT)
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        assertEquals(4, vm.state.value.score)
+        verify(exactly = 0) { vibrationManager.vibrateForScore(any()) }
+    }
+
+    @Test
+    fun testMoveVibrationNoScore() {
+        val b = listOf(
+            listOf(Tile(1, 2), null),
+            listOf(null, null)
+        )
+        val state = GameState(board = b, gameMode = GameMode.Classic(2), movesCount = 1)
+        every { prefs.savedGameState } returns flowOf(state)
+        val vm = GameViewModel(application, prefs, iconManager, vibrationManager, gameTimer)
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        vm.move(Direction.RIGHT)
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        assertEquals(0, vm.state.value.score)
+        verify { vibrationManager.vibrateForScore(0) }
+    }
 }

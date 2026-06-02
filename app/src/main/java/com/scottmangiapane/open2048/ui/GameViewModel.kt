@@ -41,7 +41,7 @@ class GameViewModel @JvmOverloads constructor(
     val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
 
     val userPreferences: StateFlow<UserPreferences> = prefs.userPreferences
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserPreferences())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, UserPreferences())
 
     private fun observeTheme() {
         viewModelScope.launch {
@@ -298,7 +298,7 @@ class GameViewModel @JvmOverloads constructor(
 
             _state.value = newState
             
-            if (result.scoreGained > 0) {
+            if (userPreferences.value.vibrationEnabled) {
                 vibrationManager.vibrateForScore(result.scoreGained)
             }
 
