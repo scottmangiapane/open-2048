@@ -57,7 +57,7 @@ To ensure everything is working correctly, you can run unit tests, instrumentati
 - **Via Android Studio**: Right-click the `app/src/test` directory and select **"Run 'Tests in 'com.scottmangiapane.open2048''"**.
 
 #### Code Coverage Report
-We use **JaCoCo** to measure test coverage. The project enforces a minimum of **90% line coverage** and **90% branch coverage** for core logic (excluding compiler-generated code and UI components).
+We use **JaCoCo** to measure test coverage. The project enforces a minimum of **85% line coverage** and **85% branch coverage** for core logic (excluding compiler-generated code and UI components).
 
 - **Generate Report**:
   ```bash
@@ -69,7 +69,7 @@ We use **JaCoCo** to measure test coverage. The project enforces a minimum of **
   ```bash
   ./gradlew :app:jacocoTestCoverageVerification
   ```
-  This task will fail if the coverage falls below the 90% threshold.
+  This task will fail if the coverage falls below the 85% threshold.
 
 ## License
 
