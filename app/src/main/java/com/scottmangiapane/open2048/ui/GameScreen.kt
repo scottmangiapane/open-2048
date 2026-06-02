@@ -4,18 +4,42 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,11 +65,15 @@ fun GameScreen(
     val restartFocusRequester = remember { FocusRequester() }
     val undoFocusRequester = remember { FocusRequester() }
     var showRestartConfirmation by rememberSaveable { mutableStateOf(value = false) }
-    var forcePlayModeOnNextFocus by remember { mutableStateOf(false) }
+    var forcePlayModeOnNextFocus by remember { mutableStateOf(value = false) }
 
     val configuration = LocalConfiguration.current
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val minDimension = minOf(configuration.screenWidthDp.dp, configuration.screenHeightDp.dp)
+    val minDimension = with(density) {
+        minOf(windowInfo.containerSize.width.toDp(), windowInfo.containerSize.height.toDp())
+    }
     
     val inputModeManager = LocalInputModeManager.current
     val isKeyboardMode = inputModeManager.inputMode == InputMode.Keyboard
@@ -93,8 +121,7 @@ fun GameScreen(
                 viewModel.restartGame()
                 showRestartConfirmation = false
                 forcePlayModeOnNextFocus = true
-                focusRequester.requestFocus()
-            },
+            }
         ) {
             showRestartConfirmation = false
         }
@@ -105,7 +132,7 @@ fun GameScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding()
-            .displayCutoutPadding()
+            .displayCutoutPadding(),
     ) {
         GameLayout(
             state = state,
@@ -145,7 +172,7 @@ fun GameScreen(
         )
 
         if (showConfetti) {
-            ConfettiOverlay(onAnimationFinished = { showConfetti = false })
+            ConfettiOverlay { showConfetti = false }
         }
     }
 }
@@ -166,7 +193,7 @@ private fun GameLayout(
     onUndo: () -> Unit,
     onMoveFocusToBoard: () -> Unit,
     onBoardFocusGained: (Boolean) -> Unit,
-    forcePlayMode: Boolean
+    forcePlayMode: Boolean,
 ) {
     val (hPadding, vPadding) = when {
         minDimension >= 840.dp -> 48.dp to 32.dp
@@ -177,7 +204,7 @@ private fun GameLayout(
 
     val isLargeScreen = minDimension >= 600.dp
     val contentMaxWidth = if (isLargeScreen) 800.dp else 600.dp
-    val showControls = hasTouch && userPreferences.controlMode != ControlMode.GESTURES
+    val showControls = hasTouch && (userPreferences.controlMode != ControlMode.GESTURES)
 
     val header = @Composable {
         HeaderSection(
@@ -197,11 +224,11 @@ private fun GameLayout(
         BoxWithConstraints(
             modifier = modifier.sizeIn(maxWidth = contentMaxWidth)
         ) {
-            val boardSize = if (maxWidth < maxHeight) maxWidth else maxHeight
+            val boardSize = minOf(this.maxWidth, this.maxHeight)
             Box(
                 modifier = Modifier
                     .size(boardSize)
-                    .align(Alignment.Center)
+                    .align(Alignment.Center),
             ) {
                 BoardContainer(
                     state = state,

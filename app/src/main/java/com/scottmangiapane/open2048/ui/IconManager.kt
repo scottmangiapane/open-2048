@@ -5,7 +5,10 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.scottmangiapane.open2048.model.AppTheme
 
-class IconManager(private val context: Context) {
+class IconManager(
+    private val context: Context,
+    private val packageManager: PackageManager = context.packageManager
+) {
     
     private var pendingTheme: AppTheme? = null
 
@@ -17,28 +20,29 @@ class IconManager(private val context: Context) {
         val theme = pendingTheme ?: return
         pendingTheme = null
 
-        val lightComponent = ComponentName(context, "com.scottmangiapane.open2048.MainActivityLight")
-        val darkComponent = ComponentName(context, "com.scottmangiapane.open2048.MainActivityDark")
-        val classicComponent = ComponentName(context, "com.scottmangiapane.open2048.MainActivityClassic")
+        val lightName = "com.scottmangiapane.open2048.MainActivityLight"
+        val darkName = "com.scottmangiapane.open2048.MainActivityDark"
+        val classicName = "com.scottmangiapane.open2048.MainActivityClassic"
 
-        val targetComponent = when (theme) {
-            AppTheme.LIGHT -> lightComponent
-            AppTheme.DARK -> darkComponent
-            AppTheme.CLASSIC -> classicComponent
+        val targetName = when (theme) {
+            AppTheme.LIGHT -> lightName
+            AppTheme.DARK -> darkName
+            AppTheme.CLASSIC -> classicName
         }
         
-        val components = listOf(lightComponent, darkComponent, classicComponent)
+        val componentNames = listOf(lightName, darkName, classicName)
 
-        components.forEach { component ->
-            val isTarget = component == targetComponent
+        componentNames.forEach { className ->
+            val component = ComponentName(context, className)
+            val isTarget = className == targetName
             val newState = if (isTarget) {
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED
             } else {
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED
             }
             
-            if (context.packageManager.getComponentEnabledSetting(component) != newState) {
-                context.packageManager.setComponentEnabledSetting(
+            if (packageManager.getComponentEnabledSetting(component) != newState) {
+                packageManager.setComponentEnabledSetting(
                     component,
                     newState,
                     PackageManager.DONT_KILL_APP

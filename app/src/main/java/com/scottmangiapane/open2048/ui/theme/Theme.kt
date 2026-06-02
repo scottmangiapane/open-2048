@@ -30,7 +30,7 @@ fun Open2048Theme(
             onBackground = colorResource(R.color.slate_100),
             onSurface = colorResource(R.color.slate_100),
             surfaceVariant = colorResource(R.color.slate_900),
-            onSurfaceVariant = colorResource(R.color.slate_400)
+            onSurfaceVariant = colorResource(R.color.slate_400),
         )
         AppTheme.LIGHT -> lightColorScheme(
             primary = colorResource(R.color.emerald_500),

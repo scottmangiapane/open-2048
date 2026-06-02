@@ -102,3 +102,15 @@ open class MainActivity : ComponentActivity() {
         }
     }
 }
+
+class MainActivityLight : MainActivity() {
+    override val activityTheme: AppTheme = AppTheme.LIGHT
+}
+
+class MainActivityDark : MainActivity() {
+    override val activityTheme: AppTheme = AppTheme.DARK
+}
+
+class MainActivityClassic : MainActivity() {
+    override val activityTheme: AppTheme = AppTheme.CLASSIC
+}

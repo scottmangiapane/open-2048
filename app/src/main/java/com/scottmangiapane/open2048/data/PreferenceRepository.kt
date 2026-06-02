@@ -1,6 +1,7 @@
 package com.scottmangiapane.open2048.data
 
 import android.content.Context
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.scottmangiapane.open2048.model.*
@@ -10,7 +11,10 @@ import kotlin.math.sqrt
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
-class PreferenceRepository(private val context: Context) {
+class PreferenceRepository(
+    private val context: Context,
+    private val dataStore: DataStore<Preferences> = context.dataStore,
+) {
     companion object {
         private val THEME_KEY = stringPreferencesKey("app_theme")
         private val BOARD_KEY = stringPreferencesKey("board")
@@ -40,9 +44,30 @@ class PreferenceRepository(private val context: Context) {
         private val HAS_WON_KEY = booleanPreferencesKey("has_won")
         private val MOVES_TO_WIN_KEY = intPreferencesKey("moves_to_win")
         private val TIME_TO_WIN_KEY = longPreferencesKey("time_to_win")
+
+        fun serializeBoard(board: List<List<Tile?>>): String =
+            board.asSequence().flatten().joinToString(",") { tile ->
+                tile?.let { "${it.id}:${it.value}" } ?: "n"
+            }
+
+        fun deserializeBoard(data: String): List<List<Tile?>> {
+            if (data.isBlank()) return emptyList()
+            val parts = data.split(",")
+            val flatList = parts.map { s ->
+                if (s == "n") null
+                else {
+                    val tileParts = s.split(":")
+                    val id = tileParts.getOrNull(0)?.toIntOrNull() ?: return emptyList()
+                    val value = tileParts.getOrNull(1)?.toIntOrNull() ?: return emptyList()
+                    Tile(id, value)
+                }
+            }
+            val size = sqrt(flatList.size.toDouble()).toInt()
+            return if ((size * size) == flatList.size) flatList.chunked(size) else emptyList()
+        }
     }
 
-    val userPreferences: Flow<UserPreferences> = context.dataStore.data.map { preferences ->
+    val userPreferences: Flow<UserPreferences> = dataStore.data.map { preferences ->
         UserPreferences(
             theme = preferences[THEME_KEY]?.let { runCatching { AppTheme.valueOf(it) }.getOrNull() } ?: AppTheme.LIGHT,
             vibrationEnabled = preferences[VIBRATION_ENABLED_KEY] ?: true,
@@ -55,11 +80,11 @@ class PreferenceRepository(private val context: Context) {
 
     val theme: Flow<AppTheme?> = userPreferences.map { it.theme }
 
-    fun getBestScore(modeId: String): Flow<Int> = context.dataStore.data.map { 
+    fun getBestScore(modeId: String): Flow<Int> = dataStore.data.map { 
         it[getBestScoreKey(modeId)] ?: 0 
     }
 
-    val savedGameState: Flow<GameState?> = context.dataStore.data.map { preferences ->
+    val savedGameState: Flow<GameState?> = dataStore.data.map { preferences ->
         val boardString = preferences[BOARD_KEY] ?: return@map null
         val modeString = preferences[GAME_MODE_KEY] ?: return@map null
         
@@ -89,12 +114,12 @@ class PreferenceRepository(private val context: Context) {
         )
     }
 
-    fun getIntStat(key: Preferences.Key<Int>): Flow<Int> = context.dataStore.data.map { it[key] ?: 0 }
-    fun getLongStat(key: Preferences.Key<Long>): Flow<Long> = context.dataStore.data.map { it[key] ?: 0L }
+    fun getIntStat(key: Preferences.Key<Int>): Flow<Int> = dataStore.data.map { it[key] ?: 0 }
+    fun getLongStat(key: Preferences.Key<Long>): Flow<Long> = dataStore.data.map { it[key] ?: 0L }
 
     suspend fun updateBestScore(modeId: String, score: Int) {
         val key = getBestScoreKey(modeId)
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             val currentBest = preferences[key] ?: 0
             if (score > currentBest) preferences[key] = score
         }
@@ -102,7 +127,7 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun updateHighestTile(modeId: String, tile: Int) {
         val key = getHighestTileKey(modeId)
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             val current = preferences[key] ?: 0
             if (tile > current) preferences[key] = tile
         }
@@ -110,7 +135,7 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun updateFewestMoves(modeId: String, moves: Int) {
         val key = getFewestMovesKey(modeId)
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             val current = preferences[key] ?: Int.MAX_VALUE
             if (moves < current) preferences[key] = moves
         }
@@ -118,7 +143,7 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun updateFastestTime(modeId: String, timeMs: Long) {
         val key = getFastestTimeKey(modeId)
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             val current = preferences[key] ?: Long.MAX_VALUE
             if (timeMs < current) preferences[key] = timeMs
         }
@@ -126,7 +151,7 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun incrementWinCount(modeId: String) {
         val key = getWinCountKey(modeId)
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             val current = preferences[key] ?: 0
             preferences[key] = current + 1
         }
@@ -134,7 +159,7 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun incrementGamesPlayed(modeId: String) {
         val key = getGamesPlayedKey(modeId)
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             val current = preferences[key] ?: 0
             preferences[key] = current + 1
         }
@@ -142,38 +167,38 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun addToTotalTime(modeId: String, timeMs: Long) {
         val key = getTotalTimeKey(modeId)
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             val current = preferences[key] ?: 0L
             preferences[key] = current + timeMs
         }
     }
 
     suspend fun setTheme(theme: AppTheme) {
-        context.dataStore.edit { it[THEME_KEY] = theme.name }
+        dataStore.edit { it[THEME_KEY] = theme.name }
     }
 
     suspend fun setVibrationEnabled(enabled: Boolean) {
-        context.dataStore.edit { it[VIBRATION_ENABLED_KEY] = enabled }
+        dataStore.edit { it[VIBRATION_ENABLED_KEY] = enabled }
     }
 
     suspend fun setControlMode(mode: ControlMode) {
-        context.dataStore.edit { it[CONTROL_MODE_KEY] = mode.name }
+        dataStore.edit { it[CONTROL_MODE_KEY] = mode.name }
     }
 
     suspend fun setShowUndo(show: Boolean) {
-        context.dataStore.edit { it[SHOW_UNDO_KEY] = show }
+        dataStore.edit { it[SHOW_UNDO_KEY] = show }
     }
 
     suspend fun setShowStopwatch(show: Boolean) {
-        context.dataStore.edit { it[SHOW_STOPWATCH_KEY] = show }
+        dataStore.edit { it[SHOW_STOPWATCH_KEY] = show }
     }
 
     suspend fun setAnimationSpeed(speed: AnimationSpeed) {
-        context.dataStore.edit { it[ANIMATION_SPEED_KEY] = speed.name }
+        dataStore.edit { it[ANIMATION_SPEED_KEY] = speed.name }
     }
 
     suspend fun saveGameState(state: GameState) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             if (state.movesCount > 0) {
                 preferences[BOARD_KEY] = serializeBoard(state.board)
                 preferences[SCORE_KEY] = state.score
@@ -204,26 +229,5 @@ class PreferenceRepository(private val context: Context) {
                 preferences.remove(TIME_TO_WIN_KEY)
             }
         }
-    }
-
-    private fun serializeBoard(board: List<List<Tile?>>): String =
-        board.flatten().joinToString(",") { tile ->
-            tile?.let { "${it.id}:${it.value}" } ?: "n"
-        }
-
-    private fun deserializeBoard(data: String): List<List<Tile?>> {
-        if (data.isBlank()) return emptyList()
-        val parts = data.split(",")
-        val flatList = parts.map { s ->
-            if (s == "n") null
-            else {
-                val tileParts = s.split(":")
-                val id = tileParts.getOrNull(0)?.toIntOrNull() ?: return emptyList()
-                val value = tileParts.getOrNull(1)?.toIntOrNull() ?: return emptyList()
-                Tile(id, value)
-            }
-        }
-        val size = sqrt(flatList.size.toDouble()).toInt()
-        return if (size * size == flatList.size) flatList.chunked(size) else emptyList()
     }
 }

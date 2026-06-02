@@ -1,6 +1,25 @@
+# Gradle and Build
 .gradle/
 build/
 local.properties
+captures/
+*.apk
+*.aab
+
+# IDE - Android Studio
 .idea/
 *.iml
+
+# OS-specific
 .DS_Store
+
+# Kotlin
+.kotlin/
+
+# Jacoco and test artifacts
+*.exec
+*.ec
+
+# Keystore files
+*.jks
+*.keystore

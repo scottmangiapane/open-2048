@@ -42,8 +42,34 @@ You can download the latest `.apk` from the [Releases](https://github.com/scottm
 ## Development
 
 1. **Clone the repository**: `git clone https://github.com/scottmangiapane/open-2048.git`
-2. **Open in Android Studio**: Use **Android Studio Ladybug** or newer.
+2. **Open in Android Studio**: Use **Android Studio Ladybug** (2024.2.1) or newer.
 3. **Build and Run**: Deploy to an emulator or physical device.
+
+### Running Tests
+
+To ensure everything is working correctly, you can run unit tests, instrumentation tests, and coverage reports:
+
+#### Unit Tests (Logic, Models, ViewModels, UI)
+- **Via Command Line**:
+  ```bash
+  ./gradlew :app:testDebugUnitTest
+  ```
+- **Via Android Studio**: Right-click the `app/src/test` directory and select **"Run 'Tests in 'com.scottmangiapane.open2048''"**.
+
+#### Code Coverage Report
+We use **JaCoCo** to measure test coverage. The project enforces a minimum of **90% line coverage** and **90% branch coverage** for core logic (excluding compiler-generated code and UI components).
+
+- **Generate Report**:
+  ```bash
+  ./gradlew :app:jacocoTestReport
+  ```
+  After running, the HTML report can be found at `app/build/reports/jacoco/jacocoTestReport/html/index.html`.
+
+- **Verify Coverage**:
+  ```bash
+  ./gradlew :app:jacocoTestCoverageVerification
+  ```
+  This task will fail if the coverage falls below the 90% threshold.
 
 ## License
 

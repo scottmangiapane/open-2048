@@ -28,19 +28,19 @@ sealed class GameMode {
 
     data class Daily(val year: Int, val month: Int, val day: Int) : GameMode() {
         override val size: Int = 4
-        override val id: String = "daily_${year}_${month}_${day}"
+        override val id: String = "daily_${year}_${month}_$day"
         override val winCondition: Int = 2048
         
-        val dateSeed: Long get() = (year * 10000 + month * 100 + day).toLong()
+        val dateSeed: Long get() = ((year * 10000) + (month * 100) + day).toLong()
         
         companion object {
             fun today(): Daily {
                 // Use UTC and US locale to ensure consistency across different devices and calendar systems
                 val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.US)
                 return Daily(
-                    cal.get(Calendar.YEAR),
-                    cal.get(Calendar.MONTH) + 1,
-                    cal.get(Calendar.DAY_OF_MONTH)
+                    cal[Calendar.YEAR],
+                    cal[Calendar.MONTH] + 1,
+                    cal[Calendar.DAY_OF_MONTH],
                 )
             }
         }
@@ -64,7 +64,7 @@ sealed class GameMode {
 
         val Saver: Saver<GameMode?, String> = Saver(
             save = { it?.id ?: "" },
-            restore = { fromId(it) }
+            restore = ::fromId
         )
     }
 }

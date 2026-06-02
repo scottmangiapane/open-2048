@@ -1,6 +1,8 @@
 package com.scottmangiapane.open2048.ui.components
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -89,7 +91,7 @@ fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme, animationSpeed: A
                 text = displayValue.intValue.toString(),
                 fontSize = (tileSize.value * factor).sp,
                 fontWeight = FontWeight.Black,
-                color = textColor
+                color = textColor,
             )
         }
     }
