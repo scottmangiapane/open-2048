@@ -43,22 +43,6 @@ object TileColors {
                     else -> R.color.slate_50
                 },
             )
-            AppTheme.RETRO -> colorResource(
-                when (value) {
-                    2 -> R.color.tile_retro_2
-                    4 -> R.color.tile_retro_4
-                    8 -> R.color.tile_retro_8
-                    16 -> R.color.tile_retro_16
-                    32 -> R.color.tile_retro_32
-                    64 -> R.color.tile_retro_64
-                    128 -> R.color.tile_retro_128
-                    256 -> R.color.tile_retro_256
-                    512 -> R.color.tile_retro_512
-                    1024 -> R.color.tile_retro_1024
-                    2048 -> R.color.tile_retro_2048
-                    else -> R.color.white
-                },
-            )
             AppTheme.OLED -> colorResource(
                 when (value) {
                     2 -> R.color.tile_hc_2
@@ -103,12 +87,8 @@ object TileColors {
                 value > 2048 -> colorResource(R.color.slate_900)
                 else -> Color.White
             }
-            AppTheme.RETRO -> when {
-                value == 1024 || value > 2048 -> Color.Black
-                else -> Color.White
-            }
             AppTheme.OLED -> when {
-                value >= 512 -> Color.Black
+                value >= 1024 -> Color.Black
                 else -> Color.White
             }
             AppTheme.LIGHT -> colorResource(if (value <= 4) R.color.classic_text_dark else R.color.classic_text_light)

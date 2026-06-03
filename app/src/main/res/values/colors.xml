@@ -44,11 +44,22 @@
     <!-- Modern Accent Colors -->
     <color name="emerald_50">#ECFDF5</color>
     <color name="emerald_100">#D1FAE5</color>
+    <color name="emerald_200">#A7F3D0</color>
+    <color name="emerald_300">#6EE7B7</color>
+    <color name="emerald_400">#34D399</color>
     <color name="emerald_500">#10B981</color>
+    <color name="emerald_600">#059669</color>
+    <color name="emerald_700">#047857</color>
     <color name="royal_blue_500">#3B82F6</color>
+    <color name="indigo_400">#818CF8</color>
+    <color name="indigo_600">#4F46E5</color>
+    <color name="violet_400">#A78BFA</color>
     <color name="violet_600">#7C3AED</color>
+    <color name="cyan_600">#0891B2</color>
+    <color name="rose_400">#FB7185</color>
     <color name="rose_500">#F43F5E</color>
     <color name="amber_500">#F59E0B</color>
+    <color name="orange_600">#EA580C</color>
 
     <!-- Modern Tile Colors -->
     <color name="tile_modern_8">#0EA5E9</color>
@@ -61,47 +72,25 @@
     <color name="tile_modern_1024">#C084FC</color>
     <color name="tile_modern_2048">#E879F9</color>
 
-    <!-- Retro Theme (Synthwave) -->
-    <color name="retro_bg">#0D0221</color>
-    <color name="retro_board">#190636</color>
-    <color name="retro_empty">#240B36</color>
-    <color name="retro_primary">#FF00FF</color>
-    <color name="retro_secondary">#00FFFF</color>
-    <color name="retro_tertiary">#B967FF</color>
-    <color name="retro_text">#FFFFFF</color>
-
-    <!-- Retro Tile Colors (Vibrant Neon Gradient) -->
-    <color name="tile_retro_2">#240046</color>
-    <color name="tile_retro_4">#3C096C</color>
-    <color name="tile_retro_8">#5A189A</color>
-    <color name="tile_retro_16">#7B2CBF</color>
-    <color name="tile_retro_32">#9D4EDD</color>
-    <color name="tile_retro_64">#C77DFF</color>
-    <color name="tile_retro_128">#E0AAFF</color>
-    <color name="tile_retro_256">#FF71CE</color>
-    <color name="tile_retro_512">#01CDFE</color>
-    <color name="tile_retro_1024">#05FFA1</color>
-    <color name="tile_retro_2048">#B967FF</color>
-
-    <!-- OLED / High Contrast Theme (Premium Pitch) -->
+    <!-- OLED / High Contrast Theme (Premium Gold) -->
     <color name="hc_bg">#000000</color>
-    <color name="hc_board">#0A0A0A</color>
-    <color name="hc_empty">#141414</color>
-    <color name="hc_primary">#00E5FF</color>
-    <color name="hc_secondary">#76FF03</color>
+    <color name="hc_board">#000000</color>
+    <color name="hc_empty">#121212</color>
+    <color name="hc_primary">#D4AF37</color>
+    <color name="hc_secondary">#E0E0E0</color>
     <color name="hc_text">#FFFFFF</color>
 
-    <!-- High Contrast Tiles (OLED Glowing Palette) -->
-    <color name="tile_hc_2">#1A1A1A</color>
-    <color name="tile_hc_4">#262626</color>
-    <color name="tile_hc_8">#004D40</color>
-    <color name="tile_hc_16">#00796B</color>
-    <color name="tile_hc_32">#00C853</color>
-    <color name="tile_hc_64">#64DD17</color>
-    <color name="tile_hc_128">#AA00FF</color>
-    <color name="tile_hc_256">#D500F9</color>
-    <color name="tile_hc_512">#FFD600</color>
-    <color name="tile_hc_1024">#FFAB00</color>
-    <color name="tile_hc_2048">#FFFFFF</color>
+    <!-- High Contrast Tiles (Monochrome to Gold) -->
+    <color name="tile_hc_2">#1E1E1E</color>
+    <color name="tile_hc_4">#2A2A2A</color>
+    <color name="tile_hc_8">#363636</color>
+    <color name="tile_hc_16">#424242</color>
+    <color name="tile_hc_32">#4E4E4E</color>
+    <color name="tile_hc_64">#5A5A5A</color>
+    <color name="tile_hc_128">#666666</color>
+    <color name="tile_hc_256">#727272</color>
+    <color name="tile_hc_512">#7E7E7E</color>
+    <color name="tile_hc_1024">#B8860B</color>
+    <color name="tile_hc_2048">#D4AF37</color>
 
 </resources>

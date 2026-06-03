@@ -24,7 +24,8 @@ fun Open2048Theme(
             onPrimary = Color.White,
             secondary = colorResource(R.color.rose_500),
             onSecondary = Color.White,
-            tertiary = colorResource(R.color.tile_modern_2048),
+            tertiary = colorResource(R.color.cyan_600),
+            onTertiary = Color.White,
             background = colorResource(R.color.slate_950),
             surface = colorResource(R.color.slate_800),
             onBackground = colorResource(R.color.slate_100),
@@ -37,7 +38,8 @@ fun Open2048Theme(
             onPrimary = Color.White,
             secondary = colorResource(R.color.royal_blue_500),
             onSecondary = Color.White,
-            tertiary = colorResource(R.color.tile_modern_2048),
+            tertiary = colorResource(R.color.rose_400),
+            onTertiary = Color.White,
             background = colorResource(R.color.slate_50),
             surface = colorResource(R.color.slate_100),
             onBackground = colorResource(R.color.slate_900),
@@ -50,7 +52,8 @@ fun Open2048Theme(
             onPrimary = colorResource(R.color.classic_text_light),
             secondary = colorResource(R.color.classic_resume_blue),
             onSecondary = Color.White,
-            tertiary = colorResource(R.color.tile_classic_8),
+            tertiary = colorResource(R.color.tile_classic_32),
+            onTertiary = Color.White,
             background = colorResource(R.color.classic_bg),
             surface = colorResource(R.color.classic_empty),
             onBackground = colorResource(R.color.classic_text_dark),
@@ -58,25 +61,13 @@ fun Open2048Theme(
             surfaceVariant = colorResource(R.color.classic_board),
             onSurfaceVariant = colorResource(R.color.classic_text_light)
         )
-        AppTheme.RETRO -> darkColorScheme(
-            primary = colorResource(R.color.retro_primary),
-            onPrimary = Color.Black,
-            secondary = colorResource(R.color.retro_secondary),
-            onSecondary = Color.Black,
-            tertiary = colorResource(R.color.retro_tertiary),
-            background = colorResource(R.color.retro_bg),
-            surface = colorResource(R.color.retro_empty),
-            onBackground = colorResource(R.color.retro_text),
-            onSurface = colorResource(R.color.retro_text),
-            surfaceVariant = colorResource(R.color.retro_board),
-            onSurfaceVariant = colorResource(R.color.retro_text)
-        )
         AppTheme.OLED -> darkColorScheme(
             primary = colorResource(R.color.hc_primary),
             onPrimary = Color.Black,
             secondary = colorResource(R.color.hc_secondary),
             onSecondary = Color.Black,
-            tertiary = Color.White,
+            tertiary = colorResource(R.color.royal_blue_500),
+            onTertiary = Color.White,
             background = colorResource(R.color.hc_bg),
             surface = colorResource(R.color.hc_empty),
             onBackground = colorResource(R.color.hc_text),
@@ -95,7 +86,6 @@ fun Open2048Theme(
                 AppTheme.LIGHT -> true
                 AppTheme.DARK -> false
                 AppTheme.CLASSIC -> true
-                AppTheme.RETRO -> false
                 AppTheme.OLED -> false
             }
             windowInsetsController.isAppearanceLightStatusBars = isAppearanceLight

@@ -68,7 +68,6 @@ fun MenuScreen(
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val amber = colorResource(R.color.amber_500)
     var pendingGameMode by rememberSaveable(stateSaver = GameMode.Saver) { mutableStateOf(null) }
 
     val initialFocusRequester = remember { FocusRequester() }
@@ -125,6 +124,7 @@ fun MenuScreen(
                             icon = Icons.Rounded.PlayArrow,
                             onClick = onResumeGame,
                             containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary,
                             fullWidth = true,
                             modifier = Modifier
                                 .focusRequester(initialFocusRequester)
@@ -137,7 +137,8 @@ fun MenuScreen(
                         text = "Daily Challenge",
                         icon = Icons.Rounded.EmojiEvents,
                         onClick = { handleStartGame(GameMode.Daily.today()) },
-                        containerColor = amber,
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = MaterialTheme.colorScheme.onTertiary,
                         fullWidth = true,
                         modifier = (if (!canResume) Modifier.focusRequester(initialFocusRequester) else Modifier)
                             .then(if (!canResume) Modifier.focusProperties { up = statsFocusRequester } else Modifier)
