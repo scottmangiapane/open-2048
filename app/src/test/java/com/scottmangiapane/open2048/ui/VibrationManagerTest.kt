@@ -44,6 +44,10 @@ class VibrationManagerTest {
     fun testVibrateOneShot() {
         vibrationManager.vibrate(100, 128)
         verify { vibrator.vibrate(any<android.os.VibrationEffect>()) }
+        
+        // Test custom amplitude out of range (coerced)
+        vibrationManager.vibrate(100, 300)
+        verify { vibrator.vibrate(any<android.os.VibrationEffect>()) }
     }
 
     @Test
@@ -62,15 +66,26 @@ class VibrationManagerTest {
     }
 
     @Test
-    fun testVibrateForScore() {
+    fun testVibrateForScoreBranches() {
+        // 0 -> vibrate(10, 20)
         vibrationManager.vibrateForScore(0)
-        vibrationManager.vibrateForScore(32)
-        vibrationManager.vibrateForScore(128)
-        vibrationManager.vibrateForScore(512)
-        vibrationManager.vibrateForScore(1024)
         
-        // This verify might need to handle both overloads or be specific
-        // Actually, verify it was called at all
-        verify(atLeast = 1) { vibrator.vibrate(any<android.os.VibrationEffect>()) }
+        // <= 32 -> vibrate(20, 45)
+        vibrationManager.vibrateForScore(32)
+        vibrationManager.vibrateForScore(2)
+        
+        // <= 128 -> vibrate(40, 90)
+        vibrationManager.vibrateForScore(128)
+        vibrationManager.vibrateForScore(64)
+        
+        // <= 512 -> vibrate(60, 160)
+        vibrationManager.vibrateForScore(512)
+        vibrationManager.vibrateForScore(256)
+        
+        // else -> vibrate(100, 220)
+        vibrationManager.vibrateForScore(1024)
+        vibrationManager.vibrateForScore(2048)
+        
+        verify(atLeast = 9) { vibrator.vibrate(any<android.os.VibrationEffect>()) }
     }
 }

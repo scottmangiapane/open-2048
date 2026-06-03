@@ -24,6 +24,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.scottmangiapane.open2048.logic.Direction
 import com.scottmangiapane.open2048.model.AnimationSpeed
@@ -118,6 +119,7 @@ fun BoardContainer(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .testTag("BoardContainer")
             .clip(RoundedCornerShape(8.dp))
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .onKeyEvent { keyEvent ->

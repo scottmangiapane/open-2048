@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.ui.theme.Open2048Theme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -23,6 +24,15 @@ class FocusUtilsTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    @Test
+    fun testIsBlack() {
+        assertTrue(Color.Black.isBlack)
+        assertTrue(Color(0xFF000000).isBlack)
+        assertFalse(Color.White.isBlack)
+        assertFalse(Color.Transparent.isBlack)
+        assertFalse(Color.Red.isBlack)
+    }
 
     @Test
     fun testAppFocusBorder() {

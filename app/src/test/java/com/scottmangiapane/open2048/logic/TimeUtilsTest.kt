@@ -21,6 +21,8 @@ class TimeUtilsTest {
     fun testFormatDurationHours() {
         assertEquals("1:00:00", TimeUtils.formatDuration(3600000, true))
         assertEquals("2:30:45", TimeUtils.formatDuration(9045000, true))
+        // showHours = true but hours = 0
+        assertEquals("01:00", TimeUtils.formatDuration(60000, true))
     }
 
     @Test

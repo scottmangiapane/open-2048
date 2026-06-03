@@ -152,8 +152,8 @@ object GameEngine {
         val size = board.size
         for (r in 0 until size) {
             for (c in 0 until size) {
-                if (board[r][c] == null) return false
-                val current = board[r][c]?.value ?: continue
+                val currentTile = board[r][c] ?: return false
+                val current = currentTile.value
                 if (r + 1 < size && board[r + 1][c]?.value == current) return false
                 if (c + 1 < size && board[r][c + 1]?.value == current) return false
             }

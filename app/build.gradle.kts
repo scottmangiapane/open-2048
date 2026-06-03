@@ -86,7 +86,9 @@ kover {
             }
             verify {
                 rule {
-                    bound { minValue = 85 }
+                    bound {
+                        minValue = 90
+                    }
                 }
             }
         }
@@ -101,7 +103,9 @@ kover {
             }
             verify {
                 rule {
-                    bound { minValue = 85 }
+                    bound {
+                        minValue = 90
+                    }
                 }
             }
         }

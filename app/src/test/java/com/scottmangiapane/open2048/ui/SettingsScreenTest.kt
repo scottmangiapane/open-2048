@@ -123,6 +123,27 @@ class SettingsScreenTest {
     }
 
     @Test
+    fun testSettingsScreenNoTouchNoVibrator() {
+        val viewModel = mockk<GameViewModel>(relaxed = true)
+        every { viewModel.userPreferences } returns MutableStateFlow(UserPreferences())
+        every { viewModel.hasTouch } returns false
+        every { viewModel.hasVibrator } returns false
+
+        composeTestRule.setContent {
+            SettingsScreen(viewModel = viewModel, onBack = {})
+        }
+
+        // Controls group should not be visible if hasTouch is false
+        composeTestRule.onNodeWithText("CONTROLS").assertDoesNotExist()
+        
+        // Haptic Feedback should not be visible if hasVibrator is false
+        composeTestRule.onNodeWithText("Haptic Feedback").assertDoesNotExist()
+        
+        // Settings group title GAMEPLAY should still exist
+        composeTestRule.onNodeWithText("GAMEPLAY").assertExists()
+    }
+
+    @Test
     fun testSettingsScreenNavigation() {
         var backCalled = false
         val viewModel = mockViewModel()

@@ -204,8 +204,35 @@ class GameEngineTest {
             listOf(Tile(9, 512), Tile(10, 1024), Tile(11, 2048), Tile(12, 4096)),
             listOf(Tile(13, 8192), Tile(14, 16384), Tile(15, 32768), Tile(16, 65536))
         )
+        // Board is full and no merges possible.
+        // GameEngine.move should return hasChanged = false and same board.
         val result = GameEngine.move(board, Direction.UP, 0.5f, 0.5f, 100)
         assertFalse(result.hasChanged)
+        assertEquals(board, result.board)
+    }
+
+    @Test
+    fun testMoveWhenFullWithMerge() {
+        val board = listOf(
+            listOf(Tile(1, 2), Tile(2, 2), Tile(3, 8), Tile(4, 16)),
+            listOf(Tile(5, 32), Tile(6, 64), Tile(7, 128), Tile(8, 256)),
+            listOf(Tile(9, 512), Tile(10, 1024), Tile(11, 2048), Tile(12, 4096)),
+            listOf(Tile(13, 8192), Tile(14, 16384), Tile(15, 32768), Tile(16, 65536))
+        )
+        // Board is full but 2+2=4 merge is possible.
+        val result = GameEngine.move(board, Direction.LEFT, 0.5f, 0.5f, 100)
+        assertTrue(result.hasChanged)
+        // A new tile should be added in the spot vacated by the merge
+        val newTiles = result.board.flatten().filterNotNull().filter { it.id == 100 }
+        assertEquals(1, newTiles.size)
+    }
+
+    @Test
+    fun testIsGameOverEdgeCases() {
+        assertFalse(GameEngine.isGameOver(emptyList()))
+        
+        val singleTile = listOf(listOf(Tile(1, 2)))
+        assertTrue(GameEngine.isGameOver(singleTile))
     }
 
     @Test

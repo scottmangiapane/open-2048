@@ -144,7 +144,7 @@ class BoardViewTest {
 
     @Test
     fun testBoardKeyEvents() {
-        var capturedDirection: Direction?
+        var capturedDirection: Direction? = null
         val board = listOf(listOf(Tile(1, 2), null), listOf(null, null))
         val state = GameState(board = board, gameMode = GameMode.Classic(2))
         val focusRequester = FocusRequester()
@@ -160,7 +160,7 @@ class BoardViewTest {
             )
         }
 
-        composeTestRule.onRoot().performClick()
+        composeTestRule.onNodeWithTag("BoardContainer").performClick()
         composeTestRule.runOnIdle {
             focusRequester.requestFocus()
         }
@@ -174,10 +174,91 @@ class BoardViewTest {
 
         keys.forEach { (keyCode, expected) ->
             capturedDirection = null
-            composeTestRule.onRoot().performKeyPress(KeyEvent(
+            composeTestRule.onNodeWithTag("BoardContainer").performKeyPress(KeyEvent(
                 android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, keyCode)
             ))
             assertEquals(expected, capturedDirection)
         }
+    }
+
+    @Test
+    fun testBoardKeyEventsAdvanced() {
+        var capturedDirection: Direction? = null
+        val board = listOf(listOf(Tile(1, 2), null), listOf(null, null))
+        val state = GameState(board = board, gameMode = GameMode.Classic(2))
+        val focusRequester = FocusRequester()
+        
+        composeTestRule.setContent {
+            BoardContainer(
+                state = state,
+                currentTheme = AppTheme.LIGHT,
+                animationSpeed = AnimationSpeed.NONE,
+                onMove = { capturedDirection = it },
+                focusRequester = focusRequester,
+                autoPlay = true,
+                hasTouch = false
+            )
+        }
+
+        composeTestRule.onNodeWithTag("BoardContainer").performClick()
+        composeTestRule.runOnIdle { focusRequester.requestFocus() }
+        composeTestRule.waitForIdle()
+
+        // 1. Initial state: playing (autoPlay=true).
+        composeTestRule.onNodeWithTag("BoardContainer").performKeyPress(KeyEvent(
+            android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_RIGHT)
+        ))
+        assertEquals(Direction.RIGHT, capturedDirection)
+
+        // 2. Press Escape to stop playing
+        composeTestRule.onNodeWithTag("BoardContainer").performKeyPress(KeyEvent(
+            android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_ESCAPE)
+        ))
+        composeTestRule.waitForIdle()
+        
+        // 3. Arrow keys should NOT trigger moves now
+        capturedDirection = null
+        composeTestRule.onNodeWithTag("BoardContainer").performKeyPress(KeyEvent(
+            android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_LEFT)
+        ))
+        assertEquals(null, capturedDirection)
+    }
+
+    @Test
+    fun testBoardDiagonalSwipe() {
+        var capturedDirection: Direction? = null
+        val state = GameState(board = listOf(listOf(Tile(1, 2))), gameMode = GameMode.Classic(1))
+        
+        composeTestRule.setContent {
+            BoardContainer(
+                state = state,
+                currentTheme = AppTheme.LIGHT,
+                animationSpeed = AnimationSpeed.NONE,
+                onMove = { capturedDirection = it },
+                autoPlay = true,
+                fullScreenGestures = false
+            )
+        }
+
+        // Swipe diagonally (mostly right, a bit down)
+        composeTestRule.onNodeWithTag("BoardContainer").performTouchInput {
+            swipe(
+                start = center,
+                end = center.copy(x = center.x + 200f, y = center.y + 50f),
+                durationMillis = 100
+            )
+        }
+        assertEquals(Direction.RIGHT, capturedDirection)
+        
+        // Swipe diagonally (mostly up, a bit left)
+        capturedDirection = null
+        composeTestRule.onNodeWithTag("BoardContainer").performTouchInput {
+            swipe(
+                start = center,
+                end = center.copy(x = center.x - 50f, y = center.y - 200f),
+                durationMillis = 100
+            )
+        }
+        assertEquals(Direction.UP, capturedDirection)
     }
 }

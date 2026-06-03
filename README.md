@@ -47,7 +47,7 @@ You can download the latest `.apk` from the [Releases](https://github.com/scottm
 
 ### Quality & Testing
 
-The project maintains a robust suite of unit and UI tests covering core logic, state transitions, and themes. We aim for at least **85% line and branch coverage**.
+The project maintains a robust suite of unit and UI tests covering core logic, state transitions, and themes. We aim for at least **90% line and 75% branch coverage**.
 
 Run tests and generate coverage reports via Gradle using the distribution flavors (`github` or `play`):
 

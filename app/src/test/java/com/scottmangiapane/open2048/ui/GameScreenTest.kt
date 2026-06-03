@@ -127,4 +127,26 @@ class GameScreenTest {
         composeTestRule.onNodeWithText("Undo").performClick()
         verify { viewModel.undo() }
     }
+
+    @Test
+    fun testGameScreenConfettiReset() {
+        val stateFlow = MutableStateFlow(GameState(highestTile = 2048, gameMode = GameMode.Classic(4)))
+        val viewModel = mockViewModel()
+        every { viewModel.state } returns stateFlow
+        
+        composeTestRule.setContent {
+            GameScreen(viewModel = viewModel, onBackToMenu = {})
+        }
+        
+        // Advance clock to let LaunchedEffect run
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        
+        // Now lower the highest tile (undo)
+        stateFlow.value = stateFlow.value.copy(highestTile = 1024)
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        
+        // Now raise it again
+        stateFlow.value = stateFlow.value.copy(highestTile = 2048)
+        composeTestRule.mainClock.advanceTimeBy(1000)
+    }
 }
