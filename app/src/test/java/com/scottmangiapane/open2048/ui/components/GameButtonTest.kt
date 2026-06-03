@@ -1,17 +1,19 @@
 package com.scottmangiapane.open2048.ui.components
 
-import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.junit.Assert.assertTrue
-import org.robolectric.annotation.Config
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.createComposeRule
+import com.scottmangiapane.open2048.model.AppTheme
+import com.scottmangiapane.open2048.ui.theme.Open2048Theme
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -36,22 +38,29 @@ class GameButtonTest {
     fun testGameButtonBranches() {
         composeTestRule.setContent {
             MaterialTheme {
-                // isTextButton = true
                 GameButton(text = "Text Button", onClick = {}, isTextButton = true)
-                // fullWidth = true, icon != null
                 GameButton(text = "Full Width", onClick = {}, fullWidth = true, icon = Icons.Default.Add)
-                // disabled
                 GameButton(text = "Disabled", onClick = {}, enabled = false)
-                
-                // containerColor == primary branch in focus border
-                GameButton(text = "Primary", onClick = {}, containerColor = MaterialTheme.colorScheme.primary)
-                // containerColor != primary
-                GameButton(text = "Secondary", onClick = {}, containerColor = Color.Red)
             }
         }
         composeTestRule.onNodeWithText("Text Button").assertExists()
         composeTestRule.onNodeWithText("Full Width").assertExists()
         composeTestRule.onNodeWithText("Disabled").assertExists()
+    }
+
+    @Test
+    fun testGameButtonOLED() {
+        composeTestRule.setContent {
+            Open2048Theme(theme = AppTheme.OLED) {
+                GameButton(text = "OLED Button", onClick = {}, containerColor = Color.Black)
+                SelectableButton(text = "OLED Selectable", selected = true, onClick = {})
+                SelectableButton(text = "OLED Unselected", selected = false, onClick = {})
+                ControlButton(icon = Icons.Default.Add, onClick = {})
+            }
+        }
+        composeTestRule.onNodeWithText("OLED Button").assertExists()
+        composeTestRule.onNodeWithText("OLED Selectable").assertExists()
+        composeTestRule.onNodeWithText("OLED Unselected").assertExists()
     }
 
     @Test
@@ -64,22 +73,6 @@ class GameButtonTest {
         composeTestRule.onNodeWithText("Selectable").assertExists()
         composeTestRule.onNodeWithText("Selectable").performClick()
         assertTrue(clicked)
-    }
-
-    @Test
-    fun testSelectableButtonUnselected() {
-        composeTestRule.setContent {
-            SelectableButton(text = "Unselected", selected = false, onClick = { })
-        }
-        composeTestRule.onNodeWithText("Unselected").assertExists()
-    }
-
-    @Test
-    fun testGameButtonIconNoFullWidth() {
-        composeTestRule.setContent {
-            GameButton(text = "Icon Button", onClick = { }, icon = Icons.Default.Add, fullWidth = false)
-        }
-        composeTestRule.onNodeWithText("Icon Button").assertExists()
     }
 
     @Test

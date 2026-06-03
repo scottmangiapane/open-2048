@@ -42,8 +42,8 @@ class GameScreenTest {
         composeTestRule.onNodeWithText("SCORE").assertExists()
         composeTestRule.onNodeWithText("BEST").assertExists()
         
-        // Test New Game button interaction
         composeTestRule.onNodeWithText("New Game").performClick()
+        verify { viewModel.restartGame() }
     }
 
     @Test
@@ -92,42 +92,39 @@ class GameScreenTest {
         }
         
         composeTestRule.onNodeWithText("New Game").performClick()
-        // Should NOT show confirmation dialog
         composeTestRule.onNodeWithText("Restart Game?").assertDoesNotExist()
         verify { viewModel.restartGame() }
     }
 
     @Test
-    fun testGameScreenLargeScreen() {
-        val viewModel = mockViewModel()
-        
+    fun testGameScreenDailyMode() {
+        val state = GameState(gameMode = GameMode.Daily.today())
+        val viewModel = mockViewModel(state)
         composeTestRule.setContent {
-            androidx.compose.runtime.CompositionLocalProvider(
-                androidx.compose.ui.platform.LocalWindowInfo provides object : androidx.compose.ui.platform.WindowInfo {
-                    override val isWindowFocused: Boolean = true
-                    override val containerSize: androidx.compose.ui.unit.IntSize = androidx.compose.ui.unit.IntSize(3000, 3000)
-                }
-            ) {
-                GameScreen(viewModel = viewModel, onBackToMenu = {})
-            }
+            GameScreen(viewModel = viewModel, onBackToMenu = {})
         }
-        composeTestRule.onNodeWithText("SCORE").assertExists()
+        composeTestRule.onNodeWithText("DAILY CHALLENGE").assertExists()
     }
-    
+
     @Test
-    fun testGameScreenMediumScreen() {
-        val viewModel = mockViewModel()
-        
+    fun testGameScreenBlitzMode() {
+        val state = GameState(gameMode = GameMode.Blitz(2), timeLeftMs = 120000L)
+        val viewModel = mockViewModel(state)
         composeTestRule.setContent {
-            androidx.compose.runtime.CompositionLocalProvider(
-                androidx.compose.ui.platform.LocalWindowInfo provides object : androidx.compose.ui.platform.WindowInfo {
-                    override val isWindowFocused: Boolean = true
-                    override val containerSize: androidx.compose.ui.unit.IntSize = androidx.compose.ui.unit.IntSize(1800, 1800)
-                }
-            ) {
-                GameScreen(viewModel = viewModel, onBackToMenu = {})
-            }
+            GameScreen(viewModel = viewModel, onBackToMenu = {})
         }
-        composeTestRule.onNodeWithText("SCORE").assertExists()
+        composeTestRule.onNodeWithText("2M BLITZ").assertExists()
+        composeTestRule.onNodeWithText("02:00").assertExists()
+    }
+
+    @Test
+    fun testGameScreenUndoAction() {
+        val state = GameState(canUndo = true)
+        val viewModel = mockViewModel(state)
+        composeTestRule.setContent {
+            GameScreen(viewModel = viewModel, onBackToMenu = {})
+        }
+        composeTestRule.onNodeWithText("Undo").performClick()
+        verify { viewModel.undo() }
     }
 }

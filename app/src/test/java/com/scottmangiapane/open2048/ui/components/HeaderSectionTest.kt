@@ -180,4 +180,35 @@ class HeaderSectionTest {
 
         composeTestRule.onNodeWithText("5x5 CLASSIC").assertExists()
     }
+
+    @Test
+    fun testHeaderSectionSettingsBranches() {
+        val state = GameState(gameMode = GameMode.Classic(4))
+        composeTestRule.setContent {
+            HeaderSection(
+                state = state,
+                onRestart = {},
+                onUndo = {},
+                isLandscape = false,
+                showUndo = false,
+                showStopwatch = false
+            )
+        }
+        composeTestRule.onNodeWithText("Undo").assertDoesNotExist()
+        composeTestRule.onNodeWithText("TIME:", substring = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun testHeaderSectionLandscapeAdvanced() {
+        val state = GameState(gameMode = GameMode.Classic(5))
+        composeTestRule.setContent {
+            HeaderSection(
+                state = state,
+                onRestart = {},
+                onUndo = {},
+                isLandscape = true
+            )
+        }
+        composeTestRule.onNodeWithText("5x5 CLASSIC").assertExists()
+    }
 }

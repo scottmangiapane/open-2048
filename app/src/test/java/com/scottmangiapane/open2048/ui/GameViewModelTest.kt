@@ -526,4 +526,39 @@ class GameViewModelTest {
         assertEquals(0, vm.state.value.score)
         verify { vibrationManager.vibrateForScore(0) }
     }
+
+    @Test
+    fun testStartTimerStopTimer() {
+        viewModel.startTimer()
+        viewModel.stopTimer()
+        // No crash
+    }
+
+    @Test
+    fun testRestartGameWithMode() {
+        viewModel.restartGame(GameMode.Blitz(5))
+        assertEquals(GameMode.Blitz(5), viewModel.state.value.gameMode)
+    }
+
+    @Test
+    fun testMoveWhenNoChange() {
+        val board = listOf(listOf(Tile(1, 2)))
+        val state = GameState(board = board, gameMode = GameMode.Classic(1))
+        every { prefs.savedGameState } returns flowOf(state)
+        val vm = GameViewModel(application, prefs, iconManager, vibrationManager, gameTimer)
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        vm.move(Direction.UP)
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        assertEquals(state.movesCount, vm.state.value.movesCount)
+        assertFalse(vm.state.value.canUndo)
+    }
+
+    @Test
+    fun testSetShowUndo() {
+        viewModel.setShowUndo(true)
+        testDispatcher.scheduler.advanceUntilIdle()
+        coVerify { prefs.setShowUndo(true) }
+    }
 }

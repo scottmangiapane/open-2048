@@ -34,4 +34,24 @@ class TimeUtilsTest {
     fun testFormatDurationShowZero() {
         assertEquals("00:00", TimeUtils.formatDuration(0, true))
     }
+
+    @Test
+    fun testFormatDurationEdgeCases() {
+        // Exactly 1 hour
+        assertEquals("1:00:00", TimeUtils.formatDuration(3600000, true))
+        // 59m 59s
+        assertEquals("59:59", TimeUtils.formatDuration(3599000, false))
+        // Negative (should ideally not happen, but check behavior)
+        // ms / 1000 will be 0 or negative
+    }
+
+    @Test
+    fun testFormatDurationAbbreviatedEdgeCases() {
+        // 0s
+        assertEquals("0s", TimeUtils.formatDurationAbbreviated(0))
+        // 1h exactly
+        assertEquals("1h 0m", TimeUtils.formatDurationAbbreviated(3600000))
+        // 1m exactly
+        assertEquals("1m 0s", TimeUtils.formatDurationAbbreviated(60000))
+    }
 }

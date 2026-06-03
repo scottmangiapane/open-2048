@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("jacoco")
+    id("org.jetbrains.kotlinx.kover") version "0.9.8"
 }
 
 android {
@@ -37,6 +37,7 @@ android {
             )
         }
         debug {
+            // Enable JaCoCo/AGP coverage capture
             enableUnitTestCoverage = true
         }
     }
@@ -55,88 +56,56 @@ android {
     }
 }
 
-jacoco {
-    toolVersion = "0.8.12"
-}
-
-tasks.withType<Test> {
-    configure<JacocoTaskExtension> {
-        isIncludeNoLocationClasses = true
-        excludes = listOf("jdk.internal.*")
-    }
-}
-
-val fileFilter = listOf(
-    "**/R.class",
-    "**/R$*.class",
-    "**/BuildConfig.*",
-    "**/Manifest*.*",
-    "**/*Test*.*",
-    "android/**/*.*",
-    "**/*$*",
-    "**/ui/components/**",
-    "**/*Screen*.*",
-    "**/ui/SupportSection*.*",
-    "**/ui/theme/Theme*.*"
-)
-
-val jacocoTestReport = tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn("testGithubDebugUnitTest")
-
+kover {
     reports {
-        xml.required.set(true)
-        html.required.set(true)
-    }
-
-    val buildDir = layout.buildDirectory.get().asFile
-    val debugTree = fileTree("$buildDir/intermediates/built_in_kotlinc/githubDebug/compileGithubDebugKotlin/classes") {
-        include("com/scottmangiapane/open2048/**")
-        exclude(fileFilter)
-    }
-    val mainSrc = "${project.projectDir}/src/main/java"
-
-    sourceDirectories.setFrom(files(mainSrc))
-    classDirectories.setFrom(files(debugTree))
-    executionData.setFrom(fileTree(buildDir) {
-        include("outputs/unit_test_code_coverage/githubDebugUnitTest/testGithubDebugUnitTest.exec")
-    })
-}
-
-val jacocoTestCoverageVerification = tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-    dependsOn("testGithubDebugUnitTest")
-
-    violationRules {
-        rule {
-            element = "BUNDLE"
-            limit {
-                counter = "LINE"
-                value = "COVEREDRATIO"
-                minimum = "0.85".toBigDecimal()
+        // Shared filters for all reports
+        filters {
+            excludes {
+                classes(
+                    "**/R",
+                    "**/R$*",
+                    "**/BuildConfig",
+                    "**/Manifest*",
+                    "**/*Test*",
+                    "android/**/*",
+                    "com.scottmangiapane.open2048.databinding.*",
+                    "com.scottmangiapane.open2048.BR",
+                )
+                annotatedBy("androidx.compose.ui.tooling.preview.Preview")
             }
-            limit {
-                counter = "BRANCH"
-                value = "COVEREDRATIO"
-                minimum = "0.85".toBigDecimal()
+        }
+
+        // Configure variant-specific reports for flavored Android project
+        variant("githubDebug") {
+            html {
+                title = "Open 2048 Coverage (GitHub Distribution)"
+                onCheck = true
+            }
+            xml {
+                onCheck = true
+            }
+            verify {
+                rule {
+                    bound { minValue = 85 }
+                }
+            }
+        }
+
+        variant("playDebug") {
+            html {
+                title = "Open 2048 Coverage (Play Store Distribution)"
+                onCheck = true
+            }
+            xml {
+                onCheck = true
+            }
+            verify {
+                rule {
+                    bound { minValue = 85 }
+                }
             }
         }
     }
-
-    val buildDir = layout.buildDirectory.get().asFile
-    val debugTree = fileTree("$buildDir/intermediates/built_in_kotlinc/githubDebug/compileGithubDebugKotlin/classes") {
-        include("com/scottmangiapane/open2048/**")
-        exclude(fileFilter)
-    }
-    val mainSrc = "${project.projectDir}/src/main/java"
-
-    sourceDirectories.setFrom(files(mainSrc))
-    classDirectories.setFrom(files(debugTree))
-    executionData.setFrom(fileTree(buildDir) {
-        include("outputs/unit_test_code_coverage/githubDebugUnitTest/testGithubDebugUnitTest.exec")
-    })
-}
-
-tasks.check {
-    dependsOn(jacocoTestCoverageVerification)
 }
 
 dependencies {

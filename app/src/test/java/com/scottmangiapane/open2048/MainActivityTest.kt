@@ -4,39 +4,59 @@ import com.scottmangiapane.open2048.model.AppTheme
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import org.junit.Rule
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class MainActivityTest {
+
+    @get:Rule
+    val composeTestRule = createAndroidComposeRule<MainActivityLight>()
 
     @Test
     fun testActivityThemes() {
         assertEquals(AppTheme.LIGHT, MainActivityLight().activityTheme)
         assertEquals(AppTheme.DARK, MainActivityDark().activityTheme)
         assertEquals(AppTheme.CLASSIC, MainActivityClassic().activityTheme)
+        assertEquals(AppTheme.OLED, MainActivityOLED().activityTheme)
     }
 
     @Test
-    fun testMainActivityLaunchSubclasses() {
-        val light = Robolectric.buildActivity(MainActivityLight::class.java).setup().get()
-        assertEquals(AppTheme.LIGHT, light.activityTheme)
+    fun testMainActivityNavigationFlow() {
+        // Start at Menu
+        composeTestRule.onNodeWithText("Classic 4x4").assertExists()
         
-        val dark = Robolectric.buildActivity(MainActivityDark::class.java).setup().get()
-        assertEquals(AppTheme.DARK, dark.activityTheme)
+        // Go to Stats
+        composeTestRule.onNodeWithContentDescription("Statistics").performClick()
+        composeTestRule.onNodeWithText("Statistics").assertExists()
         
-        val classic = Robolectric.buildActivity(MainActivityClassic::class.java).setup().get()
-        assertEquals(AppTheme.CLASSIC, classic.activityTheme)
-    }
-
-    @Test
-    fun testMainActivityLaunch() {
-        // Use a themed subclass to avoid complexity of Preferences mock in MainActivity
-        val controller = Robolectric.buildActivity(MainActivityLight::class.java)
-        controller.setup()
-        val activity = controller.get()
-        assertEquals(AppTheme.LIGHT, activity.activityTheme)
+        // Go back to Menu
+        composeTestRule.onNodeWithContentDescription("Back").performClick()
+        composeTestRule.onNodeWithText("Classic 4x4").assertExists()
+        
+        // Go to Settings
+        composeTestRule.onNodeWithContentDescription("Settings").performClick()
+        composeTestRule.onNodeWithText("Settings").assertExists()
+        
+        // Go back to Menu
+        composeTestRule.onNodeWithContentDescription("Back").performClick()
+        
+        // Start a Game
+        composeTestRule.onNodeWithText("Classic 4x4").performClick()
+        composeTestRule.waitForIdle()
+        
+        // Header in Game says "2048"
+        composeTestRule.onNodeWithText("2048").assertExists()
+        
+        // Go back to Menu
+        composeTestRule.onNodeWithContentDescription("Back to Menu").performClick()
+        composeTestRule.waitForIdle()
+        
+        // Verify we are back on Menu
+        composeTestRule.onNodeWithText("Classic 4x4").assertExists()
     }
 }

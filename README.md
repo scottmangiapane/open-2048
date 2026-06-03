@@ -45,31 +45,21 @@ You can download the latest `.apk` from the [Releases](https://github.com/scottm
 2. **Open in Android Studio**: Use **Android Studio Ladybug** (2024.2.1) or newer.
 3. **Build and Run**: Deploy to an emulator or physical device.
 
-### Running Tests
+### Quality & Testing
 
-To ensure everything is working correctly, you can run unit tests, instrumentation tests, and coverage reports:
+The project maintains a robust suite of unit and UI tests covering core logic, state transitions, and themes. We aim for at least **85% line and branch coverage**.
 
-#### Unit Tests (Logic, Models, ViewModels, UI)
-- **Via Command Line**:
-  ```bash
-  ./gradlew :app:testDebugUnitTest
-  ```
-- **Via Android Studio**: Right-click the `app/src/test` directory and select **"Run 'Tests in 'com.scottmangiapane.open2048''"**.
+Run tests and generate coverage reports via Gradle using the distribution flavors (`github` or `play`):
 
-#### Code Coverage Report
-We use **JaCoCo** to measure test coverage. The project enforces a minimum of **85% line coverage** and **85% branch coverage** for core logic (excluding compiler-generated code and UI components).
+```bash
+# Run all tests (GitHub flavor)
+./gradlew :app:testGithubDebugUnitTest
 
-- **Generate Report**:
-  ```bash
-  ./gradlew :app:jacocoTestReport
-  ```
-  After running, the HTML report can be found at `app/build/reports/jacoco/jacocoTestReport/html/index.html`.
+# Generate and verify coverage report
+./gradlew clean :app:testGithubDebugUnitTest :app:koverHtmlReportGithubDebug :app:koverVerifyGithubDebug
+```
 
-- **Verify Coverage**:
-  ```bash
-  ./gradlew :app:jacocoTestCoverageVerification
-  ```
-  This task will fail if the coverage falls below the 85% threshold.
+Reports are generated at `app/build/reports/kover/htmlGithubDebug/index.html`.
 
 ## License
 

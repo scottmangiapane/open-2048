@@ -46,4 +46,14 @@ class ThemeTest {
         }
         composeTestRule.onNodeWithText("Hello Classic").assertExists()
     }
+
+    @Test
+    fun testOpen2048ThemeOLED() {
+        composeTestRule.setContent {
+            Open2048Theme(theme = AppTheme.OLED) {
+                Text("Hello OLED")
+            }
+        }
+        composeTestRule.onNodeWithText("Hello OLED").assertExists()
+    }
 }

@@ -62,7 +62,8 @@ class PreferenceRepositoryTest {
         assertTrue(PreferenceRepository.deserializeBoard("1:2,n,n").isEmpty()) // Not a square
         assertTrue(PreferenceRepository.deserializeBoard("1:a,n,n,n").isEmpty()) // Invalid value
         assertTrue(PreferenceRepository.deserializeBoard("a:2,n,n,n").isEmpty()) // Invalid ID
-        assertTrue(PreferenceRepository.deserializeBoard("1,n,n,n").isEmpty()) // Incomplete
+        assertTrue(PreferenceRepository.deserializeBoard("1,n,n,n").isEmpty()) // Incomplete (no colon)
+        assertTrue(PreferenceRepository.deserializeBoard("1:2:3,n,n,n").isEmpty()) // Too many colons
         assertTrue(PreferenceRepository.deserializeBoard(" ").isEmpty())
     }
 

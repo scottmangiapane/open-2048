@@ -58,8 +58,9 @@ class PreferenceRepository(
                 if (s == "n") null
                 else {
                     val tileParts = s.split(":")
-                    val id = tileParts.getOrNull(0)?.toIntOrNull() ?: return emptyList()
-                    val value = tileParts.getOrNull(1)?.toIntOrNull() ?: return emptyList()
+                    if (tileParts.size != 2) return emptyList()
+                    val id = tileParts[0].toIntOrNull() ?: return emptyList()
+                    val value = tileParts[1].toIntOrNull() ?: return emptyList()
                     Tile(id, value)
                 }
             }

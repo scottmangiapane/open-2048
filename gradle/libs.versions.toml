@@ -14,6 +14,7 @@ mockk = "1.13.12"
 kotlinx-coroutines-test = "1.9.0"
 robolectric = "4.14.1"
 billing = "7.1.1"
+kover = "0.9.8"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,3 +43,4 @@ billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", versi
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

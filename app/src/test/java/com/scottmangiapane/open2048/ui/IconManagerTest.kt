@@ -93,6 +93,26 @@ class IconManagerTest {
     }
 
     @Test
+    fun testApplyPendingIconChangeOLED() {
+        val context = mockk<Context>(relaxed = true)
+        val packageManager = mockk<PackageManager>(relaxed = true)
+        every { context.packageName } returns "com.scottmangiapane.open2048"
+        every { packageManager.getComponentEnabledSetting(any()) } returns PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
+        val iconManager = IconManager(context, packageManager)
+        
+        iconManager.setPendingIconUpdate(AppTheme.OLED)
+        iconManager.applyPendingIconChange()
+        
+        verify { 
+            packageManager.setComponentEnabledSetting(
+                match { it.className == "com.scottmangiapane.open2048.MainActivityOLED" },
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                any()
+            )
+        }
+    }
+
+    @Test
     fun testApplyPendingIconChangeNoPending() {
         val packageManager = mockk<PackageManager>(relaxed = true)
         val iconManager = IconManager(mockk(relaxed = true), packageManager)

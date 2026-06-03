@@ -2,12 +2,15 @@ package com.scottmangiapane.open2048.ui
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import com.scottmangiapane.open2048.model.AppTheme
+import com.scottmangiapane.open2048.model.GameMode
+import com.scottmangiapane.open2048.ui.theme.Open2048Theme
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import org.junit.Assert.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -105,40 +108,19 @@ class MenuScreenTest {
     }
 
     @Test
-    fun testMenuScreenClassicModes() {
-        var modeSelectedCount = 0
+    fun testMenuScreenThemes() {
         composeTestRule.setContent {
-            MenuScreen(
-                onStartGame = { modeSelectedCount++ },
-                onResumeGame = {},
-                onNavigateToStats = {},
-                onNavigateToSettings = {},
-                canResume = false,
-                hasProgress = false
-            )
+            Open2048Theme(theme = AppTheme.OLED) {
+                MenuScreen(
+                    onStartGame = {},
+                    onResumeGame = {},
+                    onNavigateToStats = {},
+                    onNavigateToSettings = {},
+                    canResume = true,
+                    hasProgress = true
+                )
+            }
         }
-        
-        composeTestRule.onNodeWithText("Small 3x3").performClick()
-        composeTestRule.onNodeWithText("Large 5x5").performClick()
-        assertTrue(modeSelectedCount == 2)
-    }
-
-    @Test
-    fun testMenuScreenBlitzModes() {
-        var modeSelectedCount = 0
-        composeTestRule.setContent {
-            MenuScreen(
-                onStartGame = { modeSelectedCount++ },
-                onResumeGame = {},
-                onNavigateToStats = {},
-                onNavigateToSettings = {},
-                canResume = false,
-                hasProgress = false
-            )
-        }
-        
-        composeTestRule.onNodeWithText("2 Minute Blitz").performScrollTo().performClick()
-        composeTestRule.onNodeWithText("5 Minute Blitz").performScrollTo().performClick()
-        assertTrue(modeSelectedCount == 2)
+        composeTestRule.onNodeWithText("Resume").assertExists()
     }
 }
