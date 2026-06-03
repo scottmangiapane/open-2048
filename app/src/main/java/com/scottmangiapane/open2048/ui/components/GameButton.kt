@@ -23,7 +23,7 @@ fun GameButton(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     containerColor: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = Color.White,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     padding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
     height: Dp = 56.dp,
     enabled: Boolean = true,
@@ -132,7 +132,7 @@ fun SelectableButton(
         interactionSource = interactionSource,
         shape = RoundedCornerShape(8.dp),
         color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-        contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface
+        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -162,14 +162,14 @@ fun ControlButton(
             ),
         interactionSource = interactionSource,
         colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+            contentColor = MaterialTheme.colorScheme.onPrimary
         ),
         shape = RoundedCornerShape(8.dp)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color.White,
             modifier = Modifier.size(28.dp)
         )
     }

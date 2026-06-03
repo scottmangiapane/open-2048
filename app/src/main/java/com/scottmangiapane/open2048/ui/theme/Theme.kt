@@ -58,6 +58,32 @@ fun Open2048Theme(
             surfaceVariant = colorResource(R.color.classic_board),
             onSurfaceVariant = colorResource(R.color.classic_text_light)
         )
+        AppTheme.RETRO -> darkColorScheme(
+            primary = colorResource(R.color.retro_primary),
+            onPrimary = Color.Black,
+            secondary = colorResource(R.color.retro_secondary),
+            onSecondary = Color.Black,
+            tertiary = colorResource(R.color.retro_tertiary),
+            background = colorResource(R.color.retro_bg),
+            surface = colorResource(R.color.retro_empty),
+            onBackground = colorResource(R.color.retro_text),
+            onSurface = colorResource(R.color.retro_text),
+            surfaceVariant = colorResource(R.color.retro_board),
+            onSurfaceVariant = colorResource(R.color.retro_text)
+        )
+        AppTheme.OLED -> darkColorScheme(
+            primary = colorResource(R.color.hc_primary),
+            onPrimary = Color.Black,
+            secondary = colorResource(R.color.hc_secondary),
+            onSecondary = Color.Black,
+            tertiary = Color.White,
+            background = colorResource(R.color.hc_bg),
+            surface = colorResource(R.color.hc_empty),
+            onBackground = colorResource(R.color.hc_text),
+            onSurface = colorResource(R.color.hc_text),
+            surfaceVariant = colorResource(R.color.hc_board),
+            onSurfaceVariant = colorResource(R.color.hc_text)
+        )
     }
 
     val view = LocalView.current
@@ -69,6 +95,8 @@ fun Open2048Theme(
                 AppTheme.LIGHT -> true
                 AppTheme.DARK -> false
                 AppTheme.CLASSIC -> true
+                AppTheme.RETRO -> false
+                AppTheme.OLED -> false
             }
             windowInsetsController.isAppearanceLightStatusBars = isAppearanceLight
             windowInsetsController.isAppearanceLightNavigationBars = isAppearanceLight

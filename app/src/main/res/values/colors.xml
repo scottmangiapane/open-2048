@@ -60,4 +60,48 @@
     <color name="tile_modern_512">#A78BFA</color>
     <color name="tile_modern_1024">#C084FC</color>
     <color name="tile_modern_2048">#E879F9</color>
+
+    <!-- Retro Theme (Synthwave) -->
+    <color name="retro_bg">#0D0221</color>
+    <color name="retro_board">#190636</color>
+    <color name="retro_empty">#240B36</color>
+    <color name="retro_primary">#FF00FF</color>
+    <color name="retro_secondary">#00FFFF</color>
+    <color name="retro_tertiary">#B967FF</color>
+    <color name="retro_text">#FFFFFF</color>
+
+    <!-- Retro Tile Colors (Vibrant Neon Gradient) -->
+    <color name="tile_retro_2">#240046</color>
+    <color name="tile_retro_4">#3C096C</color>
+    <color name="tile_retro_8">#5A189A</color>
+    <color name="tile_retro_16">#7B2CBF</color>
+    <color name="tile_retro_32">#9D4EDD</color>
+    <color name="tile_retro_64">#C77DFF</color>
+    <color name="tile_retro_128">#E0AAFF</color>
+    <color name="tile_retro_256">#FF71CE</color>
+    <color name="tile_retro_512">#01CDFE</color>
+    <color name="tile_retro_1024">#05FFA1</color>
+    <color name="tile_retro_2048">#B967FF</color>
+
+    <!-- OLED / High Contrast Theme (Premium Pitch) -->
+    <color name="hc_bg">#000000</color>
+    <color name="hc_board">#0A0A0A</color>
+    <color name="hc_empty">#141414</color>
+    <color name="hc_primary">#00E5FF</color>
+    <color name="hc_secondary">#76FF03</color>
+    <color name="hc_text">#FFFFFF</color>
+
+    <!-- High Contrast Tiles (OLED Glowing Palette) -->
+    <color name="tile_hc_2">#1A1A1A</color>
+    <color name="tile_hc_4">#262626</color>
+    <color name="tile_hc_8">#004D40</color>
+    <color name="tile_hc_16">#00796B</color>
+    <color name="tile_hc_32">#00C853</color>
+    <color name="tile_hc_64">#64DD17</color>
+    <color name="tile_hc_128">#AA00FF</color>
+    <color name="tile_hc_256">#D500F9</color>
+    <color name="tile_hc_512">#FFD600</color>
+    <color name="tile_hc_1024">#FFAB00</color>
+    <color name="tile_hc_2048">#FFFFFF</color>
+
 </resources>
