@@ -27,6 +27,7 @@ import com.scottmangiapane.open2048.model.ControlMode
 import com.scottmangiapane.open2048.ui.components.SelectableButton
 import com.scottmangiapane.open2048.ui.components.appFocusBorder
 import com.scottmangiapane.open2048.ui.components.oledBorder
+import com.scottmangiapane.open2048.ui.components.appContainerColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +94,7 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                    color = appContainerColor(),
                                     shape = RoundedCornerShape(8.dp)
                                 )
                                 .oledBorder()
@@ -114,7 +115,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            color = appContainerColor(),
                             shape = RoundedCornerShape(8.dp)
                         )
                         .oledBorder()

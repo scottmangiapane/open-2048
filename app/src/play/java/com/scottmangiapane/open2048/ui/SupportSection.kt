@@ -14,8 +14,6 @@ fun SupportSection() {
         onClick = { 
             // Launch Google Play Billing Flow
         },
-        fullWidth = true,
-        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        fullWidth = true
     )
 }

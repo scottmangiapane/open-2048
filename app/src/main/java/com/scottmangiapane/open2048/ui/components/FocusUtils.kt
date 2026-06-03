@@ -61,6 +61,12 @@ fun MenuIconButton(
 }
 
 @Composable
+fun appContainerColor(): Color {
+    return if (MaterialTheme.colorScheme.background.isBlack) Color.Transparent 
+           else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+}
+
+@Composable
 fun Modifier.oledBorder(
     color: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
     shape: Shape = RoundedCornerShape(8.dp),

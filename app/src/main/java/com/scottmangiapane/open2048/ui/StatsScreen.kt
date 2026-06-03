@@ -21,6 +21,7 @@ import com.scottmangiapane.open2048.logic.TimeUtils
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.ui.components.appFocusBorder
 import com.scottmangiapane.open2048.ui.components.oledBorder
+import com.scottmangiapane.open2048.ui.components.appContainerColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,7 +140,7 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     Surface(
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+        color = appContainerColor(),
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -211,7 +212,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     Surface(
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+        color = appContainerColor(),
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()

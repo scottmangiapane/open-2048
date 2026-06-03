@@ -57,6 +57,7 @@ import com.scottmangiapane.open2048.ui.components.GameButton
 import com.scottmangiapane.open2048.ui.components.GameConfirmationDialog
 import com.scottmangiapane.open2048.ui.components.MenuIconButton
 import com.scottmangiapane.open2048.ui.components.oledBorder
+import com.scottmangiapane.open2048.ui.components.appContainerColor
 
 @Composable
 fun MenuScreen(
@@ -205,7 +206,7 @@ fun MenuScreen(
                 .statusBarsPadding()
                 .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
                 .padding(horizontal = 24.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
             verticalAlignment = Alignment.CenterVertically
         ) {
             MenuIconButton(
@@ -323,7 +324,7 @@ private fun MenuColumn(
         modifier = modifier
             .widthIn(max = 280.dp)
             .background(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                color = appContainerColor(),
                 shape = RoundedCornerShape(8.dp)
             )
             .oledBorder()

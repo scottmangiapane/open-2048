@@ -15,8 +15,6 @@ fun SupportSection() {
         text = "Support on GitHub Sponsors",
         icon = Icons.Rounded.Favorite,
         onClick = { uriHandler.openUri("https://github.com/sponsors/scottmangiapane") },
-        fullWidth = true,
-        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        fullWidth = true
     )
 }

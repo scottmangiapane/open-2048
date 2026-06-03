@@ -136,7 +136,7 @@ fun SelectableButton(
             ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(8.dp),
-        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else appContainerColor(),
         contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
         border = if (selected && MaterialTheme.colorScheme.primaryContainer.isBlack)
             BorderStroke(2.dp, MaterialTheme.colorScheme.onPrimaryContainer)
