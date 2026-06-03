@@ -36,10 +36,10 @@ class SettingsScreenTest {
             SettingsScreen(viewModel = viewModel, onBack = {})
         }
         
-        composeTestRule.onNodeWithText("Dark").performClick()
+        composeTestRule.onNodeWithText("Dark").performScrollTo().performClick()
         verify { viewModel.setTheme(AppTheme.DARK) }
         
-        composeTestRule.onNodeWithText("Classic").performClick()
+        composeTestRule.onNodeWithText("Classic").performScrollTo().performClick()
         verify { viewModel.setTheme(AppTheme.CLASSIC) }
     }
 
@@ -50,10 +50,10 @@ class SettingsScreenTest {
             SettingsScreen(viewModel = viewModel, onBack = {})
         }
         
-        composeTestRule.onNodeWithText("Fast").performClick()
+        composeTestRule.onNodeWithText("Fast").performScrollTo().performClick()
         verify { viewModel.setAnimationSpeed(AnimationSpeed.FAST) }
         
-        composeTestRule.onNodeWithText("Off").performClick()
+        composeTestRule.onNodeWithText("Off").performScrollTo().performClick()
         verify { viewModel.setAnimationSpeed(AnimationSpeed.NONE) }
     }
 
@@ -107,6 +107,18 @@ class SettingsScreenTest {
         
         composeTestRule.onNodeWithText("Haptic Feedback").performScrollTo().performClick()
         verify { viewModel.setVibrationEnabled(any()) }
+    }
+
+    @Test
+    fun testSettingsScreenSupportSection() {
+        val viewModel = mockViewModel()
+        composeTestRule.setContent {
+            SettingsScreen(viewModel = viewModel, onBack = {})
+        }
+        
+        composeTestRule.onNodeWithText("SUPPORT").assertExists()
+        // We don't test the specific SupportSection content here as it's flavor-dependent,
+        // but we verify the group is present.
     }
 
     @Test

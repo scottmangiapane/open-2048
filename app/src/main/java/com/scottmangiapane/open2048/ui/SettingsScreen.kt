@@ -157,6 +157,11 @@ fun SettingsScreen(
                     currentSpeed = preferences.animationSpeed,
                 ) { viewModel.setAnimationSpeed(it) }
             }
+
+            // Support Section
+            SettingsGroup(title = "SUPPORT") {
+                SupportSection()
+            }
         }
     }
 }

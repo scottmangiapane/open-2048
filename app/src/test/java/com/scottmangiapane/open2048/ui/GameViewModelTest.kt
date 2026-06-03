@@ -197,6 +197,42 @@ class GameViewModelTest {
     }
 
     @Test
+    fun testBlitzTimerTimeOutHitsGameOver() {
+        val mode = GameMode.Blitz(2)
+        val initialState = GameState(board = listOf(listOf(Tile(1, 2))), gameMode = mode, timeLeftMs = 1000L, isGameOver = false)
+        every { prefs.savedGameState } returns flowOf(initialState)
+
+        val vm = GameViewModel(application, prefs, iconManager, vibrationManager, gameTimer)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val slot = mutableListOf<(Long) -> Unit>()
+        every { gameTimer.start(capture(slot)) } returns Unit
+
+        vm.startTimer()
+        slot.first().invoke(1000) // 1 second elapsed, timer hits 0
+
+        assertTrue(vm.state.value.isGameOver)
+        assertEquals(0L, vm.state.value.timeLeftMs)
+        verify { gameTimer.stop() }
+    }
+
+    @Test
+    fun testMoveWhenTimeUp() {
+        val mode = GameMode.Blitz(2)
+        // timeLeftMs is 0, game should be over upon next move or load
+        val timeUpState = GameState(board = listOf(listOf(Tile(1, 2), null), listOf(null, null)), gameMode = mode, timeLeftMs = 0L, isGameOver = false)
+        every { prefs.savedGameState } returns flowOf(timeUpState)
+
+        val vm = GameViewModel(application, prefs, iconManager, vibrationManager, gameTimer)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        vm.move(Direction.RIGHT)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(vm.state.value.isGameOver)
+    }
+
+    @Test
     fun testDailyChallengeDeterminism() {
         val dailyMode = GameMode.Daily(2024, 5, 20)
 

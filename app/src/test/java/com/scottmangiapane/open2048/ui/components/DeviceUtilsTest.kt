@@ -58,4 +58,26 @@ class DeviceUtilsTest {
 
         assertFalse(DeviceUtils.hasTouch(context))
     }
+
+    @Test
+    fun testIsGooglePlayTrue() {
+        val context = mockk<Context>()
+        val packageManager = mockk<PackageManager>()
+        every { context.packageManager } returns packageManager
+        every { context.packageName } returns "com.scottmangiapane.open2048"
+        every { packageManager.getInstallerPackageName("com.scottmangiapane.open2048") } returns "com.android.vending"
+
+        assertTrue(DeviceUtils.isGooglePlay(context))
+    }
+
+    @Test
+    fun testIsGooglePlayFalse() {
+        val context = mockk<Context>()
+        val packageManager = mockk<PackageManager>()
+        every { context.packageManager } returns packageManager
+        every { context.packageName } returns "com.scottmangiapane.open2048"
+        every { packageManager.getInstallerPackageName("com.scottmangiapane.open2048") } returns "org.fdroid.fdroid"
+
+        assertFalse(DeviceUtils.isGooglePlay(context))
+    }
 }

@@ -109,9 +109,10 @@ class IconManagerTest {
         
         // Classic is already enabled
         every { packageManager.getComponentEnabledSetting(match { it.className.endsWith("Classic") }) } returns PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-        // Light and Dark are already disabled
+        // Light, Dark and Oled are already disabled
         every { packageManager.getComponentEnabledSetting(match { it.className.endsWith("Light") }) } returns PackageManager.COMPONENT_ENABLED_STATE_DISABLED
         every { packageManager.getComponentEnabledSetting(match { it.className.endsWith("Dark") }) } returns PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+        every { packageManager.getComponentEnabledSetting(match { it.className.endsWith("Oled") }) } returns PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 
         val iconManager = IconManager(context, packageManager)
         

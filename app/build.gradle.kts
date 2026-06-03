@@ -18,6 +18,16 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("play") {
+            dimension = "distribution"
+        }
+        create("github") {
+            dimension = "distribution"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -66,11 +76,12 @@ val fileFilter = listOf(
     "**/*$*",
     "**/ui/components/**",
     "**/*Screen*.*",
+    "**/ui/SupportSection*.*",
     "**/ui/theme/Theme*.*"
 )
 
 val jacocoTestReport = tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn("testDebugUnitTest")
+    dependsOn("testGithubDebugUnitTest")
 
     reports {
         xml.required.set(true)
@@ -78,7 +89,7 @@ val jacocoTestReport = tasks.register<JacocoReport>("jacocoTestReport") {
     }
 
     val buildDir = layout.buildDirectory.get().asFile
-    val debugTree = fileTree("$buildDir/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") {
+    val debugTree = fileTree("$buildDir/intermediates/built_in_kotlinc/githubDebug/compileGithubDebugKotlin/classes") {
         include("com/scottmangiapane/open2048/**")
         exclude(fileFilter)
     }
@@ -87,12 +98,12 @@ val jacocoTestReport = tasks.register<JacocoReport>("jacocoTestReport") {
     sourceDirectories.setFrom(files(mainSrc))
     classDirectories.setFrom(files(debugTree))
     executionData.setFrom(fileTree(buildDir) {
-        include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
+        include("outputs/unit_test_code_coverage/githubDebugUnitTest/testGithubDebugUnitTest.exec")
     })
 }
 
 val jacocoTestCoverageVerification = tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-    dependsOn("testDebugUnitTest")
+    dependsOn("testGithubDebugUnitTest")
 
     violationRules {
         rule {
@@ -111,7 +122,7 @@ val jacocoTestCoverageVerification = tasks.register<JacocoCoverageVerification>(
     }
 
     val buildDir = layout.buildDirectory.get().asFile
-    val debugTree = fileTree("$buildDir/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") {
+    val debugTree = fileTree("$buildDir/intermediates/built_in_kotlinc/githubDebug/compileGithubDebugKotlin/classes") {
         include("com/scottmangiapane/open2048/**")
         exclude(fileFilter)
     }
@@ -120,7 +131,7 @@ val jacocoTestCoverageVerification = tasks.register<JacocoCoverageVerification>(
     sourceDirectories.setFrom(files(mainSrc))
     classDirectories.setFrom(files(debugTree))
     executionData.setFrom(fileTree(buildDir) {
-        include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
+        include("outputs/unit_test_code_coverage/githubDebugUnitTest/testGithubDebugUnitTest.exec")
     })
 }
 
@@ -141,6 +152,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.datastore.preferences)
+    "playImplementation"(libs.billing.ktx)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)

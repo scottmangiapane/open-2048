@@ -15,4 +15,12 @@ object DeviceUtils {
         val hasConfig = context.resources.configuration.touchscreen != Configuration.TOUCHSCREEN_NOTOUCH
         return hasFeature && hasConfig
     }
+
+    /**
+     * Returns true if the app was installed from the Google Play Store.
+     */
+    fun isGooglePlay(context: Context): Boolean {
+        val installer = context.packageManager.getInstallerPackageName(context.packageName)
+        return installer == "com.android.vending"
+    }
 }
