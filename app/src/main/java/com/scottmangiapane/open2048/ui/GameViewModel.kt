@@ -142,7 +142,7 @@ class GameViewModel @JvmOverloads constructor(
         
         viewModelScope.launch {
             prefs.saveGameState(newState)
-            prefs.incrementGamesPlayed(newMode.statsId)
+            prefs.incrementGamesPlayed(newMode.groupStatsId)
         }
         
         _state.value = newState
@@ -313,7 +313,7 @@ class GameViewModel @JvmOverloads constructor(
                 prefs.updateBestScore(state.value.gameMode.statsId, newScore)
                 prefs.updateHighestTile(state.value.gameMode.statsId, newState.highestTile)
                 if (newlyWon) {
-                    prefs.incrementWinCount(state.value.gameMode.statsId)
+                    prefs.incrementWinCount(state.value.gameMode.groupStatsId)
                     prefs.updateFewestMoves(state.value.gameMode.statsId, newState.movesToWin!!)
                     prefs.updateFastestTime(state.value.gameMode.statsId, newState.timeToWin!!)
                 }
@@ -322,7 +322,7 @@ class GameViewModel @JvmOverloads constructor(
             if (newState.isGameOver) {
                 stopTimer()
                 viewModelScope.launch {
-                    prefs.addToTotalTime(state.value.gameMode.statsId, newState.elapsedTimeMs)
+                    prefs.addToTotalTime(state.value.gameMode.groupStatsId, newState.elapsedTimeMs)
                 }
             }
         }

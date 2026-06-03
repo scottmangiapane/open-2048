@@ -132,9 +132,9 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
     val fewestMoves by viewModel.getFewestMoves(mode).collectAsStateWithLifecycle()
     val fastestTime by viewModel.getFastestTime(mode).collectAsStateWithLifecycle()
     
-    val totalWins by viewModel.getWinCount("daily").collectAsStateWithLifecycle()
-    val totalPlayed by viewModel.getGamesPlayed("daily").collectAsStateWithLifecycle()
-    val totalTime by viewModel.getTotalTime("daily").collectAsStateWithLifecycle()
+    val totalWins by viewModel.getWinCount(mode.groupStatsId).collectAsStateWithLifecycle()
+    val totalPlayed by viewModel.getGamesPlayed(mode.groupStatsId).collectAsStateWithLifecycle()
+    val totalTime by viewModel.getTotalTime(mode.groupStatsId).collectAsStateWithLifecycle()
 
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -204,9 +204,9 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
     val highestTile by viewModel.getHighestTile(mode).collectAsStateWithLifecycle()
     val fewestMoves by viewModel.getFewestMoves(mode).collectAsStateWithLifecycle()
     val fastestTime by viewModel.getFastestTime(mode).collectAsStateWithLifecycle()
-    val wins by viewModel.getWinCount(mode.id).collectAsStateWithLifecycle()
-    val played by viewModel.getGamesPlayed(mode.id).collectAsStateWithLifecycle()
-    val totalTime by viewModel.getTotalTime(mode.id).collectAsStateWithLifecycle()
+    val wins by viewModel.getWinCount(mode.groupStatsId).collectAsStateWithLifecycle()
+    val played by viewModel.getGamesPlayed(mode.groupStatsId).collectAsStateWithLifecycle()
+    val totalTime by viewModel.getTotalTime(mode.groupStatsId).collectAsStateWithLifecycle()
 
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()

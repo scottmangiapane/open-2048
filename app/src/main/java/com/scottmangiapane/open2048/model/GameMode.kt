@@ -9,7 +9,8 @@ sealed class GameMode {
     abstract val size: Int
     abstract val id: String
     abstract val winCondition: Int
-    val statsId: String get() = if (this is Daily) "daily" else id
+    val statsId: String get() = id
+    val groupStatsId: String get() = if (this is Daily) "daily" else id
 
     data class Classic(override val size: Int) : GameMode() {
         override val id: String = "classic_$size"

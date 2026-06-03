@@ -43,7 +43,8 @@ class GameModeTest {
         assertEquals(4, mode.size)
         assertEquals(2048, mode.winCondition)
         assertEquals(20240520L, mode.dateSeed)
-        assertEquals("daily", mode.statsId)
+        assertEquals("daily_2024_5_20", mode.statsId)
+        assertEquals("daily", mode.groupStatsId)
     }
 
     @Test
