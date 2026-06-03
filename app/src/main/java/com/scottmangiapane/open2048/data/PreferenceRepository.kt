@@ -75,7 +75,7 @@ class PreferenceRepository(
             controlMode = preferences[CONTROL_MODE_KEY]?.let { runCatching { ControlMode.valueOf(it) }.getOrNull() } ?: ControlMode.GESTURES,
             fullScreenGestures = preferences[FULL_SCREEN_GESTURES_KEY] ?: true,
             showUndo = preferences[SHOW_UNDO_KEY] ?: true,
-            showStopwatch = preferences[SHOW_STOPWATCH_KEY] ?: true,
+            showStopwatch = preferences[SHOW_STOPWATCH_KEY] ?: false,
             animationSpeed = preferences[ANIMATION_SPEED_KEY]?.let { runCatching { AnimationSpeed.valueOf(it) }.getOrNull() } ?: AnimationSpeed.NORMAL,
         )
     }

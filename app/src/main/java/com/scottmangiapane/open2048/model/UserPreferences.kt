@@ -6,9 +6,9 @@ enum class ControlMode {
 
 enum class AnimationSpeed(val label: String) {
     NONE("Off"),
-    FAST("Fast"),
+    SLOW("Slow"),
     NORMAL("Normal"),
-    SLOW("Slow")
+    FAST("Fast")
 }
 
 data class UserPreferences(
@@ -17,6 +17,6 @@ data class UserPreferences(
     val controlMode: ControlMode = ControlMode.GESTURES,
     val fullScreenGestures: Boolean = true,
     val showUndo: Boolean = true,
-    val showStopwatch: Boolean = true,
+    val showStopwatch: Boolean = false,
     val animationSpeed: AnimationSpeed = AnimationSpeed.NORMAL
 )

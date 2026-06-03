@@ -80,20 +80,6 @@ fun SettingsScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Appearance Section
-            SettingsGroup(title = "APPEARANCE") {
-                ThemeSelector(
-                    currentTheme = preferences.theme,
-                ) { viewModel.setTheme(it) }
-            }
-
-            // Animation Section
-            SettingsGroup(title = "ANIMATION SPEED") {
-                AnimationSpeedSelector(
-                    currentSpeed = preferences.animationSpeed,
-                ) { viewModel.setAnimationSpeed(it) }
-            }
-
             // Controls Section
             if (viewModel.hasTouch) {
                 SettingsGroup(title = "CONTROLS") {
@@ -156,6 +142,20 @@ fun SettingsScreen(
                         ) { viewModel.setVibrationEnabled(it) }
                     }
                 }
+            }
+
+            // Appearance Section
+            SettingsGroup(title = "APPEARANCE") {
+                ThemeSelector(
+                    currentTheme = preferences.theme,
+                ) { viewModel.setTheme(it) }
+            }
+
+            // Animation Section
+            SettingsGroup(title = "ANIMATION SPEED") {
+                AnimationSpeedSelector(
+                    currentSpeed = preferences.animationSpeed,
+                ) { viewModel.setAnimationSpeed(it) }
             }
         }
     }
