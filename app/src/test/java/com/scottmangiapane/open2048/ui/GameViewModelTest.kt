@@ -244,6 +244,10 @@ class GameViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         coVerify { prefs.setControlMode(ControlMode.ARROWS) }
 
+        viewModel.setFullScreenGestures(false)
+        testDispatcher.scheduler.advanceUntilIdle()
+        coVerify { prefs.setFullScreenGestures(false) }
+
         viewModel.setShowUndo(false)
         testDispatcher.scheduler.advanceUntilIdle()
         coVerify { prefs.setShowUndo(false) }

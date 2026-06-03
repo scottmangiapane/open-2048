@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import com.scottmangiapane.open2048.model.*
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
@@ -20,30 +21,92 @@ class SettingsScreenTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    private fun mockViewModel(): GameViewModel {
+    private fun mockViewModel(preferences: UserPreferences = UserPreferences()): GameViewModel {
         val vm = mockk<GameViewModel>(relaxed = true)
-        every { vm.userPreferences } returns MutableStateFlow(UserPreferences())
+        every { vm.userPreferences } returns MutableStateFlow(preferences)
         every { vm.hasTouch } returns true
+        every { vm.hasVibrator } returns true
         return vm
     }
 
     @Test
-    fun testSettingsScreenBasicUi() {
+    fun testSettingsScreenAppearance() {
         val viewModel = mockViewModel()
         composeTestRule.setContent {
-            SettingsScreen(
-                viewModel = viewModel,
-                onBack = {}
-            )
+            SettingsScreen(viewModel = viewModel, onBack = {})
         }
-        composeTestRule.onNodeWithText("Settings").assertExists()
-        composeTestRule.onNodeWithText("APPEARANCE").assertExists()
         
-        // Test a toggle
-        composeTestRule.onNodeWithText("Show Stopwatch").performClick()
+        composeTestRule.onNodeWithText("Dark").performClick()
+        verify { viewModel.setTheme(AppTheme.DARK) }
         
-        // Test radio button
-        composeTestRule.onNodeWithText("Swipe Gestures").performClick()
+        composeTestRule.onNodeWithText("Classic").performClick()
+        verify { viewModel.setTheme(AppTheme.CLASSIC) }
+    }
+
+    @Test
+    fun testSettingsScreenAnimationSpeed() {
+        val viewModel = mockViewModel()
+        composeTestRule.setContent {
+            SettingsScreen(viewModel = viewModel, onBack = {})
+        }
+        
+        composeTestRule.onNodeWithText("Fast").performClick()
+        verify { viewModel.setAnimationSpeed(AnimationSpeed.FAST) }
+        
+        composeTestRule.onNodeWithText("Off").performClick()
+        verify { viewModel.setAnimationSpeed(AnimationSpeed.NONE) }
+    }
+
+    @Test
+    fun testSettingsScreenControls() {
+        val viewModel = mockViewModel()
+        composeTestRule.setContent {
+            SettingsScreen(viewModel = viewModel, onBack = {})
+        }
+        
+        // Change Control Mode
+        composeTestRule.onNodeWithText("Arrows").performClick()
+        verify { viewModel.setControlMode(ControlMode.ARROWS) }
+        
+        // Full Screen Gestures toggle should disappear when Arrows is selected
+        // (But since we're using a mock, the UI won't recompose automatically unless we update the flow)
+    }
+
+    @Test
+    fun testSettingsScreenControlsFullScreenToggle() {
+        val prefs = MutableStateFlow(UserPreferences(controlMode = ControlMode.GESTURES))
+        val viewModel = mockk<GameViewModel>(relaxed = true)
+        every { viewModel.userPreferences } returns prefs
+        every { viewModel.hasTouch } returns true
+        
+        composeTestRule.setContent {
+            SettingsScreen(viewModel = viewModel, onBack = {})
+        }
+        
+        composeTestRule.onNodeWithText("Full Screen Gestures").assertExists()
+        composeTestRule.onNodeWithText("Full Screen Gestures").performClick()
+        verify { viewModel.setFullScreenGestures(any()) }
+        
+        // Update prefs to ARROWS
+        prefs.value = UserPreferences(controlMode = ControlMode.ARROWS)
+        composeTestRule.onNodeWithText("Full Screen Gestures").assertDoesNotExist()
+    }
+
+    @Test
+    fun testSettingsScreenGameplayToggles() {
+        val viewModel = mockViewModel()
+        composeTestRule.setContent {
+            SettingsScreen(viewModel = viewModel, onBack = {})
+        }
+        
+        composeTestRule.onNodeWithText("Show Stopwatch").performScrollTo().performClick()
+        verify { viewModel.setShowStopwatch(any()) }
+        
+        composeTestRule.onNodeWithText("Show Undo Button").performScrollTo().performClick()
+        verify { viewModel.setShowUndo(any()) }
+        
+        composeTestRule.onNodeWithText("Haptic Feedback").performScrollTo().performClick()
+        verify { viewModel.setVibrationEnabled(any()) }
     }
 
     @Test

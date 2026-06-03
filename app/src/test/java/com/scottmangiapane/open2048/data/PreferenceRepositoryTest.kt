@@ -129,6 +129,9 @@ class PreferenceRepositoryTest {
         
         repository.setControlMode(ControlMode.ARROWS)
         assertEquals(ControlMode.ARROWS, repository.userPreferences.first().controlMode)
+
+        repository.setFullScreenGestures(false)
+        assertFalse(repository.userPreferences.first().fullScreenGestures)
         
         repository.setShowUndo(false)
         assertFalse(repository.userPreferences.first().showUndo)

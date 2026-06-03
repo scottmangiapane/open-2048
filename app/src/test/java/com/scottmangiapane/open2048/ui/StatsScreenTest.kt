@@ -111,4 +111,49 @@ class StatsScreenTest {
         val nodes = composeTestRule.onAllNodesWithText("-").fetchSemanticsNodes()
         assertTrue(nodes.size >= 2)
     }
+
+    @Test
+    fun testStatsScreenAllModeCategories() {
+        val viewModel = mockViewModel()
+        composeTestRule.setContent {
+            StatsScreen(viewModel = viewModel, onBack = {})
+        }
+
+        // Daily Challenge
+        composeTestRule.onNodeWithText("DAILY CHALLENGE").assertExists()
+        composeTestRule.onNodeWithText("Today's Best").assertExists()
+
+        // Classic Modes
+        composeTestRule.onNodeWithText("CLASSIC MODES").assertExists()
+        composeTestRule.onNodeWithText("Classic 4x4").assertExists()
+        composeTestRule.onNodeWithText("Small 3x3").assertExists()
+        composeTestRule.onNodeWithText("Large 5x5").assertExists()
+
+        // Blitz Modes
+        composeTestRule.onNodeWithText("BLITZ MODES").assertExists()
+        composeTestRule.onNodeWithText("2 Minute Blitz").assertExists()
+        composeTestRule.onNodeWithText("5 Minute Blitz").assertExists()
+    }
+
+    @Test
+    fun testStatsScreenDataBinding() {
+        val viewModel = mockViewModel()
+        val classic4Mode = GameMode.Classic(4)
+        
+        // Mock specific data for Classic 4x4
+        every { viewModel.getBestScore(match { it.id == classic4Mode.id }) } returns MutableStateFlow(5432)
+        every { viewModel.getHighestTile(match { it.id == classic4Mode.id }) } returns MutableStateFlow(1024)
+        every { viewModel.getWinCount(match { it == classic4Mode.id }) } returns MutableStateFlow(7)
+        every { viewModel.getGamesPlayed(match { it == classic4Mode.id }) } returns MutableStateFlow(42)
+
+        composeTestRule.setContent {
+            StatsScreen(viewModel = viewModel, onBack = {})
+        }
+
+        // Verify Classic 4x4 specific data is displayed
+        composeTestRule.onNodeWithText("5432").assertExists()
+        composeTestRule.onAllNodesWithText("1024").onFirst().assertExists()
+        composeTestRule.onAllNodesWithText("7").onFirst().assertExists()
+        composeTestRule.onAllNodesWithText("42").onFirst().assertExists()
+    }
 }

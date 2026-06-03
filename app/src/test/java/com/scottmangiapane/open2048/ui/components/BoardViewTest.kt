@@ -92,7 +92,8 @@ class BoardViewTest {
                 currentTheme = AppTheme.LIGHT,
                 animationSpeed = AnimationSpeed.NONE,
                 onMove = { capturedDirection = it },
-                autoPlay = true
+                autoPlay = true,
+                fullScreenGestures = false
             )
         }
 
@@ -168,7 +169,8 @@ class BoardViewTest {
                 currentTheme = AppTheme.LIGHT,
                 animationSpeed = AnimationSpeed.NONE,
                 onMove = { capturedDirection = it },
-                autoPlay = true
+                autoPlay = true,
+                fullScreenGestures = false
             )
         }
 
