@@ -131,6 +131,12 @@ fun GameScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .swipeGestures(
+                enabled = userPreferences.controlMode != ControlMode.ARROWS && 
+                         userPreferences.fullScreenGestures && 
+                         !state.isGameOver,
+                onMove = { viewModel.move(it) }
+            )
             .systemBarsPadding()
             .displayCutoutPadding(),
     ) {
@@ -164,7 +170,8 @@ fun GameScreen(
                     forcePlayModeOnNextFocus = false
                 }
             },
-            forcePlayMode = forcePlayModeOnNextFocus
+            forcePlayMode = forcePlayModeOnNextFocus,
+            fullScreenGestures = userPreferences.fullScreenGestures
         )
 
         GameControls(
@@ -194,6 +201,7 @@ private fun GameLayout(
     onMoveFocusToBoard: () -> Unit,
     onBoardFocusGained: (Boolean) -> Unit,
     forcePlayMode: Boolean,
+    fullScreenGestures: Boolean,
 ) {
     val (hPadding, vPadding) = when {
         minDimension >= 840.dp -> 48.dp to 32.dp
@@ -235,6 +243,7 @@ private fun GameLayout(
                     currentTheme = state.theme ?: userPreferences.theme,
                     animationSpeed = userPreferences.animationSpeed,
                     controlMode = userPreferences.controlMode,
+                    fullScreenGestures = fullScreenGestures,
                     focusRequester = focusRequester,
                     autoPlay = !hasTouch || isKeyboardMode || forcePlayMode,
                     hasTouch = hasTouch,

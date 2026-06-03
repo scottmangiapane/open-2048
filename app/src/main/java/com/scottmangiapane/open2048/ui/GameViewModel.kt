@@ -219,6 +219,12 @@ class GameViewModel @JvmOverloads constructor(
         }
     }
 
+    fun setFullScreenGestures(enabled: Boolean) {
+        viewModelScope.launch {
+            prefs.setFullScreenGestures(enabled)
+        }
+    }
+
     fun setShowUndo(show: Boolean) {
         viewModelScope.launch {
             prefs.setShowUndo(show)

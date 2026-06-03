@@ -29,6 +29,7 @@ class PreferenceRepository(
         private val HIGHEST_TILE_KEY = intPreferencesKey("highest_tile")
         private val VIBRATION_ENABLED_KEY = booleanPreferencesKey("vibration_enabled")
         private val CONTROL_MODE_KEY = stringPreferencesKey("control_mode")
+        private val FULL_SCREEN_GESTURES_KEY = booleanPreferencesKey("full_screen_gestures")
         private val SHOW_UNDO_KEY = booleanPreferencesKey("show_undo")
         private val SHOW_STOPWATCH_KEY = booleanPreferencesKey("show_stopwatch")
         private val ANIMATION_SPEED_KEY = stringPreferencesKey("animation_speed")
@@ -72,6 +73,7 @@ class PreferenceRepository(
             theme = preferences[THEME_KEY]?.let { runCatching { AppTheme.valueOf(it) }.getOrNull() } ?: AppTheme.LIGHT,
             vibrationEnabled = preferences[VIBRATION_ENABLED_KEY] ?: true,
             controlMode = preferences[CONTROL_MODE_KEY]?.let { runCatching { ControlMode.valueOf(it) }.getOrNull() } ?: ControlMode.GESTURES,
+            fullScreenGestures = preferences[FULL_SCREEN_GESTURES_KEY] ?: true,
             showUndo = preferences[SHOW_UNDO_KEY] ?: true,
             showStopwatch = preferences[SHOW_STOPWATCH_KEY] ?: true,
             animationSpeed = preferences[ANIMATION_SPEED_KEY]?.let { runCatching { AnimationSpeed.valueOf(it) }.getOrNull() } ?: AnimationSpeed.NORMAL,
@@ -183,6 +185,10 @@ class PreferenceRepository(
 
     suspend fun setControlMode(mode: ControlMode) {
         dataStore.edit { it[CONTROL_MODE_KEY] = mode.name }
+    }
+
+    suspend fun setFullScreenGestures(enabled: Boolean) {
+        dataStore.edit { it[FULL_SCREEN_GESTURES_KEY] = enabled }
     }
 
     suspend fun setShowUndo(show: Boolean) {

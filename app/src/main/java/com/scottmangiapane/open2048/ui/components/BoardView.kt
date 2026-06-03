@@ -34,11 +34,47 @@ import com.scottmangiapane.open2048.model.Tile
 import kotlin.math.abs
 
 @Composable
+fun Modifier.swipeGestures(
+    enabled: Boolean,
+    onMove: (Direction) -> Unit
+): Modifier {
+    if (!enabled) return this
+    val density = LocalDensity.current
+    val swipeThreshold = remember(density) { with(density) { 56.dp.toPx() } }
+
+    return this.pointerInput(Unit) {
+        var totalDragX = 0f
+        var totalDragY = 0f
+        detectDragGestures(
+            onDragEnd = {
+                val direction = when {
+                    (abs(totalDragX) > abs(totalDragY)) && (abs(totalDragX) > swipeThreshold) -> {
+                        if (totalDragX > 0) Direction.RIGHT else Direction.LEFT
+                    }
+                    abs(totalDragY) > swipeThreshold -> {
+                        if (totalDragY > 0) Direction.DOWN else Direction.UP
+                    }
+                    else -> null
+                }
+                direction?.let { onMove(it) }
+                totalDragX = 0f
+                totalDragY = 0f
+            }
+        ) { change, dragAmount ->
+            change.consume()
+            totalDragX += dragAmount.x
+            totalDragY += dragAmount.y
+        }
+    }
+}
+
+@Composable
 fun BoardContainer(
     state: GameState,
     currentTheme: AppTheme,
     animationSpeed: AnimationSpeed,
     controlMode: ControlMode = ControlMode.BOTH,
+    fullScreenGestures: Boolean = true,
     focusRequester: FocusRequester? = null,
     autoPlay: Boolean = false,
     hasTouch: Boolean = true,
@@ -58,8 +94,6 @@ fun BoardContainer(
     }
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
-    val density = LocalDensity.current
-    val swipeThreshold = remember(density) { with(density) { 56.dp.toPx() } }
 
     LaunchedEffect(isFocused) {
         if (isFocused) {
@@ -122,33 +156,9 @@ fun BoardContainer(
                 }
                 false
             }
-            .then(
-                if (controlMode != ControlMode.ARROWS && !state.isGameOver) {
-                    Modifier.pointerInput(Unit) {
-                        var totalDragX = 0f
-                        var totalDragY = 0f
-                        detectDragGestures(
-                            onDragEnd = {
-                                val direction = when {
-                                    (abs(totalDragX) > abs(totalDragY)) && (abs(totalDragX) > swipeThreshold) -> {
-                                        if (totalDragX > 0) Direction.RIGHT else Direction.LEFT
-                                    }
-                                    abs(totalDragY) > swipeThreshold -> {
-                                        if (totalDragY > 0) Direction.DOWN else Direction.UP
-                                    }
-                                    else -> null
-                                }
-                                direction?.let { onMove(it) }
-                                totalDragX = 0f
-                                totalDragY = 0f
-                            }
-                        ) { change, dragAmount ->
-                            change.consume()
-                            totalDragX += dragAmount.x
-                            totalDragY += dragAmount.y
-                        }
-                    }
-                } else Modifier
+            .swipeGestures(
+                enabled = controlMode != ControlMode.ARROWS && !state.isGameOver && !fullScreenGestures,
+                onMove = onMove
             )
             .clickable(
                 enabled = !state.isGameOver,

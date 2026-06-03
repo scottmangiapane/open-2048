@@ -53,12 +53,12 @@ fun SettingsScreen(
                     IconButton(
                         onClick = onBack,
                         interactionSource = interactionSource,
-                        modifier = Modifier.appFocusBorder(isFocused = isFocused)
+                        modifier = Modifier.appFocusBorder(isFocused = isFocused),
                     ) {
                         Icon(
                             Icons.AutoMirrored.Rounded.ArrowBack, 
                             contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 },
@@ -91,8 +91,7 @@ fun SettingsScreen(
             SettingsGroup(title = "ANIMATION SPEED") {
                 AnimationSpeedSelector(
                     currentSpeed = preferences.animationSpeed,
-                    onSpeedChange = { viewModel.setAnimationSpeed(it) }
-                )
+                ) { viewModel.setAnimationSpeed(it) }
             }
 
             // Controls Section
@@ -100,8 +99,24 @@ fun SettingsScreen(
                 SettingsGroup(title = "CONTROLS") {
                     ControlModeSelector(
                         currentMode = preferences.controlMode,
-                        onModeChange = { viewModel.setControlMode(it) }
-                    )
+                    ) { viewModel.setControlMode(it) }
+
+                    if (preferences.controlMode != ControlMode.ARROWS) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        ) {
+                            ToggleRow(
+                                label = "Full Screen Gestures",
+                                icon = Icons.Rounded.Fullscreen,
+                                checked = preferences.fullScreenGestures,
+                            ) { viewModel.setFullScreenGestures(it) }
+                        }
+                    }
                 }
             }
 
@@ -119,8 +134,7 @@ fun SettingsScreen(
                         label = "Show Stopwatch",
                         icon = Icons.Rounded.Timer,
                         checked = preferences.showStopwatch,
-                        onCheckedChange = { viewModel.setShowStopwatch(it) }
-                    )
+                    ) { viewModel.setShowStopwatch(it) }
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
@@ -129,8 +143,7 @@ fun SettingsScreen(
                         label = "Show Undo Button",
                         icon = Icons.Rounded.History,
                         checked = preferences.showUndo,
-                        onCheckedChange = { viewModel.setShowUndo(it) }
-                    )
+                    ) { viewModel.setShowUndo(it) }
                     if (viewModel.hasVibrator) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp),
@@ -140,8 +153,7 @@ fun SettingsScreen(
                             label = "Haptic Feedback",
                             icon = Icons.Rounded.Vibration,
                             checked = preferences.vibrationEnabled,
-                            onCheckedChange = { viewModel.setVibrationEnabled(it) }
-                        )
+                        ) { viewModel.setVibrationEnabled(it) }
                     }
                 }
             }
@@ -210,56 +222,21 @@ private fun ControlModeSelector(
     currentMode: ControlMode,
     onModeChange: (ControlMode) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                shape = RoundedCornerShape(8.dp)
-            )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        ControlMode.entries.forEachIndexed { index, mode ->
-            val selected = currentMode == mode
-            val interactionSource = remember { MutableInteractionSource() }
-            val isFocused by interactionSource.collectIsFocusedAsState()
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .appFocusBorder(isFocused = isFocused)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = LocalIndication.current
-                    ) { onModeChange(mode) }
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = selected,
-                    onClick = { onModeChange(mode) },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = MaterialTheme.colorScheme.primary,
-                        unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = when (mode) {
-                        ControlMode.GESTURES -> "Swipe Gestures"
-                        ControlMode.ARROWS -> "On-Screen Arrows"
-                        ControlMode.BOTH -> "Gestures & Arrows"
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            if (index < (ControlMode.entries.size - 1)) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                )
-            }
+        ControlMode.entries.forEach { mode ->
+            SelectableButton(
+                text = when (mode) {
+                    ControlMode.GESTURES -> "Gestures"
+                    ControlMode.ARROWS -> "Arrows"
+                    ControlMode.BOTH -> "Both"
+                },
+                selected = currentMode == mode,
+                onClick = { onModeChange(mode) },
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

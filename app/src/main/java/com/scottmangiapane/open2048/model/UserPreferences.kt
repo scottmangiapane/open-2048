@@ -15,6 +15,7 @@ data class UserPreferences(
     val theme: AppTheme = AppTheme.LIGHT,
     val vibrationEnabled: Boolean = true,
     val controlMode: ControlMode = ControlMode.GESTURES,
+    val fullScreenGestures: Boolean = true,
     val showUndo: Boolean = true,
     val showStopwatch: Boolean = true,
     val animationSpeed: AnimationSpeed = AnimationSpeed.NORMAL
