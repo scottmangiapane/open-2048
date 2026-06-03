@@ -26,6 +26,7 @@ import com.scottmangiapane.open2048.model.AppTheme
 import com.scottmangiapane.open2048.model.ControlMode
 import com.scottmangiapane.open2048.ui.components.SelectableButton
 import com.scottmangiapane.open2048.ui.components.appFocusBorder
+import com.scottmangiapane.open2048.ui.components.oledBorder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,6 +96,7 @@ fun SettingsScreen(
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                                     shape = RoundedCornerShape(8.dp)
                                 )
+                                .oledBorder()
                         ) {
                             ToggleRow(
                                 label = "Full Screen Gestures",
@@ -115,6 +117,7 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                             shape = RoundedCornerShape(8.dp)
                         )
+                        .oledBorder()
                 ) {
                     ToggleRow(
                         label = "Show Stopwatch",
@@ -193,7 +196,10 @@ private fun ThemeSelector(
     ) {
         AppTheme.entries.forEach { theme ->
             SelectableButton(
-                text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
+                text = when (theme) {
+                    AppTheme.OLED -> "OLED"
+                    else -> theme.name.lowercase().replaceFirstChar { it.uppercase() }
+                },
                 selected = currentTheme == theme,
                 onClick = { onThemeChange(theme) },
                 modifier = Modifier.weight(1f)

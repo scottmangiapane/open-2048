@@ -23,7 +23,7 @@ class IconManager(
         val lightName = "com.scottmangiapane.open2048.MainActivityLight"
         val darkName = "com.scottmangiapane.open2048.MainActivityDark"
         val classicName = "com.scottmangiapane.open2048.MainActivityClassic"
-        val oledName = "com.scottmangiapane.open2048.MainActivityOled"
+        val oledName = "com.scottmangiapane.open2048.MainActivityOLED"
 
         val targetName = when (theme) {
             AppTheme.LIGHT -> lightName

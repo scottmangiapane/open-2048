@@ -294,14 +294,9 @@ private fun GameControls(
     onBackToMenu: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-        val interactionSource = remember { MutableInteractionSource() }
-        val isFocused by interactionSource.collectIsFocusedAsState()
-        IconButton(
+        MenuIconButton(
             onClick = onBackToMenu,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .appFocusBorder(isFocused = isFocused),
-            interactionSource = interactionSource
+            modifier = Modifier.align(Alignment.TopStart)
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,

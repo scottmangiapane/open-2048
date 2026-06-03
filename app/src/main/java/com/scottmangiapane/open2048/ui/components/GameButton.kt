@@ -1,5 +1,7 @@
 package com.scottmangiapane.open2048.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
@@ -22,8 +24,8 @@ fun GameButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
-    containerColor: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     padding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
     height: Dp = 56.dp,
     enabled: Boolean = true,
@@ -79,7 +81,7 @@ fun GameButton(
         .height(height)
         .appFocusBorder(
             isFocused = isFocused,
-            color = if (containerColor == MaterialTheme.colorScheme.primary && !isTextButton) 
+            color = if (containerColor == MaterialTheme.colorScheme.primaryContainer && !isTextButton) 
                 MaterialTheme.colorScheme.secondary 
             else MaterialTheme.colorScheme.primary
         )
@@ -105,6 +107,9 @@ fun GameButton(
             contentPadding = padding,
             modifier = finalModifier,
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+            border = if (containerColor.isBlack) 
+                BorderStroke(2.dp, contentColor) 
+            else null,
             content = { content() }
         )
     }
@@ -131,8 +136,13 @@ fun SelectableButton(
             ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(8.dp),
-        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+        contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+        border = if (selected && MaterialTheme.colorScheme.primaryContainer.isBlack)
+            BorderStroke(2.dp, MaterialTheme.colorScheme.onPrimaryContainer)
+        else if (!selected && MaterialTheme.colorScheme.background.isBlack)
+            BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+        else null
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -159,11 +169,16 @@ fun ControlButton(
             .appFocusBorder(
                 isFocused = isFocused,
                 color = MaterialTheme.colorScheme.secondary
+            )
+            .then(
+                if (MaterialTheme.colorScheme.primaryContainer.isBlack)
+                    Modifier.border(2.dp, MaterialTheme.colorScheme.onPrimaryContainer, RoundedCornerShape(8.dp))
+                else Modifier
             ),
         interactionSource = interactionSource,
         colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-            contentColor = MaterialTheme.colorScheme.onPrimary
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         shape = RoundedCornerShape(8.dp)
     ) {

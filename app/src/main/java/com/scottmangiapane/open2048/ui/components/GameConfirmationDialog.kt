@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -37,8 +38,8 @@ fun GameConfirmationDialog(
             GameButton(
                 text = confirmText,
                 onClick = onConfirm,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 padding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 height = 48.dp
             )
@@ -47,7 +48,8 @@ fun GameConfirmationDialog(
             GameButton(
                 text = "Cancel",
                 onClick = onDismiss,
-                isTextButton = true,
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 padding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 height = 48.dp
             )

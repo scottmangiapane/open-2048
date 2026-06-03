@@ -56,6 +56,7 @@ import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.ui.components.GameButton
 import com.scottmangiapane.open2048.ui.components.GameConfirmationDialog
 import com.scottmangiapane.open2048.ui.components.MenuIconButton
+import com.scottmangiapane.open2048.ui.components.oledBorder
 
 @Composable
 fun MenuScreen(
@@ -123,8 +124,8 @@ fun MenuScreen(
                             text = "Resume",
                             icon = Icons.Rounded.PlayArrow,
                             onClick = onResumeGame,
-                            containerColor = MaterialTheme.colorScheme.secondary,
-                            contentColor = MaterialTheme.colorScheme.onSecondary,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             fullWidth = true,
                             modifier = Modifier
                                 .focusRequester(initialFocusRequester)
@@ -137,8 +138,8 @@ fun MenuScreen(
                         text = "Daily Challenge",
                         icon = Icons.Rounded.EmojiEvents,
                         onClick = { handleStartGame(GameMode.Daily.today()) },
-                        containerColor = MaterialTheme.colorScheme.tertiary,
-                        contentColor = MaterialTheme.colorScheme.onTertiary,
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                         fullWidth = true,
                         modifier = (if (!canResume) Modifier.focusRequester(initialFocusRequester) else Modifier)
                             .then(if (!canResume) Modifier.focusProperties { up = statsFocusRequester } else Modifier)
@@ -325,6 +326,7 @@ private fun MenuColumn(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                 shape = RoundedCornerShape(8.dp)
             )
+            .oledBorder()
             .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         content = content

@@ -69,7 +69,7 @@
         </activity>
 
         <activity
-            android:name=".MainActivityOled"
+            android:name=".MainActivityOLED"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_oled"

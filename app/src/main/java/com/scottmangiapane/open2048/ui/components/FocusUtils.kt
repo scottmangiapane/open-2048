@@ -18,6 +18,10 @@ import androidx.compose.runtime.getValue
 
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.unit.Dp
+
+val Color.isBlack: Boolean
+    get() = this == Color.Black || this == Color(0xFF000000)
 
 @Composable
 fun Modifier.appFocusBorder(
@@ -44,8 +48,27 @@ fun MenuIconButton(
     val isFocused by interactionSource.collectIsFocusedAsState()
     IconButton(
         onClick = onClick,
-        modifier = modifier.appFocusBorder(isFocused = isFocused),
+        modifier = modifier
+            .appFocusBorder(isFocused = isFocused)
+            .then(
+                if (MaterialTheme.colorScheme.background.isBlack)
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                else Modifier
+            ),
         interactionSource = interactionSource,
         content = content
     )
+}
+
+@Composable
+fun Modifier.oledBorder(
+    color: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+    shape: Shape = RoundedCornerShape(8.dp),
+    borderWidth: Dp = 1.dp
+): Modifier {
+    return if (MaterialTheme.colorScheme.background.isBlack) {
+        this.border(width = borderWidth, color = color, shape = shape)
+    } else {
+        this
+    }
 }

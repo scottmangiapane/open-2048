@@ -18,6 +18,7 @@ fun ScoreCard(label: String, score: Int) {
             .widthIn(min = 80.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
+            .oledBorder()
             .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

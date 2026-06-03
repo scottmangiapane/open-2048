@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scottmangiapane.open2048.logic.TimeUtils
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.ui.components.appFocusBorder
+import com.scottmangiapane.open2048.ui.components.oledBorder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,6 +145,7 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
             .fillMaxWidth()
             .appFocusBorder(isFocused = isFocused)
             .focusable(interactionSource = interactionSource)
+            .oledBorder()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -215,6 +217,7 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
             .fillMaxWidth()
             .appFocusBorder(isFocused = isFocused)
             .focusable(interactionSource = interactionSource)
+            .oledBorder()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

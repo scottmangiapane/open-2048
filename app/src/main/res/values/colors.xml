@@ -50,16 +50,32 @@
     <color name="emerald_500">#10B981</color>
     <color name="emerald_600">#059669</color>
     <color name="emerald_700">#047857</color>
+
+    <!-- Teal Palette -->
+    <color name="teal_500">#14B8A6</color>
+    <color name="teal_600">#0D9488</color>
+    <color name="teal_700">#0F766E</color>
+
+    <!-- Sky Palette -->
+    <color name="sky_600">#0284C7</color>
+
     <color name="royal_blue_500">#3B82F6</color>
+    <color name="royal_blue_600">#2563EB</color>
+    <color name="royal_blue_700">#1D4ED8</color>
     <color name="indigo_400">#818CF8</color>
     <color name="indigo_600">#4F46E5</color>
+    <color name="indigo_700">#4338CA</color>
     <color name="violet_400">#A78BFA</color>
     <color name="violet_600">#7C3AED</color>
+    <color name="violet_700">#6D28D9</color>
     <color name="cyan_600">#0891B2</color>
     <color name="rose_400">#FB7185</color>
     <color name="rose_500">#F43F5E</color>
     <color name="amber_500">#F59E0B</color>
+    <color name="amber_600">#D97706</color>
+    <color name="amber_700">#B45309</color>
     <color name="orange_600">#EA580C</color>
+    <color name="orange_700">#C2410C</color>
 
     <!-- Modern Tile Colors -->
     <color name="tile_modern_8">#0EA5E9</color>

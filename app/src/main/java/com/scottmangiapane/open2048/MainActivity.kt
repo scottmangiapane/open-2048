@@ -115,6 +115,6 @@ class MainActivityClassic : MainActivity() {
     override val activityTheme: AppTheme = AppTheme.CLASSIC
 }
 
-class MainActivityOled : MainActivity() {
+class MainActivityOLED : MainActivity() {
     override val activityTheme: AppTheme = AppTheme.OLED
 }
