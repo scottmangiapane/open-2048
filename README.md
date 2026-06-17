@@ -1,11 +1,13 @@
 # Open 2048
 
 <p align="center">
-  <img src="app_icon.svg" width="140" alt="Open 2048 Logo">
+  <img src="docs/app_icon.svg" width="120" alt="Open 2048 Logo">
+  <br>
+  <strong>A modern, open-source, and ad-free 2048 experience for Android and Android TV.</strong>
 </p>
 
 <p align="center">
-  <strong>A modern, open-source, and ad-free 2048 experience for Android and Android TV.</strong>
+  <video src="docs/demo.mp4" width="220" autoplay loop muted></video>
 </p>
 
 ---
