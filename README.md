@@ -1,13 +1,9 @@
 # Open 2048
 
 <p align="center">
-  <img src="docs/app_icon.svg" width="120" alt="Open 2048 Logo">
+  <img src="docs/demo.gif" width="270" alt="App Demo">
   <br>
   <strong>A modern, open-source, and ad-free 2048 experience for Android and Android TV.</strong>
-</p>
-
-<p align="center">
-  <img src="docs/demo.gif" width="270" alt="App Demo">
 </p>
 
 ---
