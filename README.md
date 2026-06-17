@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <video src="docs/demo.mp4" width="220" autoplay loop muted></video>
+  <img src="docs/demo.gif" width="270" alt="App Demo">
 </p>
 
 ---
