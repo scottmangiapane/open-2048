@@ -6,6 +6,11 @@ captures/
 *.apk
 *.aab
 
+# Android build artifacts
+output-metadata.json
+output.json
+*.dm
+
 # IDE - Android Studio
 .idea/
 *.iml
@@ -23,3 +28,4 @@ captures/
 # Keystore files
 *.jks
 *.keystore
+
