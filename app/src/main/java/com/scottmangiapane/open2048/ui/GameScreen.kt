@@ -203,9 +203,11 @@ private fun GameLayout(
     forcePlayMode: Boolean,
     fullScreenGestures: Boolean,
 ) {
+    val isSmall = DeviceUtils.isSmallScreen()
     val (hPadding, vPadding) = when {
         minDimension >= 840.dp -> 48.dp to 32.dp
         minDimension >= 600.dp -> 32.dp to 24.dp
+        isSmall -> 6.dp to 6.dp
         isLandscape -> 24.dp to 16.dp
         else -> 16.dp to 16.dp
     }
@@ -260,12 +262,23 @@ private fun GameLayout(
         }
     }
 
+    val spacerHeight = when {
+        isLargeScreen -> 24.dp
+        isSmall -> 4.dp
+        else -> 16.dp
+    }
+
     if (isLandscape) {
+        val rowSpacing = when {
+            isLargeScreen -> 48.dp
+            isSmall -> 8.dp
+            else -> 24.dp
+        }
         Row(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = hPadding, vertical = vPadding),
-            horizontalArrangement = Arrangement.spacedBy(if (isLargeScreen) 48.dp else 24.dp, Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.spacedBy(rowSpacing, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically
         ) {
             header()
@@ -281,9 +294,9 @@ private fun GameLayout(
             verticalArrangement = Arrangement.Center
         ) {
             header()
-            Spacer(modifier = Modifier.height(if (isLargeScreen) 24.dp else 16.dp))
+            Spacer(modifier = Modifier.height(spacerHeight))
             board(Modifier.weight(1f, fill = false).fillMaxWidth())
-            Spacer(modifier = Modifier.height(if (isLargeScreen) 24.dp else 16.dp))
+            Spacer(modifier = Modifier.height(spacerHeight))
             controls()
         }
     }
@@ -293,7 +306,11 @@ private fun GameLayout(
 private fun GameControls(
     onBackToMenu: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+    val isSmall = DeviceUtils.isSmallScreen()
+    val padding = if (isSmall) 4.dp else 8.dp
+    val iconSize = if (isSmall) 20.dp else 24.dp
+
+    Box(modifier = Modifier.fillMaxWidth().padding(padding)) {
         MenuIconButton(
             onClick = onBackToMenu,
             modifier = Modifier.align(Alignment.TopStart)
@@ -301,7 +318,8 @@ private fun GameControls(
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back to Menu",
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(iconSize)
             )
         }
     }

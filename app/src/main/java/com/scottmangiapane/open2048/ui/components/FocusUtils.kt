@@ -19,6 +19,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.focus.onFocusChanged
+import kotlinx.coroutines.launch
 
 val Color.isBlack: Boolean
     get() = this == Color.Black || this == Color(0xFF000000)
@@ -76,5 +78,27 @@ fun Modifier.oledBorder(
         this.border(width = borderWidth, color = color, shape = shape)
     } else {
         this
+    }
+}
+
+fun Modifier.scrollToTopOnFocus(
+    scrollState: androidx.compose.foundation.ScrollState,
+    coroutineScope: kotlinx.coroutines.CoroutineScope
+): Modifier = this.onFocusChanged { focusState ->
+    if (focusState.isFocused) {
+        coroutineScope.launch {
+            scrollState.animateScrollTo(0)
+        }
+    }
+}
+
+fun Modifier.scrollToBottomOnFocus(
+    scrollState: androidx.compose.foundation.ScrollState,
+    coroutineScope: kotlinx.coroutines.CoroutineScope
+): Modifier = this.onFocusChanged { focusState ->
+    if (focusState.isFocused) {
+        coroutineScope.launch {
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
     }
 }

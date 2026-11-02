@@ -15,6 +15,9 @@ output.json
 .idea/
 *.iml
 
+# IDE AI artifacts
+.artifacts/
+
 # OS-specific
 .DS_Store
 

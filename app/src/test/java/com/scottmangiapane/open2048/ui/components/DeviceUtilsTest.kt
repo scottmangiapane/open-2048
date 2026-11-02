@@ -3,13 +3,58 @@ package com.scottmangiapane.open2048.ui.components
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import androidx.compose.ui.test.junit4.createComposeRule
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
 class DeviceUtilsTest {
+
+    @get:Rule
+    val composeTestRule = createComposeRule()
+
+    @Test
+    @Config(qualifiers = "w240dp-h320dp")
+    fun testSmallScreenDetectionTrue() {
+        var isSmallScreen = false
+        var isSmallHeight = false
+        var isSmallWidth = false
+
+        composeTestRule.setContent {
+            isSmallScreen = DeviceUtils.isSmallScreen()
+            isSmallHeight = DeviceUtils.isSmallHeight()
+            isSmallWidth = DeviceUtils.isSmallWidth()
+        }
+
+        assertTrue(isSmallScreen)
+        assertTrue(isSmallHeight)
+        assertTrue(isSmallWidth)
+    }
+
+    @Test
+    @Config(qualifiers = "w411dp-h891dp")
+    fun testSmallScreenDetectionFalse() {
+        var isSmallScreen = false
+        var isSmallHeight = false
+        var isSmallWidth = false
+
+        composeTestRule.setContent {
+            isSmallScreen = DeviceUtils.isSmallScreen()
+            isSmallHeight = DeviceUtils.isSmallHeight()
+            isSmallWidth = DeviceUtils.isSmallWidth()
+        }
+
+        assertFalse(isSmallScreen)
+        assertFalse(isSmallHeight)
+        assertFalse(isSmallWidth)
+    }
 
     @Test
     fun testHasTouchTrue() {

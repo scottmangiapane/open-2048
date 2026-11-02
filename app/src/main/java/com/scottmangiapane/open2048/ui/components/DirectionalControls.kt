@@ -20,6 +20,8 @@ fun DirectionalControls(
     onMove: (Direction) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val spacing = if (DeviceUtils.isSmallScreen()) 4.dp else 8.dp
+
     if (isLandscape) {
         // Vertical-First Layout (Optimized for Landscape height):
         //      [Up]
@@ -29,7 +31,7 @@ fun DirectionalControls(
         Column(
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(spacing)
         ) {
             ControlButton(
                 icon = Icons.Rounded.KeyboardArrowUp,
@@ -37,7 +39,7 @@ fun DirectionalControls(
             )
             
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(spacing),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ControlButton(
@@ -63,7 +65,7 @@ fun DirectionalControls(
         // Width: 3 buttons, Height: 2 buttons
         Row(
             modifier = modifier,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(spacing),
             verticalAlignment = Alignment.CenterVertically
         ) {
             ControlButton(
@@ -72,7 +74,7 @@ fun DirectionalControls(
             )
             
             Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(spacing),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ControlButton(

@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scottmangiapane.open2048.model.AnimationSpeed
 import com.scottmangiapane.open2048.model.AppTheme
@@ -29,6 +30,9 @@ import com.scottmangiapane.open2048.ui.components.appFocusBorder
 import com.scottmangiapane.open2048.ui.components.oledBorder
 import com.scottmangiapane.open2048.ui.components.appContainerColor
 
+import com.scottmangiapane.open2048.ui.components.scrollToTopOnFocus
+import com.scottmangiapane.open2048.ui.components.scrollToBottomOnFocus
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -36,6 +40,9 @@ fun SettingsScreen(
     onBack: () -> Unit,
 ) {
     val preferences by viewModel.userPreferences.collectAsStateWithLifecycle()
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+    val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -46,7 +53,7 @@ fun SettingsScreen(
                 title = {
                     Text(
                         text = "Settings",
-                        style = MaterialTheme.typography.titleLarge,
+                        style = if (isSmall) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge,
                     )
                 },
                 navigationIcon = {
@@ -55,12 +62,15 @@ fun SettingsScreen(
                     IconButton(
                         onClick = onBack,
                         interactionSource = interactionSource,
-                        modifier = Modifier.appFocusBorder(isFocused = isFocused),
+                        modifier = Modifier
+                            .appFocusBorder(isFocused = isFocused)
+                            .scrollToTopOnFocus(scrollState, coroutineScope),
                     ) {
                         Icon(
                             Icons.AutoMirrored.Rounded.ArrowBack, 
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(if (isSmall) 20.dp else 24.dp)
                         )
                     }
                 },
@@ -73,14 +83,15 @@ fun SettingsScreen(
         },
         containerColor = Color.Transparent
     ) { padding ->
+        val screenPadding = if (isSmall) 12.dp else 24.dp
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .verticalScroll(scrollState)
+                .padding(screenPadding),
+            verticalArrangement = Arrangement.spacedBy(screenPadding)
         ) {
             // Controls Section
             if (viewModel.hasTouch) {
@@ -126,7 +137,7 @@ fun SettingsScreen(
                         checked = preferences.showStopwatch,
                     ) { viewModel.setShowStopwatch(it) }
                     HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
+                        modifier = Modifier.padding(horizontal = if (isSmall) 8.dp else 16.dp),
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
                     ToggleRow(
@@ -136,7 +147,7 @@ fun SettingsScreen(
                     ) { viewModel.setShowUndo(it) }
                     if (viewModel.hasVibrator) {
                         HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
+                            modifier = Modifier.padding(horizontal = if (isSmall) 8.dp else 16.dp),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                         )
                         ToggleRow(
@@ -164,7 +175,9 @@ fun SettingsScreen(
 
             // Support Section
             SettingsGroup(title = "SUPPORT") {
-                SupportSection()
+                Box(modifier = Modifier.scrollToBottomOnFocus(scrollState, coroutineScope)) {
+                    SupportSection()
+                }
             }
         }
     }
@@ -175,10 +188,12 @@ private fun SettingsGroup(
     title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
+    Column(verticalArrangement = Arrangement.spacedBy(if (isSmall) 6.dp else 12.dp)) {
         Text(
             text = title,
-            style = MaterialTheme.typography.labelLarge,
+            style = if (isSmall) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(start = 4.dp)
         )
@@ -191,9 +206,11 @@ private fun ThemeSelector(
     currentTheme: AppTheme,
     onThemeChange: (AppTheme) -> Unit
 ) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(if (isSmall) 4.dp else 8.dp)
     ) {
         AppTheme.entries.forEach { theme ->
             SelectableButton(
@@ -214,9 +231,11 @@ private fun AnimationSpeedSelector(
     currentSpeed: AnimationSpeed,
     onSpeedChange: (AnimationSpeed) -> Unit
 ) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(if (isSmall) 4.dp else 8.dp)
     ) {
         AnimationSpeed.entries.forEach { speed ->
                 SelectableButton(
@@ -234,9 +253,11 @@ private fun ControlModeSelector(
     currentMode: ControlMode,
     onModeChange: (ControlMode) -> Unit
 ) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(if (isSmall) 4.dp else 8.dp)
     ) {
         ControlMode.entries.forEach { mode ->
             SelectableButton(
@@ -260,6 +281,7 @@ private fun ToggleRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
@@ -271,7 +293,7 @@ private fun ToggleRow(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current
             ) { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = if (isSmall) 12.dp else 16.dp, vertical = if (isSmall) 6.dp else 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -280,12 +302,12 @@ private fun ToggleRow(
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(if (isSmall) 18.dp else 24.dp)
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(if (isSmall) 10.dp else 16.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyLarge,
+                style = if (isSmall) MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp) else MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold
             )

@@ -177,7 +177,8 @@ fun BoardContainer(
             )
             .background(MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Box(modifier = Modifier.fillMaxSize().padding(12.dp)) {
+        val innerPadding = if (DeviceUtils.isSmallScreen()) 6.dp else 12.dp
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             GameBoard(board = state.board, currentTheme = currentTheme, animationSpeed = animationSpeed)
         }
 
@@ -191,7 +192,7 @@ fun BoardContainer(
             ) {
                 Text(
                     text = if (state.timeLeftMs == 0L) "Time's Up!" else "Game Over!",
-                    style = MaterialTheme.typography.displayMedium,
+                    style = if (DeviceUtils.isSmallScreen()) MaterialTheme.typography.titleLarge else MaterialTheme.typography.displayMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
@@ -206,8 +207,16 @@ private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme, animatio
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val boardWidth = this.maxWidth
-        val spacingDp = if (size > 4) 8.dp else 12.dp
+        val isSmallBoard = DeviceUtils.isSmallScreen() || boardWidth < 280.dp
+        val spacingDp = when {
+            boardWidth < 200.dp -> 3.dp
+            isSmallBoard && size > 4 -> 4.dp
+            isSmallBoard -> 6.dp
+            size > 4 -> 8.dp
+            else -> 12.dp
+        }
         val tileSize = (boardWidth - (spacingDp * (size - 1).toFloat())) / size.toFloat()
+        val cornerRadius = if (tileSize < 50.dp) 4.dp else 8.dp
 
         // Render empty grid slots
         Column(verticalArrangement = Arrangement.spacedBy(spacingDp)) {
@@ -219,7 +228,7 @@ private fun GameBoard(board: List<List<Tile?>>, currentTheme: AppTheme, animatio
                                 .size(tileSize)
                                 .background(
                                     MaterialTheme.colorScheme.surface,
-                                    RoundedCornerShape(8.dp)
+                                    RoundedCornerShape(cornerRadius)
                                 )
                         )
                     }

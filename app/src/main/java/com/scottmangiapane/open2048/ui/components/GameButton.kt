@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun GameButton(
@@ -32,6 +33,16 @@ fun GameButton(
     fullWidth: Boolean = false,
     isTextButton: Boolean = false
 ) {
+    val isSmall = DeviceUtils.isSmallScreen()
+    val actualHeight = if (isSmall && height == 56.dp) 40.dp else height
+    val actualPadding = if (isSmall && padding == PaddingValues(horizontal = 24.dp, vertical = 8.dp)) {
+        PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+    } else {
+        padding
+    }
+    val iconSize = if (actualHeight < 48.dp) 16.dp else 20.dp
+    val textStyle = if (actualHeight < 48.dp) MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp) else MaterialTheme.typography.titleMedium
+
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
@@ -56,29 +67,29 @@ fun GameButton(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(iconSize)
                 )
                 if (fullWidth) {
                     Spacer(Modifier.weight(1f))
                 } else {
-                    Spacer(Modifier.width(12.dp))
+                    Spacer(Modifier.width(if (actualHeight < 48.dp) 6.dp else 12.dp))
                 }
             }
             Text(
                 text = text,
-                style = MaterialTheme.typography.titleMedium,
+                style = textStyle,
                 textAlign = TextAlign.Center
             )
             if (icon != null && fullWidth) {
                 Spacer(Modifier.weight(1f))
-                Spacer(Modifier.size(20.dp))
+                Spacer(Modifier.size(iconSize))
             }
         }
     }
 
     val finalModifier = modifier
         .then(if (fullWidth) Modifier.fillMaxWidth() else Modifier)
-        .height(height)
+        .height(actualHeight)
         .appFocusBorder(
             isFocused = isFocused,
             color = if (containerColor == MaterialTheme.colorScheme.primaryContainer && !isTextButton) 
@@ -93,7 +104,7 @@ fun GameButton(
             interactionSource = interactionSource,
             colors = buttonColors,
             shape = RoundedCornerShape(8.dp),
-            contentPadding = padding,
+            contentPadding = actualPadding,
             modifier = finalModifier,
             content = { content() }
         )
@@ -104,7 +115,7 @@ fun GameButton(
             interactionSource = interactionSource,
             colors = buttonColors,
             shape = RoundedCornerShape(8.dp),
-            contentPadding = padding,
+            contentPadding = actualPadding,
             modifier = finalModifier,
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
             border = if (containerColor.isBlack) 
@@ -123,13 +134,17 @@ fun SelectableButton(
     modifier: Modifier = Modifier,
     height: Dp = 56.dp
 ) {
+    val isSmall = DeviceUtils.isSmallScreen()
+    val actualHeight = if (isSmall && height == 56.dp) 40.dp else height
+    val textStyle = if (actualHeight < 48.dp) MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp) else MaterialTheme.typography.titleMedium
+
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     Surface(
         onClick = onClick,
         modifier = modifier
-            .height(height)
+            .height(actualHeight)
             .appFocusBorder(
                 isFocused = isFocused,
                 color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
@@ -147,7 +162,7 @@ fun SelectableButton(
         Box(contentAlignment = Alignment.Center) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.titleMedium
+                style = textStyle
             )
         }
     }
@@ -159,13 +174,17 @@ fun ControlButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isSmall = DeviceUtils.isSmallScreen()
+    val buttonSize = if (isSmall) 40.dp else 56.dp
+    val iconSize = if (isSmall) 20.dp else 28.dp
+
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     FilledIconButton(
         onClick = onClick,
         modifier = modifier
-            .size(56.dp)
+            .size(buttonSize)
             .appFocusBorder(
                 isFocused = isFocused,
                 color = MaterialTheme.colorScheme.secondary
@@ -185,7 +204,7 @@ fun ControlButton(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(28.dp)
+            modifier = Modifier.size(iconSize)
         )
     }
 }

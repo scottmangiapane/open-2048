@@ -51,13 +51,20 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.scottmangiapane.open2048.R
 import com.scottmangiapane.open2048.model.GameMode
 import com.scottmangiapane.open2048.ui.components.GameButton
 import com.scottmangiapane.open2048.ui.components.GameConfirmationDialog
 import com.scottmangiapane.open2048.ui.components.MenuIconButton
+import com.scottmangiapane.open2048.ui.components.scrollToTopOnFocus
+import com.scottmangiapane.open2048.ui.components.scrollToBottomOnFocus
 import com.scottmangiapane.open2048.ui.components.oledBorder
 import com.scottmangiapane.open2048.ui.components.appContainerColor
+
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.focus.onFocusChanged
+import kotlinx.coroutines.launch
 
 @Composable
 fun MenuScreen(
@@ -70,6 +77,7 @@ fun MenuScreen(
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
     var pendingGameMode by rememberSaveable(stateSaver = GameMode.Saver) { mutableStateOf(null) }
 
     val initialFocusRequester = remember { FocusRequester() }
@@ -102,18 +110,28 @@ fun MenuScreen(
         initialFocusRequester.requestFocus()
     }
 
+    val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+
+    val scrollToTopModifier = Modifier.scrollToTopOnFocus(scrollState, coroutineScope)
+    val scrollToBottomModifier = Modifier.scrollToBottomOnFocus(scrollState, coroutineScope)
+
+    val contentHPadding = if (isSmall) 12.dp else 24.dp
+    val contentVPadding = if (isSmall) 6.dp else 24.dp
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
+            .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
     ) {
-        // 1. Main Content Area (Truly centered in the whole screen)
+        // 1. Main Content Area
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
-                .padding(horizontal = 24.dp, vertical = 24.dp),
+                .verticalScroll(scrollState)
+                .padding(horizontal = contentHPadding, vertical = contentVPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
@@ -130,6 +148,7 @@ fun MenuScreen(
                             fullWidth = true,
                             modifier = Modifier
                                 .focusRequester(initialFocusRequester)
+                                .then(scrollToTopModifier)
                                 .focusProperties { up = statsFocusRequester }
                         )
                     }
@@ -142,22 +161,81 @@ fun MenuScreen(
                         containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                         contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                         fullWidth = true,
-                        modifier = (if (!canResume) Modifier.focusRequester(initialFocusRequester) else Modifier)
+                        modifier = (if (!canResume) Modifier.focusRequester(initialFocusRequester).then(scrollToTopModifier) else Modifier)
                             .then(if (!canResume) Modifier.focusProperties { up = statsFocusRequester } else Modifier)
                     )
                 }
             }
 
-            if (isLandscape) {
+            if (isSmall && !isLandscape) {
+                // Ultra-small portrait layout: Include logo inside top bar row to prevent eclipsing
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Logo2048(isLandscape = false)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        MenuIconButton(
+                            onClick = onNavigateToStats,
+                            modifier = Modifier
+                                .focusRequester(statsFocusRequester)
+                                .then(scrollToTopModifier)
+                                .focusProperties { down = initialFocusRequester }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.BarChart,
+                                contentDescription = "Statistics",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        MenuIconButton(
+                            onClick = onNavigateToSettings,
+                            modifier = Modifier
+                                .then(scrollToTopModifier)
+                                .focusProperties { down = initialFocusRequester }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = "Settings",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+                Column(
+                    modifier = Modifier.widthIn(max = 280.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    mainButtons()
+                    MenuSection("CLASSIC") {
+                        ClassicModes(
+                            onStartGame = handleStartGame,
+                            bottomButtonModifier = scrollToBottomModifier
+                        )
+                    }
+                    MenuSection("BLITZ") {
+                        BlitzModes(
+                            onStartGame = handleStartGame,
+                            bottomButtonModifier = scrollToBottomModifier
+                        )
+                    }
+                }
+            } else if (isLandscape) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(if (isSmall) 6.dp else 16.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     MenuColumn(modifier = Modifier.weight(1f)) {
                         Logo2048(isLandscape = true)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Spacer(modifier = Modifier.height(if (isSmall) 4.dp else 8.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(if (isSmall) 6.dp else 12.dp)) {
                             mainButtons()
                         }
                     }
@@ -175,12 +253,14 @@ fun MenuScreen(
                         MenuSection("BLITZ") {
                             BlitzModes(
                                 onStartGame = handleStartGame,
-                                topButtonModifier = Modifier.focusProperties { up = statsFocusRequester }
+                                topButtonModifier = Modifier.focusProperties { up = statsFocusRequester },
+                                bottomButtonModifier = scrollToBottomModifier
                             )
                         }
                     }
                 }
             } else {
+                // Exact original portrait layout for normal/large screens
                 Logo2048(isLandscape = false)
                 Spacer(modifier = Modifier.height(24.dp))
                 Column(
@@ -190,49 +270,60 @@ fun MenuScreen(
                 ) {
                     mainButtons()
                     MenuSection("CLASSIC") {
-                        ClassicModes(onStartGame = handleStartGame)
+                        ClassicModes(
+                            onStartGame = handleStartGame,
+                            bottomButtonModifier = scrollToBottomModifier
+                        )
                     }
                     MenuSection("BLITZ") {
-                        BlitzModes(onStartGame = handleStartGame)
+                        BlitzModes(
+                            onStartGame = handleStartGame,
+                            bottomButtonModifier = scrollToBottomModifier
+                        )
                     }
                 }
             }
         }
 
-        // 2. Settings/Stats Row (Overlay)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
-                .padding(horizontal = 24.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            MenuIconButton(
-                onClick = onNavigateToStats,
+        // 2. Settings/Stats Row (Overlay for normal/large devices or landscape)
+        if (!isSmall || isLandscape) {
+            Row(
                 modifier = Modifier
-                    .focusRequester(statsFocusRequester)
-                    .focusProperties { down = initialFocusRequester }
+                    .fillMaxWidth()
+                    .padding(horizontal = contentHPadding, vertical = if (isSmall) 4.dp else 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.BarChart,
-                    contentDescription = "Statistics",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
+                val iconSize = if (isSmall) 22.dp else 28.dp
 
-            MenuIconButton(
-                onClick = onNavigateToSettings,
-                modifier = Modifier.focusProperties { down = initialFocusRequester }
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Settings,
-                    contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(28.dp)
-                )
+                MenuIconButton(
+                    onClick = onNavigateToStats,
+                    modifier = Modifier
+                        .focusRequester(statsFocusRequester)
+                        .then(scrollToTopModifier)
+                        .focusProperties { down = initialFocusRequester }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.BarChart,
+                        contentDescription = "Statistics",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(iconSize)
+                    )
+                }
+
+                MenuIconButton(
+                    onClick = onNavigateToSettings,
+                    modifier = Modifier
+                        .then(scrollToTopModifier)
+                        .focusProperties { down = initialFocusRequester }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Settings,
+                        contentDescription = "Settings",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(iconSize)
+                    )
+                }
             }
         }
     }
@@ -240,9 +331,16 @@ fun MenuScreen(
 
 @Composable
 fun Logo2048(isLandscape: Boolean) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+    val logoStyle = when {
+        isSmall -> MaterialTheme.typography.titleMedium
+        isLandscape -> MaterialTheme.typography.displayMedium
+        else -> MaterialTheme.typography.displayLarge
+    }
+
     Text(
         text = "2048",
-        style = if (isLandscape) MaterialTheme.typography.displayMedium else MaterialTheme.typography.displayLarge,
+        style = logoStyle,
         color = MaterialTheme.colorScheme.onBackground
     )
 }
@@ -252,13 +350,15 @@ private fun MenuSection(
     title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(if (isSmall) 2.dp else 6.dp)
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.labelLarge,
+            style = if (isSmall) MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp) else MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary
         )
         content()
@@ -268,9 +368,12 @@ private fun MenuSection(
 @Composable
 private fun ClassicModes(
     onStartGame: (GameMode) -> Unit,
-    topButtonModifier: Modifier = Modifier
+    topButtonModifier: Modifier = Modifier,
+    bottomButtonModifier: Modifier = Modifier
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
+    Column(verticalArrangement = Arrangement.spacedBy(if (isSmall) 4.dp else 8.dp)) {
         GameButton(
             text = "Classic 4x4",
             onClick = { onStartGame(GameMode.Classic(4)) },
@@ -288,7 +391,8 @@ private fun ClassicModes(
             text = "Large 5x5",
             onClick = { onStartGame(GameMode.Classic(5)) },
             fullWidth = true,
-            icon = Icons.Rounded.GridView
+            icon = Icons.Rounded.GridView,
+            modifier = bottomButtonModifier
         )
     }
 }
@@ -296,9 +400,12 @@ private fun ClassicModes(
 @Composable
 private fun BlitzModes(
     onStartGame: (GameMode) -> Unit,
-    topButtonModifier: Modifier = Modifier
+    topButtonModifier: Modifier = Modifier,
+    bottomButtonModifier: Modifier = Modifier
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
+    Column(verticalArrangement = Arrangement.spacedBy(if (isSmall) 4.dp else 8.dp)) {
         GameButton(
             text = "2 Minute Blitz",
             onClick = { onStartGame(GameMode.Blitz(2)) },
@@ -310,7 +417,8 @@ private fun BlitzModes(
             text = "5 Minute Blitz",
             onClick = { onStartGame(GameMode.Blitz(5)) },
             fullWidth = true,
-            icon = Icons.Rounded.HourglassTop
+            icon = Icons.Rounded.HourglassTop,
+            modifier = bottomButtonModifier
         )
     }
 }
@@ -320,6 +428,8 @@ private fun MenuColumn(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
     Column(
         modifier = modifier
             .widthIn(max = 280.dp)
@@ -328,7 +438,7 @@ private fun MenuColumn(
                 shape = RoundedCornerShape(8.dp)
             )
             .oledBorder()
-            .padding(10.dp),
+            .padding(if (isSmall) 6.dp else 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         content = content
     )

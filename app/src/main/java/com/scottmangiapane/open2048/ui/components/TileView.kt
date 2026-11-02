@@ -71,6 +71,7 @@ fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme, animationSpeed: A
     }
 
     if (isVisible.value) {
+        val cornerRadius = if (tileSize < 50.dp) 4.dp else 8.dp
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -78,20 +79,25 @@ fun TileView(tile: Tile, tileSize: Dp, currentTheme: AppTheme, animationSpeed: A
                     scaleX = scale.value
                     scaleY = scale.value
                 }
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(cornerRadius))
                 .background(backgroundColor),
             contentAlignment = Alignment.Center,
         ) {
+            val isSmallTile = DeviceUtils.isSmallScreen() || tileSize < 50.dp
             val factor = when {
-                displayValue.intValue >= 1024 -> 0.28f
-                displayValue.intValue >= 100 -> 0.35f
-                else -> 0.45f
+                displayValue.intValue >= 10000 -> if (isSmallTile) 0.22f else 0.25f
+                displayValue.intValue >= 1024 -> if (isSmallTile) 0.24f else 0.28f
+                displayValue.intValue >= 100 -> if (isSmallTile) 0.30f else 0.35f
+                else -> if (isSmallTile) 0.40f else 0.45f
             }
             Text(
                 text = displayValue.intValue.toString(),
                 fontSize = (tileSize.value * factor).sp,
                 fontWeight = FontWeight.Black,
                 color = textColor,
+                maxLines = 1,
+                softWrap = false,
+                lineHeight = androidx.compose.ui.unit.TextUnit.Unspecified,
             )
         }
     }

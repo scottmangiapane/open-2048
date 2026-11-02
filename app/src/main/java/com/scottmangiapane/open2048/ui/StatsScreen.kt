@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scottmangiapane.open2048.logic.TimeUtils
 import com.scottmangiapane.open2048.model.GameMode
@@ -23,12 +24,19 @@ import com.scottmangiapane.open2048.ui.components.appFocusBorder
 import com.scottmangiapane.open2048.ui.components.oledBorder
 import com.scottmangiapane.open2048.ui.components.appContainerColor
 
+import com.scottmangiapane.open2048.ui.components.scrollToTopOnFocus
+import com.scottmangiapane.open2048.ui.components.scrollToBottomOnFocus
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
     viewModel: GameViewModel,
     onBack: () -> Unit,
 ) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+    val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -38,7 +46,7 @@ fun StatsScreen(
                 title = {
                     Text(
                         text = "Statistics",
-                        style = MaterialTheme.typography.titleLarge,
+                        style = if (isSmall) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge,
                     )
                 },
                 navigationIcon = {
@@ -47,12 +55,15 @@ fun StatsScreen(
                     IconButton(
                         onClick = onBack,
                         interactionSource = interactionSource,
-                        modifier = Modifier.appFocusBorder(isFocused = isFocused)
+                        modifier = Modifier
+                            .appFocusBorder(isFocused = isFocused)
+                            .scrollToTopOnFocus(scrollState, coroutineScope)
                     ) {
                         Icon(
                             Icons.AutoMirrored.Rounded.ArrowBack, 
                             contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(if (isSmall) 20.dp else 24.dp)
                         )
                     }
                 },
@@ -65,15 +76,15 @@ fun StatsScreen(
         },
         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f)
     ) { padding ->
-        val scrollState = rememberScrollState()
+        val screenPadding = if (isSmall) 12.dp else 24.dp
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
                 .verticalScroll(scrollState)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(screenPadding),
+            verticalArrangement = Arrangement.spacedBy(screenPadding)
         ) {
             // Daily Challenge Hero Card
             val today = GameMode.Daily.today()
@@ -90,8 +101,12 @@ fun StatsScreen(
 
             // Blitz Modes
             StatsSection(title = "BLITZ MODES", icon = Icons.Rounded.Timer) {
-                ModeStatCard(label = "2 Minute Blitz", mode = GameMode.Blitz(2), viewModel = viewModel)
-                ModeStatCard(label = "5 Minute Blitz", mode = GameMode.Blitz(5), viewModel = viewModel)
+                Box(modifier = Modifier.scrollToBottomOnFocus(scrollState, coroutineScope)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        ModeStatCard(label = "2 Minute Blitz", mode = GameMode.Blitz(2), viewModel = viewModel)
+                        ModeStatCard(label = "5 Minute Blitz", mode = GameMode.Blitz(5), viewModel = viewModel)
+                    }
+                }
             }
         }
     }
@@ -103,7 +118,9 @@ private fun StatsSection(
     icon: ImageVector,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
+    Column(verticalArrangement = Arrangement.spacedBy(if (isSmall) 6.dp else 12.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -113,11 +130,11 @@ private fun StatsSection(
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(if (isSmall) 16.dp else 18.dp)
             )
             Text(
                 text = title,
-                style = MaterialTheme.typography.labelLarge,
+                style = if (isSmall) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary
             )
         }
@@ -127,6 +144,7 @@ private fun StatsSection(
 
 @Composable
 private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
     val bestScore by viewModel.getBestScore(mode).collectAsStateWithLifecycle()
     val highestTile by viewModel.getHighestTile(mode).collectAsStateWithLifecycle()
     val fewestMoves by viewModel.getFewestMoves(mode).collectAsStateWithLifecycle()
@@ -139,6 +157,9 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
+    val cardPadding = if (isSmall) 10.dp else 16.dp
+    val itemSpacing = if (isSmall) 6.dp else 12.dp
+
     Surface(
         color = appContainerColor(),
         shape = RoundedCornerShape(8.dp),
@@ -148,7 +169,7 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
             .focusable(interactionSource = interactionSource)
             .oledBorder()
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(cardPadding)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -162,12 +183,17 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
                     )
                     Text(
                         text = bestScore.toString(),
-                        style = MaterialTheme.typography.displaySmall,
+                        style = if (isSmall) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Icon(Icons.Rounded.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(40.dp))
+                    Icon(
+                        Icons.Rounded.EmojiEvents, 
+                        contentDescription = null, 
+                        tint = MaterialTheme.colorScheme.primary, 
+                        modifier = Modifier.size(if (isSmall) 28.dp else 40.dp)
+                    )
                     Text(
                         text = "WIN AT ${mode.winCondition}",
                         style = MaterialTheme.typography.labelSmall,
@@ -176,20 +202,20 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isSmall) 8.dp else 16.dp))
 
             Text("TODAY", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Spacer(modifier = Modifier.height(if (isSmall) 4.dp else 8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(itemSpacing)) {
                 StatMicroItem(Modifier.weight(1f), "Max Tile", highestTile.toString())
                 StatMicroItem(Modifier.weight(1f), "Fewest Moves", if ((fewestMoves == Int.MAX_VALUE) || (fewestMoves == 0)) "-" else fewestMoves.toString())
                 StatMicroItem(Modifier.weight(1f), "Fastest Time", if ((fastestTime == Long.MAX_VALUE) || (fastestTime == 0L)) "-" else TimeUtils.formatDurationAbbreviated(fastestTime))
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isSmall) 8.dp else 16.dp))
             Text("ALL TIME", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Spacer(modifier = Modifier.height(if (isSmall) 4.dp else 8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(itemSpacing)) {
                 StatMicroItem(Modifier.weight(1f), "Wins", totalWins.toString())
                 StatMicroItem(Modifier.weight(1f), "Played", totalPlayed.toString())
                 StatMicroItem(Modifier.weight(1f), "Total Time", TimeUtils.formatDurationAbbreviated(totalTime))
@@ -200,6 +226,7 @@ private fun DailyHeroCard(mode: GameMode.Daily, viewModel: GameViewModel) {
 
 @Composable
 private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
     val bestScore by viewModel.getBestScore(mode).collectAsStateWithLifecycle()
     val highestTile by viewModel.getHighestTile(mode).collectAsStateWithLifecycle()
     val fewestMoves by viewModel.getFewestMoves(mode).collectAsStateWithLifecycle()
@@ -211,6 +238,9 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
+    val cardPadding = if (isSmall) 10.dp else 16.dp
+    val itemSpacing = if (isSmall) 6.dp else 12.dp
+
     Surface(
         color = appContainerColor(),
         shape = RoundedCornerShape(8.dp),
@@ -220,14 +250,14 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
             .focusable(interactionSource = interactionSource)
             .oledBorder()
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(cardPadding)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(label, style = if (isSmall) MaterialTheme.typography.titleSmall else MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     Text(
                         text = "WIN AT ${mode.winCondition}",
                         style = MaterialTheme.typography.labelSmall,
@@ -236,25 +266,25 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
                 }
                 Text(
                     text = bestScore.toString(),
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = if (isSmall) MaterialTheme.typography.titleMedium else MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.padding(horizontal = if (isSmall) 8.dp else 16.dp, vertical = if (isSmall) 6.dp else 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(itemSpacing)) {
                 StatMicroItem(Modifier.weight(1f), "Max Tile", highestTile.toString())
                 StatMicroItem(Modifier.weight(1f), "Fewest Moves", if ((fewestMoves == Int.MAX_VALUE) || (fewestMoves == 0)) "-" else fewestMoves.toString())
                 StatMicroItem(Modifier.weight(1f), "Fastest Time", if ((fastestTime == Long.MAX_VALUE) || (fastestTime == 0L)) "-" else TimeUtils.formatDurationAbbreviated(fastestTime))
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isSmall) 8.dp else 16.dp))
             
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(itemSpacing)) {
                 StatMicroItem(Modifier.weight(1f), "Wins", wins.toString())
                 StatMicroItem(Modifier.weight(1f), "Played", played.toString())
                 StatMicroItem(Modifier.weight(1f), "Total Time", TimeUtils.formatDurationAbbreviated(totalTime))
@@ -265,16 +295,20 @@ private fun ModeStatCard(label: String, mode: GameMode, viewModel: GameViewModel
 
 @Composable
 private fun StatMicroItem(modifier: Modifier = Modifier, label: String, value: String) {
+    val isSmall = com.scottmangiapane.open2048.ui.components.DeviceUtils.isSmallScreen()
+
     Column(modifier = modifier) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            style = if (isSmall) MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp) else MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            maxLines = 1
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
+            style = if (isSmall) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1
         )
     }
 }
